@@ -1,17 +1,13 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::collections::UnorderedMap;
-use near_sdk::{env, near_bindgen, AccountId, PanicOnDefault, NearToken};
-use near_sdk::json_types::U128;
+use near_sdk::{env, near_bindgen, AccountId, PanicOnDefault};
 
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct Contract {
     owner_id: AccountId,
-    // token_id → owner
     tokens: UnorderedMap<String, AccountId>,
-    // token_id → business account
     business_accounts: UnorderedMap<String, AccountId>,
-    // token_id → metadata (simple)
     token_metadata: UnorderedMap<String, String>,
     next_token_id: u64,
 }
@@ -29,7 +25,6 @@ impl Contract {
         }
     }
 
-    /// Mint a new Autonomous Business NFT
     #[payable]
     pub fn nft_mint(
         &mut self,
@@ -40,10 +35,8 @@ impl Contract {
         let token_id = self.next_token_id.to_string();
         self.next_token_id += 1;
 
-        // Store owner
         self.tokens.insert(&token_id, &receiver_id);
 
-        // Create business account name
         let business_account = format!(
             "business-{}.{}",
             token_id,
@@ -52,7 +45,6 @@ impl Contract {
         self.business_accounts
             .insert(&token_id, &business_account.parse().unwrap());
 
-        // Store simple metadata
         let meta = format!("{}|{}", title, description);
         self.token_metadata.insert(&token_id, &meta);
 
