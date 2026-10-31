@@ -1,0 +1,29 @@
+name: Build Business NFT Contract
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'contracts/business-nft/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Build contract
+        run: |
+          cd contracts/business-nft
+          cargo build --target wasm32-unknown-unknown --release
+
+      - name: Upload WASM
+        uses: actions/upload-artifact@v4
+        with:
+          name: business-nft-wasm
+          path: contracts/business-nft/target/wasm32-unknown-unknown/release/business_nft.wasm
