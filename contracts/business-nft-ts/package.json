@@ -1,0 +1,15 @@
+{
+  "name": "business-nft-ts",
+  "version": "0.1.0",
+  "license": "UNLICENSED",
+  "type": "module",
+  "scripts": {
+    "build": "near-sdk-js build src/contract.ts build/business_nft.wasm"
+  },
+  "dependencies": {
+    "near-sdk-js": "^2.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
