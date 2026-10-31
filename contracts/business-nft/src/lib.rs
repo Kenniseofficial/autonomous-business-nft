@@ -1,16 +1,13 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::collections::{LazyOption, UnorderedMap, UnorderedSet};
-use near_sdk::json_types::U128;
+use near_sdk::collections::{LazyOption, UnorderedMap};
 use near_sdk::{
-    env, near_bindgen, AccountId, BorshStorageKey, PanicOnDefault, Promise, PromiseOrValue,
-    NearToken,
+    env, near_bindgen, AccountId, BorshStorageKey, PanicOnDefault, PromiseOrValue,
 };
 use near_contract_standards::non_fungible_token::metadata::{
     NFTContractMetadata, NonFungibleTokenMetadataProvider, TokenMetadata, NFT_METADATA_SPEC,
 };
 use near_contract_standards::non_fungible_token::NonFungibleToken;
 use near_contract_standards::non_fungible_token::{Token, TokenId};
-use near_sdk::serde::{Deserialize, Serialize};
 
 #[derive(BorshSerialize, BorshStorageKey)]
 enum StorageKey {
@@ -27,9 +24,7 @@ enum StorageKey {
 pub struct Contract {
     tokens: NonFungibleToken,
     metadata: LazyOption<NFTContractMetadata>,
-    // Maps token_id → business account
     business_accounts: UnorderedMap<TokenId, AccountId>,
-    // Simple counter for token IDs
     next_token_id: u64,
 }
 
@@ -64,8 +59,6 @@ impl Contract {
     }
 
     /// Mint a new Autonomous Business NFT
-    /// For MVP we create the NFT and record a placeholder business account name.
-    /// Later we will add real sub-account creation + Function-Call Key granting.
     #[payable]
     pub fn nft_mint(
         &mut self,
@@ -92,8 +85,7 @@ impl Contract {
             reference_hash: None,
         };
 
-        // Create a deterministic business account name for this NFT
-        // Example: business-42.buildingfromthetop.testnet
+        // Placeholder business account name linked to this NFT
         let business_account: AccountId = format!(
             "business-{}.{}",
             token_id,
@@ -107,12 +99,10 @@ impl Contract {
         self.tokens.internal_mint(token_id.clone(), receiver_id, Some(metadata))
     }
 
-    /// View the business account linked to a token
     pub fn get_business_account(&self, token_id: TokenId) -> Option<AccountId> {
         self.business_accounts.get(&token_id)
     }
 
-    /// Simple helper to see next token id
     pub fn get_next_token_id(&self) -> u64 {
         self.next_token_id
     }
@@ -127,4 +117,4 @@ impl NonFungibleTokenMetadataProvider for Contract {
     fn nft_metadata(&self) -> NFTContractMetadata {
         self.metadata.get().unwrap()
     }
-}
+}       
