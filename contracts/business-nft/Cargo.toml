@@ -1,16 +1,14 @@
 [package]
 name = "business-nft"
 version = "0.1.0"
-authors = ["kenniseofficial"]
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-near-sdk = { version = "5.5.0", features = ["legacy"] }
-near-contract-standards = "5.5.0"
-borsh = "1.5.1"
+near-sdk = "4.1.1"
+near-contract-standards = "4.1.1"
 
 [profile.release]
 codegen-units = 1
