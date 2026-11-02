@@ -5,16 +5,16 @@ class Contract {
   owner_id: string = "";
   next_token_id: number = 1;
 
-  // token_id → owner
-  tokens: LookupMap<string> = new LookupMap("t");
-  // token_id → metadata string (title|description)
-  token_metadata: LookupMap<string> = new LookupMap("m");
-  // owner → list of token_ids (comma separated)
-  tokens_per_owner: LookupMap<string> = new LookupMap("o");
+  tokens: LookupMap<string>;
+  token_metadata: LookupMap<string>;
+  tokens_per_owner: LookupMap<string>;
 
   @initialize({})
   init({ owner_id }: { owner_id: string }) {
     this.owner_id = owner_id;
+    this.tokens = new LookupMap("t");
+    this.token_metadata = new LookupMap("m");
+    this.tokens_per_owner = new LookupMap("o");
   }
 
   @call({ payableFunction: true })
@@ -30,13 +30,9 @@ class Contract {
     const token_id = this.next_token_id.toString();
     this.next_token_id += 1;
 
-    // save owner
     this.tokens.set(token_id, receiver_id);
-
-    // save metadata (FIXED template literal)
     this.token_metadata.set(token_id, `\( {title}| \){description}`);
 
-    // add to owner's list
     let owner_tokens = this.tokens_per_owner.get(receiver_id) || "";
     if (owner_tokens === "") {
       owner_tokens = token_id;
@@ -45,17 +41,11 @@ class Contract {
     }
     this.tokens_per_owner.set(receiver_id, owner_tokens);
 
-    // Emit the event wallets look for
     const event = {
       standard: "nep171",
       version: "1.2.0",
       event: "nft_mint",
-      data: [
-        {
-          owner_id: receiver_id,
-          token_ids: [token_id],
-        },
-      ],
+      data: [{ owner_id: receiver_id, token_ids: [token_id] }],
     };
     near.log(`EVENT_JSON:${JSON.stringify(event)}`);
 
@@ -82,15 +72,13 @@ class Contract {
 
     const metaStr = this.token_metadata.get(token_id) || "Untitled|No description";
     const parts = metaStr.split("|");
-    const title = parts[0] || "Untitled";
-    const description = parts[1] || "";
 
     return {
       token_id: token_id,
       owner_id: owner,
       metadata: {
-        title: title,
-        description: description,
+        title: parts[0] || "Untitled",
+        description: parts[1] || "",
         media: "https://near.org/wp-content/themes/near-19/assets/img/brand-icon.png",
         copies: 1,
       },
