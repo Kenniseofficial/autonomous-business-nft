@@ -1,21 +1,42 @@
-import { NearBindgen, near, call, view, initialize, LookupMap } from "near-sdk-js";
+import { NearBindgen, near, call, view, initialize, LookupMap, UnorderedMap } from "near-sdk-js";
+
+class TokenMetadata {
+  title: string;
+  description: string;
+  media: string;
+  copies: number;
+
+  constructor(title: string, description: string) {
+    this.title = title;
+    this.description = description;
+    this.media = "https://near.org/wp-content/themes/near-19/assets/img/brand-icon.png"; // temporary image
+    this.copies = 1;
+  }
+}
+
+class Token {
+  token_id: string;
+  owner_id: string;
+  metadata: TokenMetadata;
+
+  constructor(token_id: string, owner_id: string, metadata: TokenMetadata) {
+    this.token_id = token_id;
+    this.owner_id = owner_id;
+    this.metadata = metadata;
+  }
+}
 
 @NearBindgen({})
 class Contract {
   owner_id: string = "";
   next_token_id: number = 1;
 
-  // token_id → owner account
-  tokens: LookupMap<string> = new LookupMap("tokens");
-
-  // token_id → metadata JSON string
-  token_metadata: LookupMap<string> = new LookupMap("metadata");
-
-  // owner account → list of token_ids (as JSON string)
-  tokens_per_owner: LookupMap<string> = new LookupMap("tokens_per_owner");
-
-  // business sub-account idea
-  business_accounts: LookupMap<string> = new LookupMap("business");
+  // token_id → owner
+  tokens: LookupMap<string> = new LookupMap("t");
+  // token_id → metadata string (title|description)
+  token_metadata: LookupMap<string> = new LookupMap("m");
+  // owner → list of token_ids (simple string, comma separated for simplicity on mobile)
+  tokens_per_owner: LookupMap<string> = new LookupMap("o");
 
   @initialize({})
   init({ owner_id }: { owner_id: string }) {
@@ -35,36 +56,22 @@ class Contract {
     const token_id = this.next_token_id.toString();
     this.next_token_id += 1;
 
-    // Save owner
+    // save owner
     this.tokens.set(token_id, receiver_id);
 
-    // Save metadata as proper object
-    const metadata = {
-      title: title || "Autonomous Business NFT",
-      description: description || "An AI agent that runs its own business on NEAR",
-      media: "https://near.org/wp-content/themes/near-22/assets/images/near-logo.svg",
-      copies: 1,
-    };
-    this.token_metadata.set(token_id, JSON.stringify(metadata));
+    // save metadata
+    this.token_metadata.set(token_id, `\( {title}| \){description}`);
 
-    // Track tokens per owner
-    let owner_tokens: string[] = [];
-    const existing = this.tokens_per_owner.get(receiver_id);
-    if (existing) {
-      try {
-        owner_tokens = JSON.parse(existing);
-      } catch (e) {
-        owner_tokens = [];
-      }
+    // add to owner's list
+    let owner_tokens = this.tokens_per_owner.get(receiver_id) || "";
+    if (owner_tokens === "") {
+      owner_tokens = token_id;
+    } else {
+      owner_tokens = owner_tokens + "," + token_id;
     }
-    owner_tokens.push(token_id);
-    this.tokens_per_owner.set(receiver_id, JSON.stringify(owner_tokens));
+    this.tokens_per_owner.set(receiver_id, owner_tokens);
 
-    // Business account idea
-    const business_account = `business-\( {token_id}. \){near.currentAccountId()}`;
-    this.business_accounts.set(token_id, business_account);
-
-    // Emit the official NEP-171 mint event (important for wallets)
+    // Emit the event wallets look for
     const event = {
       standard: "nep171",
       version: "1.2.0",
@@ -81,15 +88,13 @@ class Contract {
     return token_id;
   }
 
-  // ========== REQUIRED BY WALLETS ==========
-
   @view({})
   nft_metadata() {
     return {
       spec: "nft-1.0.0",
       name: "Autonomous Business NFT",
       symbol: "ABNFT",
-      icon: "https://near.org/wp-content/themes/near-22/assets/images/near-logo.svg",
+      icon: "https://near.org/wp-content/themes/near-19/assets/img/brand-icon.png",
       base_uri: null,
       reference: null,
       reference_hash: null,
@@ -98,53 +103,46 @@ class Contract {
 
   @view({})
   nft_token({ token_id }: { token_id: string }) {
-    const owner_id = this.tokens.get(token_id);
-    if (!owner_id) return null;
+    const owner = this.tokens.get(token_id);
+    if (!owner) return null;
 
-    const meta_str = this.token_metadata.get(token_id);
-    let metadata = {};
-    if (meta_str) {
-      try {
-        metadata = JSON.parse(meta_str);
-      } catch (e) {
-        metadata = { title: "Autonomous Business", description: "" };
-      }
-    }
+    const metaStr = this.token_metadata.get(token_id) || "Untitled|No description";
+    const parts = metaStr.split("|");
+    const title = parts[0] || "Untitled";
+    const description = parts[1] || "";
 
     return {
       token_id,
-      owner_id,
-      metadata,
+      owner_id: owner,
+      metadata: {
+        title,
+        description,
+        media: "https://near.org/wp-content/themes/near-19/assets/img/brand-icon.png",
+        copies: 1,
+      },
     };
   }
 
   @view({})
   nft_tokens_for_owner({
     account_id,
-    from_index,
-    limit,
+    from_index = "0",
+    limit = 50,
   }: {
     account_id: string;
-    from_index?: string | null;
-    limit?: number | null;
+    from_index?: string;
+    limit?: number;
   }) {
-    const tokens_str = this.tokens_per_owner.get(account_id);
-    if (!tokens_str) return [];
+    const tokensStr = this.tokens_per_owner.get(account_id);
+    if (!tokensStr) return [];
 
-    let token_ids: string[] = [];
-    try {
-      token_ids = JSON.parse(tokens_str);
-    } catch (e) {
-      return [];
-    }
-
-    const start = from_index ? parseInt(from_index) : 0;
-    const end = limit ? start + limit : token_ids.length;
-    const sliced = token_ids.slice(start, end);
+    const tokenIds = tokensStr.split(",");
+    const start = parseInt(from_index);
+    const end = Math.min(start + limit, tokenIds.length);
 
     const result = [];
-    for (const tid of sliced) {
-      const token = this.nft_token({ token_id: tid });
+    for (let i = start; i < end; i++) {
+      const token = this.nft_token({ token_id: tokenIds[i] });
       if (token) result.push(token);
     }
     return result;
@@ -152,30 +150,13 @@ class Contract {
 
   @view({})
   nft_supply_for_owner({ account_id }: { account_id: string }): string {
-    const tokens_str = this.tokens_per_owner.get(account_id);
-    if (!tokens_str) return "0";
-    try {
-      const arr = JSON.parse(tokens_str);
-      return arr.length.toString();
-    } catch (e) {
-      return "0";
-    }
+    const tokensStr = this.tokens_per_owner.get(account_id);
+    if (!tokensStr) return "0";
+    return tokensStr.split(",").length.toString();
   }
-
-  // ========== Extra helpers (keep for dashboard later) ==========
 
   @view({})
   get_next_token_id(): number {
     return this.next_token_id;
-  }
-
-  @view({})
-  get_token_owner(token_id: string): string | null {
-    return this.tokens.get(token_id);
-  }
-
-  @view({})
-  get_business_account(token_id: string): string | null {
-    return this.business_accounts.get(token_id);
   }
 }
