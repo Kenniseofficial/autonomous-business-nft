@@ -172,89 +172,6 @@
       color: #52525b;
       line-height: 1.6;
     }
-
-    /* Modal - pure CSS/JS, no library */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.78);
-      display: none;
-      align-items: flex-end;
-      justify-content: center;
-      z-index: 99999;
-      padding: 0;
-    }
-    .modal-overlay.show {
-      display: flex;
-    }
-    .modal {
-      background: #111114;
-      border: 1px solid #27272a;
-      border-radius: 22px 22px 0 0;
-      width: 100%;
-      max-width: 440px;
-      padding: 28px 20px 48px;
-      animation: slideUp 0.25s ease-out;
-    }
-    @keyframes slideUp {
-      from { transform: translateY(40px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    .modal h3 {
-      font-size: 1.25rem;
-      margin-bottom: 6px;
-      text-align: center;
-    }
-    .modal p {
-      text-align: center;
-      color: #a1a1aa;
-      font-size: 0.9rem;
-      margin-bottom: 24px;
-    }
-    .wallet-option {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      background: #18181b;
-      border: 1px solid #3f3f46;
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 12px;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .wallet-option:active {
-      border-color: #22c55e;
-      background: #1a1a1e;
-    }
-    .wallet-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 11px;
-      background: #27272a;
-      display: grid;
-      place-items: center;
-      font-size: 22px;
-    }
-    .wallet-name {
-      font-weight: 600;
-      font-size: 1.05rem;
-    }
-    .wallet-desc {
-      font-size: 0.8rem;
-      color: #a1a1aa;
-    }
-    .close-btn {
-      margin-top: 18px;
-      background: transparent;
-      border: 1px solid #3f3f46;
-      color: #a1a1aa;
-      border-radius: 12px;
-      padding: 13px;
-      width: 100%;
-      font-size: 0.95rem;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
@@ -303,86 +220,138 @@
     </div>
   </div>
 
-  <!-- Custom Wallet Modal -->
-  <div class="modal-overlay" id="walletModal">
-    <div class="modal">
-      <h3>Connect Wallet</h3>
-      <p>Choose your wallet</p>
+  <script type="importmap">
+  {
+    "imports": {
+      "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@0.12.0"
+    }
+  }
+  </script>
 
-      <div class="wallet-option" id="meteorOption">
-        <div class="wallet-icon">☄️</div>
-        <div>
-          <div class="wallet-name">Meteor Wallet</div>
-          <div class="wallet-desc">App or Browser • Recommended</div>
-        </div>
-      </div>
+  <script type="module">
+    import { NearConnector } from "@hot-labs/near-connect";
 
-      <div class="wallet-option" id="intearOption">
-        <div class="wallet-icon">💧</div>
-        <div>
-          <div class="wallet-name">Intear Wallet</div>
-          <div class="wallet-desc">Fast • Browser</div>
-        </div>
-      </div>
-
-      <button class="close-btn" id="closeModalBtn">Cancel</button>
-    </div>
-  </div>
-
-  <script>
-    // ========== PURE JS - NO EXTERNAL LIBRARY ==========
     const CONTRACT_ID = "buildingfromthetop.testnet";
-    const SUCCESS_URL = window.location.href.split('?')[0];
 
     const connectBtn = document.getElementById("connectBtn");
     const mintBtn = document.getElementById("mintBtn");
-    const modal = document.getElementById("walletModal");
     const statusEl = document.getElementById("status");
 
-    // Open modal
-    connectBtn.addEventListener("click", function () {
-      modal.classList.add("show");
-    });
+    let connector = null;
+    let accountId = null;
 
-    // Close modal
-    document.getElementById("closeModalBtn").addEventListener("click", function () {
-      modal.classList.remove("show");
-    });
+    async function init() {
+      connector = new NearConnector({
+        network: "testnet",
+        features: {
+          signAndSendTransaction: true,
+          testnet: true
+        }
+      });
 
-    // Close when tapping outside
-    modal.addEventListener("click", function (e) {
-      if (e.target === modal) {
-        modal.classList.remove("show");
+      connector.on("wallet:signIn", async (event) => {
+        accountId = event.accounts[0]?.accountId || null;
+        updateUI();
+      });
+
+      connector.on("wallet:signOut", () => {
+        accountId = null;
+        updateUI();
+      });
+
+      // Check if already connected
+      try {
+        const wallet = await connector.wallet();
+        const accounts = await wallet.getAccounts();
+        if (accounts && accounts.length > 0) {
+          accountId = accounts[0].accountId;
+          updateUI();
+        }
+      } catch (e) {
+        // not connected yet
+      }
+    }
+
+    function updateUI() {
+      if (accountId) {
+        const short = accountId.length > 18 
+          ? accountId.slice(0, 8) + "..." + accountId.slice(-6) 
+          : accountId;
+        connectBtn.innerText = short;
+        mintBtn.disabled = false;
+      } else {
+        connectBtn.innerText = "Connect Wallet";
+        mintBtn.disabled = true;
+      }
+    }
+
+    connectBtn.addEventListener("click", async () => {
+      if (accountId) return;
+      try {
+        await connector.connect();
+      } catch (err) {
+        console.error(err);
+        statusEl.className = "status error";
+        statusEl.style.display = "block";
+        statusEl.innerText = err.message || "Connection cancelled";
       }
     });
 
-    // Meteor
-    document.getElementById("meteorOption").addEventListener("click", function () {
-      modal.classList.remove("show");
-      // Redirect to Meteor login with return URL
-      const url = "https://wallet.meteorwallet.app/login?" +
-        "contract_id=" + encodeURIComponent(CONTRACT_ID) +
-        "&success_url=" + encodeURIComponent(SUCCESS_URL) +
-        "&failure_url=" + encodeURIComponent(SUCCESS_URL);
-      window.location.href = url;
+    mintBtn.addEventListener("click", async () => {
+      if (!accountId) {
+        statusEl.className = "status error";
+        statusEl.style.display = "block";
+        statusEl.innerText = "Please connect wallet first";
+        return;
+      }
+
+      const title = document.getElementById("title").value.trim();
+      const description = document.getElementById("description").value.trim();
+
+      if (!title || !description) {
+        statusEl.className = "status error";
+        statusEl.style.display = "block";
+        statusEl.innerText = "Please fill Business Name and Description";
+        return;
+      }
+
+      try {
+        statusEl.className = "status";
+        statusEl.style.display = "block";
+        statusEl.innerText = "Confirm the transaction in your wallet...";
+
+        const wallet = await connector.wallet();
+
+        await wallet.signAndSendTransaction({
+          receiverId: CONTRACT_ID,
+          actions: [
+            {
+              type: "FunctionCall",
+              params: {
+                methodName: "nft_mint",
+                args: {
+                  receiver_id: accountId,
+                  title: title,
+                  description: description
+                },
+                gas: "30000000000000",
+                deposit: "10000000000000000000000" // 0.01 NEAR
+              }
+            }
+          ]
+        });
+
+        statusEl.className = "status success";
+        statusEl.innerText = "✅ NFT Minted Successfully! Your Autonomous Business is live.";
+      } catch (err) {
+        console.error(err);
+        statusEl.className = "status error";
+        statusEl.style.display = "block";
+        statusEl.innerText = err.message || "Transaction failed or cancelled";
+      }
     });
 
-    // Intear
-    document.getElementById("intearOption").addEventListener("click", function () {
-      modal.classList.remove("show");
-      const url = "https://wallet.intear.tech/login?" +
-        "contract_id=" + encodeURIComponent(CONTRACT_ID) +
-        "&success_url=" + encodeURIComponent(SUCCESS_URL) +
-        "&failure_url=" + encodeURIComponent(SUCCESS_URL);
-      window.location.href = url;
-    });
-
-    // Mint button (will work after we add near-api-js later)
-    mintBtn.addEventListener("click", function () {
-      statusEl.className = "status error";
-      statusEl.style.display = "block";
-      statusEl.innerText = "Connect wallet first. After you return from the wallet, mint will be enabled.";
-    });
+    init();
   </script>
 </body>
 </html>
