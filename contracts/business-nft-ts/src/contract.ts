@@ -5,16 +5,13 @@ class Contract {
   owner_id: string = "";
   next_token_id: number = 1;
 
-  tokens: LookupMap<string>;
-  token_metadata: LookupMap<string>;
-  tokens_per_owner: LookupMap<string>;
+  tokens: LookupMap<string> = new LookupMap("t");
+  token_metadata: LookupMap<string> = new LookupMap("m");
+  tokens_per_owner: LookupMap<string> = new LookupMap("o");
 
   @initialize({})
   init({ owner_id }: { owner_id: string }) {
     this.owner_id = owner_id;
-    this.tokens = new LookupMap("t");
-    this.token_metadata = new LookupMap("m");
-    this.tokens_per_owner = new LookupMap("o");
   }
 
   @call({ payableFunction: true })
