@@ -4,10 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Autonomous Business NFT</title>
-
-  <!-- HOT Connect styles -->
-  <link rel="stylesheet" href="https://unpkg.com/@hot-labs/near-connect@0.12.0/modal-ui.css" />
-
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -175,6 +171,82 @@
       color: #52525b;
       line-height: 1.6;
     }
+
+    /* Custom Wallet Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 9999;
+      padding: 16px;
+    }
+    .modal-overlay.show {
+      display: flex;
+    }
+    .modal {
+      background: #111114;
+      border: 1px solid #27272a;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 440px;
+      padding: 24px 20px 40px;
+    }
+    .modal h3 {
+      font-size: 1.2rem;
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .modal p {
+      text-align: center;
+      color: #a1a1aa;
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+    .wallet-option {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .wallet-option:active {
+      border-color: #22c55e;
+    }
+    .wallet-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #27272a;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+    }
+    .wallet-name {
+      font-weight: 600;
+      font-size: 1.05rem;
+    }
+    .wallet-desc {
+      font-size: 0.8rem;
+      color: #a1a1aa;
+    }
+    .close-btn {
+      margin-top: 16px;
+      background: transparent;
+      border: 1px solid #3f3f46;
+      color: #a1a1aa;
+      border-radius: 12px;
+      padding: 12px;
+      width: 100%;
+      font-size: 0.95rem;
+    }
   </style>
 </head>
 <body>
@@ -192,7 +264,7 @@
       <p>Own a living AI agent that earns for you on NEAR</p>
     </div>
 
-    <button class="btn btn-secondary" id="connectBtn">
+    <button class="btn btn-secondary" id="connectBtn" onclick="openWalletModal()">
       Connect Wallet
     </button>
 
@@ -207,135 +279,4 @@
       <label>Business Name</label>
       <input type="text" id="title" value="My First Autonomous Business" />
 
-      <label>Description</label>
-      <textarea id="description" rows="3">This NFT owns a live autonomous business on NEAR</textarea>
-
-      <button class="btn btn-primary" id="mintBtn" disabled>
-        Mint Now
-      </button>
-
-      <div id="status" class="status"></div>
-    </div>
-
-    <div class="footer">
-      Contract: buildingfromthetop.testnet<br>
-      Network: Testnet • Built for NEAR Hackathon
-    </div>
-  </div>
-
-  <!-- HOT Connect (recommended by NEAR) -->
-  <script src="https://unpkg.com/@hot-labs/near-connect@0.12.0/cdn/index.js"></script>
-
-  <script>
-    const CONTRACT_ID = "buildingfromthetop.testnet";
-    let connector = null;
-    let accountId = null;
-
-    async function init() {
-      // Create the connector for testnet
-      connector = new window.NearConnector({
-        network: "testnet"
-      });
-
-      // Listen for successful connection
-      connector.on("wallet:signIn", async ({ accounts }) => {
-        accountId = accounts[0].accountId;
-        updateUI();
-      });
-
-      // Listen for disconnect
-      connector.on("wallet:signOut", () => {
-        accountId = null;
-        updateUI();
-      });
-
-      // Check if already connected
-      try {
-        const wallet = await connector.wallet();
-        const accounts = await wallet.getAccounts();
-        if (accounts && accounts.length > 0) {
-          accountId = accounts[0].accountId;
-          updateUI();
-        }
-      } catch (e) {
-        // not connected yet
-      }
-    }
-
-    function updateUI() {
-      const btn = document.getElementById("connectBtn");
-      const mintBtn = document.getElementById("mintBtn");
-
-      if (accountId) {
-        const short = accountId.length > 18 
-          ? accountId.slice(0, 8) + "..." + accountId.slice(-6) 
-          : accountId;
-        btn.innerText = short;
-        mintBtn.disabled = false;
-      } else {
-        btn.innerText = "Connect Wallet";
-        mintBtn.disabled = true;
-      }
-    }
-
-    // Connect button → opens proper wallet selector modal
-    document.getElementById("connectBtn").addEventListener("click", async () => {
-      if (accountId) return;
-      try {
-        await connector.connect();
-      } catch (err) {
-        console.error(err);
-      }
-    });
-
-    // Mint button
-    document.getElementById("mintBtn").addEventListener("click", async () => {
-      const title = document.getElementById("title").value.trim();
-      const description = document.getElementById("description").value.trim();
-      const statusEl = document.getElementById("status");
-
-      if (!title || !description) {
-        statusEl.className = "status error";
-        statusEl.innerText = "Please fill Business Name and Description";
-        return;
-      }
-
-      try {
-        statusEl.className = "status";
-        statusEl.style.display = "block";
-        statusEl.innerText = "Confirm the transaction in your wallet...";
-
-        const wallet = await connector.wallet();
-
-        await wallet.signAndSendTransaction({
-          receiverId: CONTRACT_ID,
-          actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "nft_mint",
-                args: {
-                  receiver_id: accountId,
-                  title: title,
-                  description: description
-                },
-                gas: "30000000000000",
-                deposit: "10000000000000000000000" // 0.01 NEAR
-              }
-            }
-          ]
-        });
-
-        statusEl.className = "status success";
-        statusEl.innerText = "✅ NFT Minted Successfully!";
-      } catch (err) {
-        console.error(err);
-        statusEl.className = "status error";
-        statusEl.innerText = err.message || "Transaction failed or cancelled";
-      }
-    });
-
-    init();
-  </script>
-</body>
-</html>
+      <label>Description</
