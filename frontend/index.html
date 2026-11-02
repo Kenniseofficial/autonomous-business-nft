@@ -132,6 +132,7 @@
       font-size: 1.05rem;
       font-weight: 600;
       cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
     .btn-primary {
       background: linear-gradient(90deg, #16a34a, #22c55e);
@@ -172,16 +173,16 @@
       line-height: 1.6;
     }
 
-    /* Custom Wallet Modal */
+    /* Modal - pure CSS/JS, no library */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.75);
+      background: rgba(0,0,0,0.78);
       display: none;
       align-items: flex-end;
       justify-content: center;
-      z-index: 9999;
-      padding: 16px;
+      z-index: 99999;
+      padding: 0;
     }
     .modal-overlay.show {
       display: flex;
@@ -189,13 +190,18 @@
     .modal {
       background: #111114;
       border: 1px solid #27272a;
-      border-radius: 20px 20px 0 0;
+      border-radius: 22px 22px 0 0;
       width: 100%;
       max-width: 440px;
-      padding: 24px 20px 40px;
+      padding: 28px 20px 48px;
+      animation: slideUp 0.25s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
     .modal h3 {
-      font-size: 1.2rem;
+      font-size: 1.25rem;
       margin-bottom: 6px;
       text-align: center;
     }
@@ -215,19 +221,20 @@
       padding: 16px;
       margin-bottom: 12px;
       cursor: pointer;
-      transition: border-color 0.15s;
+      -webkit-tap-highlight-color: transparent;
     }
     .wallet-option:active {
       border-color: #22c55e;
+      background: #1a1a1e;
     }
     .wallet-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
       background: #27272a;
       display: grid;
       place-items: center;
-      font-size: 20px;
+      font-size: 22px;
     }
     .wallet-name {
       font-weight: 600;
@@ -238,14 +245,15 @@
       color: #a1a1aa;
     }
     .close-btn {
-      margin-top: 16px;
+      margin-top: 18px;
       background: transparent;
       border: 1px solid #3f3f46;
       color: #a1a1aa;
       border-radius: 12px;
-      padding: 12px;
+      padding: 13px;
       width: 100%;
       font-size: 0.95rem;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -264,7 +272,7 @@
       <p>Own a living AI agent that earns for you on NEAR</p>
     </div>
 
-    <button class="btn btn-secondary" id="connectBtn" onclick="openWalletModal()">
+    <button class="btn btn-secondary" id="connectBtn">
       Connect Wallet
     </button>
 
@@ -279,4 +287,102 @@
       <label>Business Name</label>
       <input type="text" id="title" value="My First Autonomous Business" />
 
-      <label>Description</
+      <label>Description</label>
+      <textarea id="description" rows="3">This NFT owns a live autonomous business on NEAR</textarea>
+
+      <button class="btn btn-primary" id="mintBtn" disabled>
+        Mint Now
+      </button>
+
+      <div id="status" class="status"></div>
+    </div>
+
+    <div class="footer">
+      Contract: buildingfromthetop.testnet<br>
+      Network: Testnet • Built for NEAR Hackathon
+    </div>
+  </div>
+
+  <!-- Custom Wallet Modal -->
+  <div class="modal-overlay" id="walletModal">
+    <div class="modal">
+      <h3>Connect Wallet</h3>
+      <p>Choose your wallet</p>
+
+      <div class="wallet-option" id="meteorOption">
+        <div class="wallet-icon">☄️</div>
+        <div>
+          <div class="wallet-name">Meteor Wallet</div>
+          <div class="wallet-desc">App or Browser • Recommended</div>
+        </div>
+      </div>
+
+      <div class="wallet-option" id="intearOption">
+        <div class="wallet-icon">💧</div>
+        <div>
+          <div class="wallet-name">Intear Wallet</div>
+          <div class="wallet-desc">Fast • Browser</div>
+        </div>
+      </div>
+
+      <button class="close-btn" id="closeModalBtn">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    // ========== PURE JS - NO EXTERNAL LIBRARY ==========
+    const CONTRACT_ID = "buildingfromthetop.testnet";
+    const SUCCESS_URL = window.location.href.split('?')[0];
+
+    const connectBtn = document.getElementById("connectBtn");
+    const mintBtn = document.getElementById("mintBtn");
+    const modal = document.getElementById("walletModal");
+    const statusEl = document.getElementById("status");
+
+    // Open modal
+    connectBtn.addEventListener("click", function () {
+      modal.classList.add("show");
+    });
+
+    // Close modal
+    document.getElementById("closeModalBtn").addEventListener("click", function () {
+      modal.classList.remove("show");
+    });
+
+    // Close when tapping outside
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) {
+        modal.classList.remove("show");
+      }
+    });
+
+    // Meteor
+    document.getElementById("meteorOption").addEventListener("click", function () {
+      modal.classList.remove("show");
+      // Redirect to Meteor login with return URL
+      const url = "https://wallet.meteorwallet.app/login?" +
+        "contract_id=" + encodeURIComponent(CONTRACT_ID) +
+        "&success_url=" + encodeURIComponent(SUCCESS_URL) +
+        "&failure_url=" + encodeURIComponent(SUCCESS_URL);
+      window.location.href = url;
+    });
+
+    // Intear
+    document.getElementById("intearOption").addEventListener("click", function () {
+      modal.classList.remove("show");
+      const url = "https://wallet.intear.tech/login?" +
+        "contract_id=" + encodeURIComponent(CONTRACT_ID) +
+        "&success_url=" + encodeURIComponent(SUCCESS_URL) +
+        "&failure_url=" + encodeURIComponent(SUCCESS_URL);
+      window.location.href = url;
+    });
+
+    // Mint button (will work after we add near-api-js later)
+    mintBtn.addEventListener("click", function () {
+      statusEl.className = "status error";
+      statusEl.style.display = "block";
+      statusEl.innerText = "Connect wallet first. After you return from the wallet, mint will be enabled.";
+    });
+  </script>
+</body>
+</html>
