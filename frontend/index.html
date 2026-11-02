@@ -155,6 +155,7 @@
       margin-bottom: 14px;
       padding: 12px;
       font-size: 0.95rem;
+      display: none;
     }
     .status {
       margin-top: 16px;
@@ -197,12 +198,11 @@
       <p>Own a living AI agent that earns for you on NEAR</p>
     </div>
 
-    <!-- Wallet buttons -->
     <button class="btn btn-secondary" id="connectBtn">
       Connect Wallet
     </button>
 
-    <button class="btn btn-disconnect" id="disconnectBtn" style="display: none;">
+    <button class="btn btn-disconnect" id="disconnectBtn">
       Disconnect Wallet
     </button>
 
@@ -261,3 +261,121 @@
           signAndSendTransaction: true,
           testnet: true
         }
+      });
+
+      connector.on("wallet:signIn", async (event) => {
+        accountId = event.accounts[0]?.accountId || null;
+        updateUI();
+      });
+
+      connector.on("wallet:signOut", () => {
+        accountId = null;
+        updateUI();
+      });
+
+      try {
+        const wallet = await connector.wallet();
+        const accounts = await wallet.getAccounts();
+        if (accounts && accounts.length > 0) {
+          accountId = accounts[0].accountId;
+          updateUI();
+        }
+      } catch (e) {}
+    }
+
+    function updateUI() {
+      if (accountId) {
+        const short = accountId.length > 18 
+          ? accountId.slice(0, 8) + "..." + accountId.slice(-6) 
+          : accountId;
+        connectBtn.innerText = short;
+        disconnectBtn.style.display = "block";
+        mintBtn.disabled = false;
+      } else {
+        connectBtn.innerText = "Connect Wallet";
+        disconnectBtn.style.display = "none";
+        mintBtn.disabled = true;
+      }
+    }
+
+    connectBtn.addEventListener("click", async () => {
+      if (accountId) return;
+      try {
+        await connector.connect();
+      } catch (err) {
+        console.error(err);
+        statusEl.className = "status error";
+        statusEl.style.display = "block";
+        statusEl.innerText = err.message || "Connection cancelled";
+      }
+    });
+
+    disconnectBtn.addEventListener("click", async () => {
+      try {
+        if (connector) {
+          await connector.disconnect();
+        }
+      } catch (e) {}
+      accountId = null;
+      updateUI();
+      statusEl.style.display = "none";
+    });
+
+    mintBtn.addEventListener("click", async () => {
+      if (!accountId) {
+        statusEl.className = "status error";
+        statusEl.style.display = "block";
+        statusEl.innerText = "Please connect wallet first";
+        return;
+      }
+
+      const title = document.getElementById("title").value.trim();
+      const description = document.getElementById("description").value.trim();
+
+      if (!title || !description) {
+        statusEl.className = "status error";
+        statusEl.style.display = "block";
+        statusEl.innerText = "Please fill Business Name and Description";
+        return;
+      }
+
+      try {
+        statusEl.className = "status";
+        statusEl.style.display = "block";
+        statusEl.innerText = "Confirm the transaction in your wallet...";
+
+        const wallet = await connector.wallet();
+
+        await wallet.signAndSendTransaction({
+          receiverId: CONTRACT_ID,
+          actions: [
+            {
+              type: "FunctionCall",
+              params: {
+                methodName: "nft_mint",
+                args: {
+                  receiver_id: accountId,
+                  title: title,
+                  description: description
+                },
+                gas: "30000000000000",
+                deposit: "10000000000000000000000"
+              }
+            }
+          ]
+        });
+
+        statusEl.className = "status success";
+        statusEl.innerText = "✅ NFT Minted Successfully! Your Autonomous Business is live.";
+      } catch (err) {
+        console.error(err);
+        statusEl.className = "status error";
+        statusEl.style.display = "block";
+        statusEl.innerText = err.message || "Transaction failed or cancelled";
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>
