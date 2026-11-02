@@ -1,30 +1,4 @@
-import { NearBindgen, near, call, view, initialize, LookupMap, UnorderedMap } from "near-sdk-js";
-
-class TokenMetadata {
-  title: string;
-  description: string;
-  media: string;
-  copies: number;
-
-  constructor(title: string, description: string) {
-    this.title = title;
-    this.description = description;
-    this.media = "https://near.org/wp-content/themes/near-19/assets/img/brand-icon.png"; // temporary image
-    this.copies = 1;
-  }
-}
-
-class Token {
-  token_id: string;
-  owner_id: string;
-  metadata: TokenMetadata;
-
-  constructor(token_id: string, owner_id: string, metadata: TokenMetadata) {
-    this.token_id = token_id;
-    this.owner_id = owner_id;
-    this.metadata = metadata;
-  }
-}
+import { NearBindgen, near, call, view, initialize, LookupMap } from "near-sdk-js";
 
 @NearBindgen({})
 class Contract {
@@ -35,7 +9,7 @@ class Contract {
   tokens: LookupMap<string> = new LookupMap("t");
   // token_id → metadata string (title|description)
   token_metadata: LookupMap<string> = new LookupMap("m");
-  // owner → list of token_ids (simple string, comma separated for simplicity on mobile)
+  // owner → list of token_ids (comma separated)
   tokens_per_owner: LookupMap<string> = new LookupMap("o");
 
   @initialize({})
@@ -59,7 +33,7 @@ class Contract {
     // save owner
     this.tokens.set(token_id, receiver_id);
 
-    // save metadata
+    // save metadata (FIXED template literal)
     this.token_metadata.set(token_id, `\( {title}| \){description}`);
 
     // add to owner's list
@@ -112,11 +86,11 @@ class Contract {
     const description = parts[1] || "";
 
     return {
-      token_id,
+      token_id: token_id,
       owner_id: owner,
       metadata: {
-        title,
-        description,
+        title: title,
+        description: description,
         media: "https://near.org/wp-content/themes/near-19/assets/img/brand-icon.png",
         copies: 1,
       },
@@ -126,8 +100,8 @@ class Contract {
   @view({})
   nft_tokens_for_owner({
     account_id,
-    from_index = "0",
-    limit = 50,
+    from_index,
+    limit,
   }: {
     account_id: string;
     from_index?: string;
@@ -137,8 +111,9 @@ class Contract {
     if (!tokensStr) return [];
 
     const tokenIds = tokensStr.split(",");
-    const start = parseInt(from_index);
-    const end = Math.min(start + limit, tokenIds.length);
+    const start = from_index ? parseInt(from_index) : 0;
+    const max = limit ? limit : 50;
+    const end = Math.min(start + max, tokenIds.length);
 
     const result = [];
     for (let i = start; i < end; i++) {
