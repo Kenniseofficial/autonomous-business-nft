@@ -4,10 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Autonomous Business NFT</title>
-
-  <!-- Wallet Selector Modal styles -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@near-wallet-selector/modal-ui@8.9.13/styles.css" />
-
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -20,7 +16,7 @@
     .container {
       max-width: 440px;
       margin: 0 auto;
-      padding: 16px 16px 100px;
+      padding: 16px 16px 80px;
     }
     .topbar {
       display: flex;
@@ -142,7 +138,7 @@
       color: white;
     }
     .btn-primary:disabled {
-      opacity: 0.4;
+      opacity: 0.45;
       cursor: not-allowed;
     }
     .btn-secondary {
@@ -175,6 +171,12 @@
       color: #52525b;
       line-height: 1.6;
     }
+    .hint {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #71717a;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -192,9 +194,10 @@
       <p>Own a living AI agent that earns for you on NEAR</p>
     </div>
 
-    <button class="btn btn-secondary" id="connectBtn">
+    <button class="btn btn-secondary" id="connectBtn" onclick="connectWallet()">
       Connect Wallet
     </button>
+    <p class="hint" id="hintText">Recommended: Meteor Wallet</p>
 
     <div class="card">
       <h2>Mint Autonomous Business NFT</h2>
@@ -210,7 +213,7 @@
       <label>Description</label>
       <textarea id="description" rows="3">This NFT owns a live autonomous business on NEAR</textarea>
 
-      <button class="btn btn-primary" id="mintBtn" disabled>
+      <button class="btn btn-primary" id="mintBtn" onclick="mintNFT()" disabled>
         Mint Now
       </button>
 
@@ -223,84 +226,60 @@
     </div>
   </div>
 
-  <script type="module">
-    import { setupWalletSelector } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/core@8.9.13/+esm";
-    import { setupModal } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/modal-ui@8.9.13/+esm";
-    import { setupMeteorWallet } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/meteor-wallet@8.9.13/+esm";
-    import { setupHereWallet } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/here-wallet@8.9.13/+esm";
-    import { setupIntearWallet } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/intear-wallet@8.9.13/+esm";
-    import { setupNightly } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/nightly@8.9.13/+esm";
-    import { setupHotWallet } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/hot-wallet@8.9.13/+esm";
-    import { setupNearMobileWallet } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/near-mobile-wallet@8.9.13/+esm";
-
+  <script src="https://cdn.jsdelivr.net/npm/near-api-js@4.0.3/dist/near-api-js.min.js"></script>
+  <script>
     const CONTRACT_ID = "buildingfromthetop.testnet";
-
-    let selector;
-    let modal;
+    let nearConnection = null;
+    let walletConnection = null;
     let accountId = null;
 
     async function init() {
-      selector = await setupWalletSelector({
-        network: "testnet",
-        modules: [
-          setupMeteorWallet(),
-          setupHereWallet(),
-          setupIntearWallet(),
-          setupHotWallet(),
-          setupNightly(),
-          setupNearMobileWallet(),
-        ],
+      nearConnection = await nearApi.connect({
+        networkId: "testnet",
+        keyStore: new nearApi.keyStores.BrowserLocalStorageKeyStore(),
+        nodeUrl: "https://rpc.testnet.near.org",
+        walletUrl: "https://wallet.meteorwallet.app",   // Meteor is preferred
+        helperUrl: "https://helper.testnet.near.org",
       });
 
-      modal = setupModal(selector, {
-        contractId: CONTRACT_ID,
-        methodNames: ["nft_mint"],
-        theme: "dark",
-      });
+      walletConnection = new nearApi.WalletConnection(nearConnection, "autonomous-business-nft");
 
-      // Update UI if already signed in
-      const state = selector.store.getState();
-      if (state.accounts.length > 0) {
-        accountId = state.accounts[0].accountId;
+      if (walletConnection.isSignedIn()) {
+        accountId = walletConnection.getAccountId();
         updateUI();
       }
-
-      // Listen for sign-in / sign-out
-      selector.on("signedIn", ({ accounts }) => {
-        accountId = accounts[0].accountId;
-        updateUI();
-      });
-
-      selector.on("signedOut", () => {
-        accountId = null;
-        updateUI();
-      });
     }
 
     function updateUI() {
       const btn = document.getElementById("connectBtn");
       const mintBtn = document.getElementById("mintBtn");
+      const hint = document.getElementById("hintText");
 
       if (accountId) {
-        const short = accountId.length > 18
-          ? accountId.slice(0, 8) + "..." + accountId.slice(-6)
+        const short = accountId.length > 18 
+          ? accountId.slice(0, 8) + "..." + accountId.slice(-6) 
           : accountId;
         btn.innerText = short;
         mintBtn.disabled = false;
+        hint.innerText = "Connected successfully";
       } else {
         btn.innerText = "Connect Wallet";
         mintBtn.disabled = true;
+        hint.innerText = "Recommended: Meteor Wallet";
       }
     }
 
-    // Connect button
-    document.getElementById("connectBtn").addEventListener("click", () => {
-      if (accountId) return; // already connected
-      modal.show();
-    });
+    function connectWallet() {
+      if (accountId) return;
 
-    // Mint button
-    document.getElementById("mintBtn").addEventListener("click", async () => {
+      // This will redirect the user to Meteor Wallet (or the configured wallet)
+      walletConnection.requestSignIn({
+        contractId: CONTRACT_ID,
+        methodNames: ["nft_mint"],
+      });
+    }
+
+    async function mintNFT() {
       const title = document.getElementById("title").value.trim();
       const description = document.getElementById("description").value.trim();
       const statusEl = document.getElementById("status");
@@ -316,24 +295,16 @@
         statusEl.style.display = "block";
         statusEl.innerText = "Confirm the transaction in your wallet...";
 
-        const wallet = await selector.wallet();
-        await wallet.signAndSendTransaction({
-          receiverId: CONTRACT_ID,
-          actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "nft_mint",
-                args: {
-                  receiver_id: accountId,
-                  title,
-                  description,
-                },
-                gas: "30000000000000",
-                deposit: "10000000000000000000000", // 0.01 NEAR
-              },
-            },
-          ],
+        await walletConnection.account().functionCall({
+          contractId: CONTRACT_ID,
+          methodName: "nft_mint",
+          args: {
+            receiver_id: accountId,
+            title: title,
+            description: description
+          },
+          gas: "30000000000000",
+          attachedDeposit: "10000000000000000000000" // 0.01 NEAR
         });
 
         statusEl.className = "status success";
@@ -343,8 +314,9 @@
         statusEl.className = "status error";
         statusEl.innerText = err.message || "Transaction failed or cancelled";
       }
-    });
+    }
 
+    // Start
     init();
   </script>
 </body>
