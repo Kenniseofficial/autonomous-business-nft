@@ -146,7 +146,15 @@
       background: #18181b;
       border: 1px solid #3f3f46;
       color: #e4e4e7;
+      margin-bottom: 10px;
+    }
+    .btn-disconnect {
+      background: transparent;
+      border: 1px solid #ef4444;
+      color: #f87171;
       margin-bottom: 14px;
+      padding: 12px;
+      font-size: 0.95rem;
     }
     .status {
       margin-top: 16px;
@@ -189,8 +197,13 @@
       <p>Own a living AI agent that earns for you on NEAR</p>
     </div>
 
+    <!-- Wallet buttons -->
     <button class="btn btn-secondary" id="connectBtn">
       Connect Wallet
+    </button>
+
+    <button class="btn btn-disconnect" id="disconnectBtn" style="display: none;">
+      Disconnect Wallet
     </button>
 
     <div class="card">
@@ -234,6 +247,7 @@
     const CONTRACT_ID = "buildingfromthetop.testnet";
 
     const connectBtn = document.getElementById("connectBtn");
+    const disconnectBtn = document.getElementById("disconnectBtn");
     const mintBtn = document.getElementById("mintBtn");
     const statusEl = document.getElementById("status");
 
@@ -247,111 +261,3 @@
           signAndSendTransaction: true,
           testnet: true
         }
-      });
-
-      connector.on("wallet:signIn", async (event) => {
-        accountId = event.accounts[0]?.accountId || null;
-        updateUI();
-      });
-
-      connector.on("wallet:signOut", () => {
-        accountId = null;
-        updateUI();
-      });
-
-      // Check if already connected
-      try {
-        const wallet = await connector.wallet();
-        const accounts = await wallet.getAccounts();
-        if (accounts && accounts.length > 0) {
-          accountId = accounts[0].accountId;
-          updateUI();
-        }
-      } catch (e) {
-        // not connected yet
-      }
-    }
-
-    function updateUI() {
-      if (accountId) {
-        const short = accountId.length > 18 
-          ? accountId.slice(0, 8) + "..." + accountId.slice(-6) 
-          : accountId;
-        connectBtn.innerText = short;
-        mintBtn.disabled = false;
-      } else {
-        connectBtn.innerText = "Connect Wallet";
-        mintBtn.disabled = true;
-      }
-    }
-
-    connectBtn.addEventListener("click", async () => {
-      if (accountId) return;
-      try {
-        await connector.connect();
-      } catch (err) {
-        console.error(err);
-        statusEl.className = "status error";
-        statusEl.style.display = "block";
-        statusEl.innerText = err.message || "Connection cancelled";
-      }
-    });
-
-    mintBtn.addEventListener("click", async () => {
-      if (!accountId) {
-        statusEl.className = "status error";
-        statusEl.style.display = "block";
-        statusEl.innerText = "Please connect wallet first";
-        return;
-      }
-
-      const title = document.getElementById("title").value.trim();
-      const description = document.getElementById("description").value.trim();
-
-      if (!title || !description) {
-        statusEl.className = "status error";
-        statusEl.style.display = "block";
-        statusEl.innerText = "Please fill Business Name and Description";
-        return;
-      }
-
-      try {
-        statusEl.className = "status";
-        statusEl.style.display = "block";
-        statusEl.innerText = "Confirm the transaction in your wallet...";
-
-        const wallet = await connector.wallet();
-
-        await wallet.signAndSendTransaction({
-          receiverId: CONTRACT_ID,
-          actions: [
-            {
-              type: "FunctionCall",
-              params: {
-                methodName: "nft_mint",
-                args: {
-                  receiver_id: accountId,
-                  title: title,
-                  description: description
-                },
-                gas: "30000000000000",
-                deposit: "10000000000000000000000" // 0.01 NEAR
-              }
-            }
-          ]
-        });
-
-        statusEl.className = "status success";
-        statusEl.innerText = "✅ NFT Minted Successfully! Your Autonomous Business is live.";
-      } catch (err) {
-        console.error(err);
-        statusEl.className = "status error";
-        statusEl.style.display = "block";
-        statusEl.innerText = err.message || "Transaction failed or cancelled";
-      }
-    });
-
-    init();
-  </script>
-</body>
-</html>
