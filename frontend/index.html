@@ -175,7 +175,7 @@
     <button id="connectBtn" class="btn-primary">Connect Wallet</button>
     <button id="disconnectBtn" class="btn-danger hidden">Disconnect Wallet</button>
 
-    <div id="mintCard" class="card" style="margin-top:20px;">
+    <div class="card" style="margin-top:20px;">
       <h2>Mint Autonomous Business NFT</h2>
       <p>Own an NFT that runs its own business on NEAR.</p>
 
@@ -194,11 +194,12 @@
       <div id="status" class="status"></div>
     </div>
 
+    <!-- Owner Dashboard -->
     <div id="dashboardCard" class="card hidden">
       <h2>Your Businesses</h2>
-      <p>NFTs you own</p>
+      <p>NFTs you currently own</p>
       <div id="dashboardList"></div>
-      <button id="refreshBtn" class="btn-outline">Refresh</button>
+      <button id="refreshBtn" class="btn-outline">Refresh Dashboard</button>
     </div>
 
     <div class="footer">
@@ -249,7 +250,6 @@
       if (accountId) {
         connectBtn.classList.add("hidden");
         disconnectBtn.classList.remove("hidden");
-        disconnectBtn.innerText = "Disconnect Wallet";
         dashboardCard.classList.remove("hidden");
       } else {
         connectBtn.classList.remove("hidden");
@@ -280,7 +280,7 @@
       if (!accountId) {
         statusEl.className = "status error";
         statusEl.style.display = "block";
-        statusEl.innerText = "Please connect wallet first";
+        statusEl.innerText = "Please connect your wallet first";
         return;
       }
 
@@ -331,7 +331,8 @@
 
     async function loadDashboard() {
       if (!accountId) return;
-      dashboardList.innerHTML = "<p style='color:#a1a1aa'>Loading...</p>";
+
+      dashboardList.innerHTML = "<p style='color:#a1a1aa;font-size:0.9rem;'>Loading your businesses...</p>";
 
       try {
         const res = await fetch("https://rpc.testnet.near.org", {
@@ -353,34 +354,38 @@
 
         const data = await res.json();
         const bytes = data.result?.result;
+
         if (!bytes) {
-          dashboardList.innerHTML = "<p style='color:#a1a1aa'>No businesses yet. Mint one above.</p>";
+          dashboardList.innerHTML = "<p style='color:#a1a1aa;'>No businesses yet. Mint one above.</p>";
           return;
         }
 
         const tokens = JSON.parse(String.fromCharCode(...bytes));
+
         if (!tokens || tokens.length === 0) {
-          dashboardList.innerHTML = "<p style='color:#a1a1aa'>No businesses yet. Mint one above.</p>";
+          dashboardList.innerHTML = "<p style='color:#a1a1aa;'>No businesses yet. Mint one above.</p>";
           return;
         }
 
         dashboardList.innerHTML = "";
-        tokens.forEach(t => {
+        tokens.forEach(token => {
           const div = document.createElement("div");
           div.className = "dashboard-item";
           div.innerHTML = `
-            <h3>${t.metadata?.title || "Untitled"}</h3>
-            <p>${t.metadata?.description || ""}</p>
-            <p style="margin-top:8px;color:#4ade80">Token ID: ${t.token_id}</p>
+            <h3>${token.metadata?.title || "Untitled Business"}</h3>
+            <p>${token.metadata?.description || ""}</p>
+            <p style="margin-top:8px; color:#4ade80;">Token ID: ${token.token_id}</p>
           `;
           dashboardList.appendChild(div);
         });
-      } catch (e) {
-        dashboardList.innerHTML = "<p style='color:#f87171'>Failed to load</p>";
+      } catch (err) {
+        console.error(err);
+        dashboardList.innerHTML = "<p style='color:#f87171;'>Failed to load dashboard</p>";
       }
     }
 
     refreshBtn.addEventListener("click", loadDashboard);
+
     init();
   </script>
 </body>
