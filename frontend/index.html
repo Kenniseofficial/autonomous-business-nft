@@ -181,24 +181,6 @@
       color: #52525b;
       line-height: 1.6;
     }
-
-    /* ===== Dashboard styles (only addition) ===== */
-    .dashboard-item {
-      background: #18181b;
-      border: 1px solid #27272a;
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 12px;
-    }
-    .dashboard-item h3 {
-      font-size: 1rem;
-      margin-bottom: 4px;
-    }
-    .dashboard-item p {
-      font-size: 0.8rem;
-      color: #a1a1aa;
-      margin: 0;
-    }
   </style>
 </head>
 <body>
@@ -224,6 +206,11 @@
       Disconnect Wallet
     </button>
 
+    <!-- ADDED: Go to Dashboard button -->
+    <button class="btn btn-secondary" id="goDashboardBtn" style="display:none; margin-bottom:14px;">
+      Go to My Dashboard
+    </button>
+
     <div class="card">
       <h2>Mint Autonomous Business NFT</h2>
 
@@ -243,15 +230,6 @@
       </button>
 
       <div id="status" class="status"></div>
-    </div>
-
-    <!-- ===== Owner Dashboard (only addition) ===== -->
-    <div class="card" id="dashboardCard" style="display:none;">
-      <h2>Your Businesses</h2>
-      <div id="dashboardList"></div>
-      <button class="btn btn-secondary" id="refreshBtn" style="margin-top:12px;">
-        Refresh Dashboard
-      </button>
     </div>
 
     <div class="footer">
@@ -277,9 +255,7 @@
     const disconnectBtn = document.getElementById("disconnectBtn");
     const mintBtn = document.getElementById("mintBtn");
     const statusEl = document.getElementById("status");
-    const dashboardCard = document.getElementById("dashboardCard");
-    const dashboardList = document.getElementById("dashboardList");
-    const refreshBtn = document.getElementById("refreshBtn");
+    const goDashboardBtn = document.getElementById("goDashboardBtn");
 
     let connector = null;
     let accountId = null;
@@ -296,7 +272,6 @@
       connector.on("wallet:signIn", async (event) => {
         accountId = event.accounts[0]?.accountId || null;
         updateUI();
-        loadDashboard();
       });
 
       connector.on("wallet:signOut", () => {
@@ -310,7 +285,6 @@
         if (accounts && accounts.length > 0) {
           accountId = accounts[0].accountId;
           updateUI();
-          loadDashboard();
         }
       } catch (e) {}
     }
@@ -323,12 +297,12 @@
         connectBtn.innerText = short;
         disconnectBtn.style.display = "block";
         mintBtn.disabled = false;
-        dashboardCard.style.display = "block";
+        goDashboardBtn.style.display = "block";   // ADDED
       } else {
         connectBtn.innerText = "Connect Wallet";
         disconnectBtn.style.display = "none";
         mintBtn.disabled = true;
-        dashboardCard.style.display = "none";
+        goDashboardBtn.style.display = "none";    // ADDED
       }
     }
 
@@ -353,6 +327,11 @@
       accountId = null;
       updateUI();
       statusEl.style.display = "none";
+    });
+
+    // ADDED: Go to Dashboard
+    goDashboardBtn.addEventListener("click", () => {
+      window.location.href = "dashboard.html";
     });
 
     mintBtn.addEventListener("click", async () => {
@@ -401,7 +380,6 @@
 
         statusEl.className = "status success";
         statusEl.innerText = "✅ NFT Minted Successfully! Your Autonomous Business is live.";
-        setTimeout(loadDashboard, 2000);
       } catch (err) {
         console.error(err);
         statusEl.className = "status error";
@@ -409,63 +387,6 @@
         statusEl.innerText = err.message || "Transaction failed or cancelled";
       }
     });
-
-    // ===== Dashboard functions (only addition) =====
-    async function loadDashboard() {
-      if (!accountId) return;
-      dashboardList.innerHTML = "<p style='color:#a1a1aa;font-size:0.9rem;'>Loading your businesses...</p>";
-
-      try {
-        const res = await fetch("https://rpc.testnet.near.org", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jsonrpc: "2.0",
-            id: "1",
-            method: "query",
-            params: {
-              request_type: "call_function",
-              finality: "final",
-              account_id: CONTRACT_ID,
-              method_name: "nft_tokens_for_owner",
-              args_base64: btoa(JSON.stringify({ account_id: accountId }))
-            }
-          })
-        });
-
-        const data = await res.json();
-        const bytes = data.result?.result;
-
-        if (!bytes) {
-          dashboardList.innerHTML = "<p style='color:#a1a1aa;'>No businesses yet. Mint one above.</p>";
-          return;
-        }
-
-        const tokens = JSON.parse(String.fromCharCode(...bytes));
-
-        if (!tokens || tokens.length === 0) {
-          dashboardList.innerHTML = "<p style='color:#a1a1aa;'>No businesses yet. Mint one above.</p>";
-          return;
-        }
-
-        dashboardList.innerHTML = "";
-        tokens.forEach(token => {
-          const div = document.createElement("div");
-          div.className = "dashboard-item";
-          div.innerHTML = `
-            <h3>${token.metadata?.title || "Untitled Business"}</h3>
-            <p>${token.metadata?.description || ""}</p>
-            <p style="margin-top:8px; color:#4ade80;">Token ID: ${token.token_id}</p>
-          `;
-          dashboardList.appendChild(div);
-        });
-      } catch (err) {
-        console.error(err);
-        dashboardList.innerHTML = "<p style='color:#f87171;'>Failed to load dashboard</p>";
-      }
-    }
-
-    refreshBtn.addEventListener("click", loadDashboard);
 
     init();
   </script>
