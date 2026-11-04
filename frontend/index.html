@@ -47,99 +47,144 @@
       font-weight: 600;
       padding: 5px 12px;
       border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .live::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      background: #4ade80;
+      border-radius: 50%;
+    }
+    .hero {
+      text-align: center;
+      padding: 10px 0 28px;
+    }
+    .hero h1 {
+      font-size: 2.35rem;
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -0.5px;
+      margin-bottom: 14px;
+    }
+    .hero h1 span {
+      background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      color: #a1a1aa;
+      font-size: 1rem;
+      max-width: 300px;
+      margin: 0 auto;
     }
     .card {
-      background: #121216;
+      background: #0f0f12;
       border: 1px solid #27272a;
-      border-radius: 20px;
+      border-radius: 22px;
       padding: 24px 20px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
     .card h2 {
-      font-size: 1.25rem;
-      margin-bottom: 6px;
-    }
-    .card p {
-      color: #a1a1aa;
-      font-size: 0.9rem;
+      font-size: 1.15rem;
+      font-weight: 600;
       margin-bottom: 20px;
     }
+    .price-box {
+      background: #18181b;
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .price-label { color: #a1a1aa; font-size: 0.9rem; }
+    .price-value { color: #4ade80; font-weight: 700; font-size: 1.15rem; }
     label {
       display: block;
       font-size: 0.8rem;
       color: #a1a1aa;
-      margin-bottom: 6px;
+      margin-bottom: 7px;
+      font-weight: 500;
     }
     input, textarea {
       width: 100%;
-      background: #0a0a0c;
-      border: 1px solid #27272a;
-      border-radius: 12px;
-      padding: 14px 16px;
-      color: #f4f4f5;
-      font-size: 1rem;
+      background: #09090b;
+      border: 1px solid #3f3f46;
+      border-radius: 13px;
+      padding: 14px 15px;
+      color: #fff;
+      font-size: 0.95rem;
       margin-bottom: 16px;
+    }
+    input:focus, textarea:focus {
       outline: none;
+      border-color: #22c55e;
     }
-    .price-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #0a0a0c;
-      border-radius: 12px;
-      padding: 12px 16px;
-      margin-bottom: 20px;
-      font-size: 0.9rem;
-    }
-    .price-row span:last-child {
-      color: #4ade80;
-      font-weight: 600;
-    }
-    button {
+    .btn {
       width: 100%;
       border: none;
-      border-radius: 14px;
+      border-radius: 15px;
       padding: 16px;
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 600;
       cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
     .btn-primary {
-      background: linear-gradient(135deg, #22c55e, #16a34a);
+      background: linear-gradient(90deg, #16a34a, #22c55e);
       color: white;
     }
-    .btn-danger {
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      color: #e4e4e7;
+      margin-bottom: 10px;
+    }
+    .btn-disconnect {
       background: transparent;
       border: 1px solid #ef4444;
       color: #f87171;
-      margin-top: 12px;
-    }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #3f3f46;
-      color: #f4f4f5;
-      margin-top: 12px;
+      margin-bottom: 14px;
+      padding: 12px;
+      font-size: 0.95rem;
+      display: none;
     }
     .status {
       margin-top: 16px;
-      padding: 14px;
-      border-radius: 12px;
+      padding: 13px 15px;
+      border-radius: 13px;
       font-size: 0.9rem;
       display: none;
     }
     .status.success {
-      background: rgba(34, 197, 94, 0.15);
-      color: #4ade80;
+      background: #14532d;
+      color: #bbf7d0;
       display: block;
     }
     .status.error {
-      background: rgba(239, 68, 68, 0.15);
-      color: #f87171;
+      background: #450a0a;
+      color: #fecaca;
       display: block;
     }
-    .hidden { display: none !important; }
+    .footer {
+      text-align: center;
+      margin-top: 36px;
+      font-size: 0.8rem;
+      color: #52525b;
+      line-height: 1.6;
+    }
+
+    /* ===== Dashboard styles (only addition) ===== */
     .dashboard-item {
-      background: #0a0a0c;
+      background: #18181b;
       border: 1px solid #27272a;
       border-radius: 14px;
       padding: 16px;
@@ -154,52 +199,59 @@
       color: #a1a1aa;
       margin: 0;
     }
-    .footer {
-      text-align: center;
-      color: #52525b;
-      font-size: 0.75rem;
-      margin-top: 30px;
-    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="topbar">
       <div class="logo">
-        <div class="logo-box">🚀</div>
-        <span>Business NFT</span>
+        <div class="logo-box">◈</div>
+        <span>Autonomous Business</span>
       </div>
-      <div class="live">Testnet Live</div>
+      <div class="live">Live on NEAR</div>
     </div>
 
-    <button id="connectBtn" class="btn-primary">Connect Wallet</button>
-    <button id="disconnectBtn" class="btn-danger hidden">Disconnect Wallet</button>
+    <div class="hero">
+      <h1>Mint Your Own<br><span>Autonomous Business</span></h1>
+      <p>Own a living AI agent that earns for you on NEAR</p>
+    </div>
 
-    <div class="card" style="margin-top:20px;">
+    <button class="btn btn-secondary" id="connectBtn">
+      Connect Wallet
+    </button>
+
+    <button class="btn btn-disconnect" id="disconnectBtn">
+      Disconnect Wallet
+    </button>
+
+    <div class="card">
       <h2>Mint Autonomous Business NFT</h2>
-      <p>Own an NFT that runs its own business on NEAR.</p>
 
-      <div class="price-row">
-        <span>Price</span>
-        <span>0.01 Testnet NEAR</span>
+      <div class="price-box">
+        <span class="price-label">Price</span>
+        <span class="price-value">0.01 Testnet NEAR</span>
       </div>
 
       <label>Business Name</label>
-      <input id="title" type="text" value="My First Autonomous Business" />
+      <input type="text" id="title" value="My First Autonomous Business" />
 
       <label>Description</label>
-      <textarea id="description">This NFT owns a live autonomous business on NEAR</textarea>
+      <textarea id="description" rows="3">This NFT owns a live autonomous business on NEAR</textarea>
 
-      <button id="mintBtn" class="btn-primary">Mint Now</button>
+      <button class="btn btn-primary" id="mintBtn" disabled>
+        Mint Now
+      </button>
+
       <div id="status" class="status"></div>
     </div>
 
-    <!-- Owner Dashboard -->
-    <div id="dashboardCard" class="card hidden">
+    <!-- ===== Owner Dashboard (only addition) ===== -->
+    <div class="card" id="dashboardCard" style="display:none;">
       <h2>Your Businesses</h2>
-      <p>NFTs you currently own</p>
       <div id="dashboardList"></div>
-      <button id="refreshBtn" class="btn-outline">Refresh Dashboard</button>
+      <button class="btn btn-secondary" id="refreshBtn" style="margin-top:12px;">
+        Refresh Dashboard
+      </button>
     </div>
 
     <div class="footer">
@@ -211,7 +263,7 @@
   <script type="importmap">
   {
     "imports": {
-      "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@0.0.12"
+      "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@0.12.0"
     }
   }
   </script>
@@ -220,8 +272,6 @@
     import { NearConnector } from "@hot-labs/near-connect";
 
     const CONTRACT_ID = "buildingfromthetop.testnet";
-    let accountId = null;
-    let connector = null;
 
     const connectBtn = document.getElementById("connectBtn");
     const disconnectBtn = document.getElementById("disconnectBtn");
@@ -231,11 +281,20 @@
     const dashboardList = document.getElementById("dashboardList");
     const refreshBtn = document.getElementById("refreshBtn");
 
-    async function init() {
-      connector = new NearConnector({ network: "testnet" });
+    let connector = null;
+    let accountId = null;
 
-      connector.on("wallet:signIn", (event) => {
-        accountId = event.accounts[0].accountId;
+    async function init() {
+      connector = new NearConnector({
+        network: "testnet",
+        features: {
+          signAndSendTransaction: true,
+          testnet: true
+        }
+      });
+
+      connector.on("wallet:signIn", async (event) => {
+        accountId = event.accounts[0]?.accountId || null;
         updateUI();
         loadDashboard();
       });
@@ -244,43 +303,63 @@
         accountId = null;
         updateUI();
       });
+
+      try {
+        const wallet = await connector.wallet();
+        const accounts = await wallet.getAccounts();
+        if (accounts && accounts.length > 0) {
+          accountId = accounts[0].accountId;
+          updateUI();
+          loadDashboard();
+        }
+      } catch (e) {}
     }
 
     function updateUI() {
       if (accountId) {
-        connectBtn.classList.add("hidden");
-        disconnectBtn.classList.remove("hidden");
-        dashboardCard.classList.remove("hidden");
+        const short = accountId.length > 18 
+          ? accountId.slice(0, 8) + "..." + accountId.slice(-6) 
+          : accountId;
+        connectBtn.innerText = short;
+        disconnectBtn.style.display = "block";
+        mintBtn.disabled = false;
+        dashboardCard.style.display = "block";
       } else {
-        connectBtn.classList.remove("hidden");
-        disconnectBtn.classList.add("hidden");
-        dashboardCard.classList.add("hidden");
+        connectBtn.innerText = "Connect Wallet";
+        disconnectBtn.style.display = "none";
+        mintBtn.disabled = true;
+        dashboardCard.style.display = "none";
       }
     }
 
     connectBtn.addEventListener("click", async () => {
+      if (accountId) return;
       try {
         await connector.connect();
       } catch (err) {
         console.error(err);
+        statusEl.className = "status error";
+        statusEl.style.display = "block";
+        statusEl.innerText = err.message || "Connection cancelled";
       }
     });
 
     disconnectBtn.addEventListener("click", async () => {
       try {
-        await connector.disconnect();
-        accountId = null;
-        updateUI();
-      } catch (err) {
-        console.error(err);
-      }
+        if (connector) {
+          await connector.disconnect();
+        }
+      } catch (e) {}
+      accountId = null;
+      updateUI();
+      statusEl.style.display = "none";
     });
 
     mintBtn.addEventListener("click", async () => {
       if (!accountId) {
         statusEl.className = "status error";
         statusEl.style.display = "block";
-        statusEl.innerText = "Please connect your wallet first";
+        statusEl.innerText = "Please connect wallet first";
         return;
       }
 
@@ -303,24 +382,26 @@
 
         await wallet.signAndSendTransaction({
           receiverId: CONTRACT_ID,
-          actions: [{
-            type: "FunctionCall",
-            params: {
-              methodName: "nft_mint",
-              args: {
-                receiver_id: accountId,
-                title: title,
-                description: description
-              },
-              gas: "30000000000000",
-              deposit: "10000000000000000000000"
+          actions: [
+            {
+              type: "FunctionCall",
+              params: {
+                methodName: "nft_mint",
+                args: {
+                  receiver_id: accountId,
+                  title: title,
+                  description: description
+                },
+                gas: "30000000000000",
+                deposit: "10000000000000000000000"
+              }
             }
-          }]
+          ]
         });
 
         statusEl.className = "status success";
         statusEl.innerText = "✅ NFT Minted Successfully! Your Autonomous Business is live.";
-        setTimeout(loadDashboard, 2500);
+        setTimeout(loadDashboard, 2000);
       } catch (err) {
         console.error(err);
         statusEl.className = "status error";
@@ -329,9 +410,9 @@
       }
     });
 
+    // ===== Dashboard functions (only addition) =====
     async function loadDashboard() {
       if (!accountId) return;
-
       dashboardList.innerHTML = "<p style='color:#a1a1aa;font-size:0.9rem;'>Loading your businesses...</p>";
 
       try {
