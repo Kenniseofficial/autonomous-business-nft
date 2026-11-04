@@ -1,13 +1,11 @@
-import { NearBindgen, near, call, view, initialize, LookupMap } from "near-sdk-js";
+import { NearBindgen, near, call, view, initialize } from "near-sdk-js";
 
 @NearBindgen({})
 class Contract {
   owner_id: string = "";
   next_token_id: number = 1;
-
-  tokens: LookupMap<string> = new LookupMap("t");
-  token_metadata: LookupMap<string> = new LookupMap("m");
-  tokens_per_owner: LookupMap<string> = new LookupMap("o");
+  // Simple storage: we store everything as JSON strings under fixed keys
+  // This avoids the LookupMap reconstruction bug
 
   @initialize({})
   init({ owner_id }: { owner_id: string }) {
@@ -27,17 +25,23 @@ class Contract {
     const token_id = this.next_token_id.toString();
     this.next_token_id += 1;
 
-    this.tokens.set(token_id, receiver_id);
-    this.token_metadata.set(token_id, `\( {title}| \){description}`);
+    // Store owner
+    near.storageWrite(`token_owner:${token_id}`, receiver_id);
 
-    let owner_tokens = this.tokens_per_owner.get(receiver_id) || "";
-    if (owner_tokens === "") {
-      owner_tokens = token_id;
+    // Store metadata
+    near.storageWrite(`token_meta:\( {token_id}`, ` \){title}|${description}`);
+
+    // Add to owner's list
+    const ownerKey = `owner_tokens:${receiver_id}`;
+    let list = near.storageRead(ownerKey) || "";
+    if (list === "") {
+      list = token_id;
     } else {
-      owner_tokens = owner_tokens + "," + token_id;
+      list = list + "," + token_id;
     }
-    this.tokens_per_owner.set(receiver_id, owner_tokens);
+    near.storageWrite(ownerKey, list);
 
+    // Emit event for wallets
     const event = {
       standard: "nep171",
       version: "1.2.0",
@@ -64,10 +68,10 @@ class Contract {
 
   @view({})
   nft_token({ token_id }: { token_id: string }) {
-    const owner = this.tokens.get(token_id);
+    const owner = near.storageRead(`token_owner:${token_id}`);
     if (!owner) return null;
 
-    const metaStr = this.token_metadata.get(token_id) || "Untitled|No description";
+    const metaStr = near.storageRead(`token_meta:${token_id}`) || "Untitled|No description";
     const parts = metaStr.split("|");
 
     return {
@@ -92,10 +96,10 @@ class Contract {
     from_index?: string;
     limit?: number;
   }) {
-    const tokensStr = this.tokens_per_owner.get(account_id);
-    if (!tokensStr) return [];
+    const list = near.storageRead(`owner_tokens:${account_id}`);
+    if (!list) return [];
 
-    const tokenIds = tokensStr.split(",");
+    const tokenIds = list.split(",");
     const start = from_index ? parseInt(from_index) : 0;
     const max = limit ? limit : 50;
     const end = Math.min(start + max, tokenIds.length);
@@ -110,9 +114,9 @@ class Contract {
 
   @view({})
   nft_supply_for_owner({ account_id }: { account_id: string }): string {
-    const tokensStr = this.tokens_per_owner.get(account_id);
-    if (!tokensStr) return "0";
-    return tokensStr.split(",").length.toString();
+    const list = near.storageRead(`owner_tokens:${account_id}`);
+    if (!list) return "0";
+    return list.split(",").length.toString();
   }
 
   @view({})
