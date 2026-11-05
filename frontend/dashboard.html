@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>My Businesses – Autonomous Business NFT</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #050508;
+      color: #f4f4f5;
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 440px;
+      margin: 0 auto;
+      padding: 16px 16px 80px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0 24px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .logo-box {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+    }
+    .back {
+      color: #a1a1aa;
+      font-size: 0.9rem;
+      text-decoration: none;
+    }
+    .card {
+      background: #0f0f12;
+      border: 1px solid #27272a;
+      border-radius: 22px;
+      padding: 24px 20px;
+      margin-bottom: 18px;
+    }
+    .card h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .card p {
+      color: #a1a1aa;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+    }
+    .business-card {
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+    .business-card h3 {
+      font-size: 1.05rem;
+      margin-bottom: 6px;
+    }
+    .business-card .meta {
+      font-size: 0.8rem;
+      color: #a1a1aa;
+      margin-bottom: 10px;
+    }
+    .token-id {
+      color: #4ade80;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 15px;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn-primary {
+      background: linear-gradient(90deg, #16a34a, #22c55e);
+      color: white;
+    }
+    .btn-secondary {
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      color: #e4e4e7;
+    }
+    .empty {
+      text-align: center;
+      color: #a1a1aa;
+      padding: 40px 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="logo">
+        <div class="logo-box">◈</div>
+        <span>My Businesses</span>
+      </div>
+      <a href="index.html" class="back">← Back</a>
+    </div>
+
+    <div class="card">
+      <h2>Your Autonomous Businesses</h2>
+      <p>NFTs you own that run on-chain businesses</p>
+
+      <div id="list">
+        <div class="empty">Loading your businesses...</div>
+      </div>
+
+      <button class="btn btn-secondary" id="refreshBtn">Refresh</button>
+    </div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@0.12.0"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import { NearConnector } from "@hot-labs/near-connect";
+
+    const CONTRACT_ID = "buildingfromthetop.testnet";
+    let accountId = null;
+    let connector = null;
+
+    const listEl = document.getElementById("list");
+    const refreshBtn = document.getElementById("refreshBtn");
+
+    async function init() {
+      connector = new NearConnector({
+        network: "testnet",
+        features: { signAndSendTransaction: true, testnet: true }
+      });
+
+      try {
+        const wallet = await connector.wallet();
+        const accounts = await wallet.getAccounts();
+        if (accounts && accounts.length > 0) {
+          accountId = accounts[0].accountId;
+          loadDashboard();
+        } else {
+          listEl.innerHTML = `<div class="empty">Please connect your wallet on the main page first.</div>`;
+        }
+      } catch (e) {
+        listEl.innerHTML = `<div class="empty">Please connect your wallet on the main page first.</div>`;
+      }
+    }
+
+    async function loadDashboard() {
+      if (!accountId) return;
+
+      listEl.innerHTML = `<div class="empty">Loading...</div>`;
+
+      try {
+        const res = await fetch("https://rpc.testnet.near.org", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: "1",
+            method: "query",
+            params: {
+              request_type: "call_function",
+              finality: "final",
+              account_id: CONTRACT_ID,
+              method_name: "nft_tokens_for_owner",
+              args_base64: btoa(JSON.stringify({ account_id: accountId }))
+            }
+          })
+        });
+
+        const data = await res.json();
+        const bytes = data.result?.result;
+
+        if (!bytes) {
+          listEl.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
+          return;
+        }
+
+        const tokens = JSON.parse(String.fromCharCode(...bytes));
+
+        if (!tokens || tokens.length === 0) {
+          listEl.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
+          return;
+        }
+
+        listEl.innerHTML = "";
+        tokens.forEach(token => {
+          const div = document.createElement("div");
+          div.className = "business-card";
+          div.innerHTML = `
+            <h3>${token.metadata?.title || "Untitled Business"}</h3>
+            <div class="meta">${token.metadata?.description || "No description"}</div>
+            <div class="token-id">Token ID: ${token.token_id}</div>
+          `;
+          listEl.appendChild(div);
+        });
+      } catch (err) {
+        console.error(err);
+        listEl.innerHTML = `<div class="empty">Failed to load businesses</div>`;
+      }
+    }
+
+    refreshBtn.addEventListener("click", loadDashboard);
+    init();
+  </script>
+</body>
+</html>
