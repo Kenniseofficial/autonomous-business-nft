@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>My Businesses – Autonomous Business NFT</title>
+  <title>Owner Dashboard – Autonomous Business NFT</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -13,99 +13,66 @@
       min-height: 100vh;
       line-height: 1.5;
     }
-    .container {
-      max-width: 440px;
-      margin: 0 auto;
-      padding: 16px 16px 80px;
-    }
+    .container { max-width: 440px; margin: 0 auto; padding: 16px 16px 80px; }
     .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0 20px;
     }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 700;
-      font-size: 1rem;
-    }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; }
     .logo-box {
-      width: 32px;
-      height: 32px;
+      width: 32px; height: 32px;
       background: linear-gradient(135deg, #22c55e, #16a34a);
-      border-radius: 9px;
-      display: grid;
-      place-items: center;
-      font-size: 16px;
+      border-radius: 9px; display: grid; place-items: center;
     }
-    .back {
-      color: #a1a1aa;
-      font-size: 0.9rem;
-      text-decoration: none;
+    .back { color: #a1a1aa; text-decoration: none; font-size: 0.9rem; }
+    .header { margin-bottom: 20px; }
+    .header h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+    .header .sub { color: #a1a1aa; font-size: 0.85rem; }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(34,197,94,0.15); color: #4ade80;
+      font-size: 0.75rem; padding: 4px 10px; border-radius: 20px;
+      margin-top: 8px;
     }
+    .status-badge::before {
+      content: ""; width: 6px; height: 6px; background: #4ade80; border-radius: 50%;
+    }
+    .stats {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;
+    }
+    .stat-card {
+      background: #0f0f12; border: 1px solid #27272a;
+      border-radius: 16px; padding: 16px;
+    }
+    .stat-card .label { color: #a1a1aa; font-size: 0.75rem; margin-bottom: 4px; }
+    .stat-card .value { font-size: 1.2rem; font-weight: 700; }
     .card {
-      background: #0f0f12;
-      border: 1px solid #27272a;
-      border-radius: 22px;
-      padding: 24px 20px;
-      margin-bottom: 18px;
+      background: #0f0f12; border: 1px solid #27272a;
+      border-radius: 18px; padding: 20px; margin-bottom: 16px;
     }
-    .card h2 {
-      font-size: 1.15rem;
-      font-weight: 600;
-      margin-bottom: 6px;
+    .card h3 { font-size: 1rem; margin-bottom: 12px; }
+    .claim-btn {
+      width: 100%; background: #18181b; border: 1px solid #3f3f46;
+      color: #a1a1aa; border-radius: 14px; padding: 14px;
+      font-size: 0.95rem; font-weight: 600; margin-top: 8px;
     }
-    .card p {
-      color: #a1a1aa;
-      font-size: 0.9rem;
-      margin-bottom: 20px;
+    .activity {
+      text-align: center; color: #71717a; padding: 30px 10px; font-size: 0.9rem;
     }
-    .business-card {
-      background: #18181b;
-      border: 1px solid #27272a;
-      border-radius: 16px;
-      padding: 18px;
-      margin-bottom: 14px;
+    .business-list { margin-top: 10px; }
+    .business-item {
+      background: #18181b; border: 1px solid #27272a;
+      border-radius: 14px; padding: 16px; margin-bottom: 12px;
     }
-    .business-card h3 {
-      font-size: 1.05rem;
-      margin-bottom: 6px;
-    }
-    .business-card .meta {
-      font-size: 0.8rem;
-      color: #a1a1aa;
-      margin-bottom: 10px;
-    }
-    .token-id {
-      color: #4ade80;
-      font-size: 0.85rem;
-      font-weight: 600;
-    }
+    .business-item h4 { font-size: 1rem; margin-bottom: 4px; }
+    .business-item p { color: #a1a1aa; font-size: 0.8rem; margin-bottom: 6px; }
+    .token-id { color: #4ade80; font-size: 0.8rem; font-weight: 600; }
     .btn {
-      width: 100%;
-      border: none;
-      border-radius: 15px;
-      padding: 14px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .btn-primary {
-      background: linear-gradient(90deg, #16a34a, #22c55e);
-      color: white;
+      width: 100%; border: none; border-radius: 14px; padding: 14px;
+      font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 10px;
     }
     .btn-secondary {
-      background: #18181b;
-      border: 1px solid #3f3f46;
-      color: #e4e4e7;
-    }
-    .empty {
-      text-align: center;
-      color: #a1a1aa;
-      padding: 40px 20px;
+      background: #18181b; border: 1px solid #3f3f46; color: #e4e4e7;
     }
   </style>
 </head>
@@ -119,15 +86,49 @@
       <a href="index.html" class="back">← Back</a>
     </div>
 
-    <div class="card">
-      <h2>Your Autonomous Businesses</h2>
-      <p>NFTs you own that run on-chain businesses</p>
+    <div class="header">
+      <h1>Owner Dashboard</h1>
+      <div class="sub">Your Autonomous Business NFTs</div>
+      <div class="status-badge">Active on Testnet</div>
+    </div>
 
-      <div id="list">
-        <div class="empty">Loading your businesses...</div>
+    <div class="stats">
+      <div class="stat-card">
+        <div class="label">Treasury</div>
+        <div class="value">$0</div>
       </div>
+      <div class="stat-card">
+        <div class="label">This Month</div>
+        <div class="value">$0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Jobs Done</div>
+        <div class="value">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Success Rate</div>
+        <div class="value">—</div>
+      </div>
+    </div>
 
+    <div class="card">
+      <h3>Claim Profits</h3>
+      <p style="color:#a1a1aa; font-size:0.85rem; margin-bottom:8px;">No profits available to claim yet</p>
+      <button class="claim-btn" disabled>🔒 Claim Profits</button>
+    </div>
+
+    <div class="card">
+      <h3>Your Businesses</h3>
+      <div id="list" class="business-list">
+        <div class="activity">Loading your businesses...</div>
+      </div>
       <button class="btn btn-secondary" id="refreshBtn">Refresh</button>
+    </div>
+
+    <div class="card">
+      <h3>Agent Status</h3>
+      <p style="color:#4ade80; font-size:0.9rem;">● Ready – Waiting for first job</p>
+      <p style="color:#a1a1aa; font-size:0.8rem; margin-top:6px;">Your agent is live on the network and available to accept jobs.</p>
     </div>
   </div>
 
@@ -162,17 +163,16 @@
           accountId = accounts[0].accountId;
           loadDashboard();
         } else {
-          listEl.innerHTML = `<div class="empty">Please connect your wallet on the main page first.</div>`;
+          listEl.innerHTML = `<div class="activity">Please connect wallet on the main page first.</div>`;
         }
       } catch (e) {
-        listEl.innerHTML = `<div class="empty">Please connect your wallet on the main page first.</div>`;
+        listEl.innerHTML = `<div class="activity">Please connect wallet on the main page first.</div>`;
       }
     }
 
     async function loadDashboard() {
       if (!accountId) return;
-
-      listEl.innerHTML = `<div class="empty">Loading...</div>`;
+      listEl.innerHTML = `<div class="activity">Loading...</div>`;
 
       try {
         const res = await fetch("https://rpc.testnet.near.org", {
@@ -196,31 +196,31 @@
         const bytes = data.result?.result;
 
         if (!bytes) {
-          listEl.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
+          listEl.innerHTML = `<div class="activity">No businesses yet.<br>Go back and mint one.</div>`;
           return;
         }
 
         const tokens = JSON.parse(String.fromCharCode(...bytes));
 
         if (!tokens || tokens.length === 0) {
-          listEl.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
+          listEl.innerHTML = `<div class="activity">No businesses yet.<br>Go back and mint one.</div>`;
           return;
         }
 
         listEl.innerHTML = "";
         tokens.forEach(token => {
           const div = document.createElement("div");
-          div.className = "business-card";
+          div.className = "business-item";
           div.innerHTML = `
-            <h3>${token.metadata?.title || "Untitled Business"}</h3>
-            <div class="meta">${token.metadata?.description || "No description"}</div>
+            <h4>${token.metadata?.title || "Untitled Business"}</h4>
+            <p>${token.metadata?.description || "No description"}</p>
             <div class="token-id">Token ID: ${token.token_id}</div>
           `;
           listEl.appendChild(div);
         });
       } catch (err) {
         console.error(err);
-        listEl.innerHTML = `<div class="empty">Failed to load businesses</div>`;
+        listEl.innerHTML = `<div class="activity">Failed to load businesses</div>`;
       }
     }
 
