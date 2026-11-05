@@ -1,13 +1,9 @@
-import { NearBindgen, near, call, view, initialize, LookupMap } from "near-sdk-js";
+import { NearBindgen, near, call, view, initialize } from "near-sdk-js";
 
 @NearBindgen({})
 class Contract {
   owner_id: string = "";
   next_token_id: number = 1;
-
-  tokens: LookupMap<string> = new LookupMap("t");           // token_id → owner
-  token_metadata: LookupMap<string> = new LookupMap("m");   // token_id → JSON string
-  tokens_per_owner: LookupMap<string> = new LookupMap("o"); // owner → "1,2,5"
 
   @initialize({})
   init({ owner_id }: { owner_id: string }) {
@@ -27,35 +23,38 @@ class Contract {
     const token_id = this.next_token_id.toString();
     this.next_token_id += 1;
 
-    // Save owner
-    this.tokens.set(token_id, receiver_id);
+    // Owner
+    near.storageWrite(`token_owner:${token_id}`, receiver_id);
 
-    // Save proper metadata as JSON
+    // Metadata as JSON
     const metadata = {
       title: title || "Autonomous Business NFT",
       description: description || "An NFT that runs its own business on NEAR",
       media: "https://near.org/wp-content/themes/near-19/assets/img/brand-icon.png",
       copies: 1
     };
-    this.token_metadata.set(token_id, JSON.stringify(metadata));
+    near.storageWrite(`token_meta:${token_id}`, JSON.stringify(metadata));
 
-    // Add to owner's list
-    const current = this.tokens_per_owner.get(receiver_id) || "";
+    // Owner → list of tokens
+    const ownerKey = `owner_tokens:${receiver_id}`;
+    const current = near.storageRead(ownerKey) || "";
     const newList = current ? `\( {current}, \){token_id}` : token_id;
-    this.tokens_per_owner.set(receiver_id, newList);
+    near.storageWrite(ownerKey, newList);
 
-    // Emit NEP-171 event so wallets can index it
-    near.log(`EVENT_JSON:{"standard":"nep171","version":"1.0.0","event":"nft_mint","data":[{"owner_id":"\( {receiver_id}","token_ids":[" \){token_id}"]}]}`);
+    // NEP-171 event so wallets can index it
+    near.log(
+      `EVENT_JSON:{"standard":"nep171","version":"1.0.0","event":"nft_mint","data":[{"owner_id":"\( {receiver_id}","token_ids":[" \){token_id}"]}]}`
+    );
 
     return token_id;
   }
 
   @view({})
   nft_token({ token_id }: { token_id: string }) {
-    const owner = this.tokens.get(token_id);
+    const owner = near.storageRead(`token_owner:${token_id}`);
     if (!owner) return null;
 
-    const metaStr = this.token_metadata.get(token_id);
+    const metaStr = near.storageRead(`token_meta:${token_id}`);
     let metadata = {
       title: "Untitled",
       description: "No description",
@@ -86,7 +85,7 @@ class Contract {
     from_index?: string;
     limit?: number;
   }) {
-    const tokensStr = this.tokens_per_owner.get(account_id);
+    const tokensStr = near.storageRead(`owner_tokens:${account_id}`);
     if (!tokensStr) return [];
 
     const tokenIds = tokensStr.split(",");
@@ -103,7 +102,7 @@ class Contract {
 
   @view({})
   nft_supply_for_owner({ account_id }: { account_id: string }): string {
-    const tokensStr = this.tokens_per_owner.get(account_id);
+    const tokensStr = near.storageRead(`owner_tokens:${account_id}`);
     if (!tokensStr) return "0";
     return tokensStr.split(",").length.toString();
   }
