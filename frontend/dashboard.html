@@ -25,171 +25,208 @@
       border-radius: 9px; display: grid; place-items: center;
     }
     .back { color: #a1a1aa; text-decoration: none; font-size: 0.9rem; }
-    .header { margin-bottom: 20px; }
-    .header h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
-    .header .sub { color: #a1a1aa; font-size: 0.85rem; }
-    .status-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(34,197,94,0.15); color: #4ade80;
-      font-size: 0.75rem; padding: 4px 10px; border-radius: 20px;
-      margin-top: 8px;
+    .header { margin-bottom: 24px; }
+    .header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+    .header .sub { color: #a1a1aa; font-size: 0.9rem; }
+
+    .wallet-bar {
+      background: #111114;
+      border: 1px solid #27272a;
+      border-radius: 14px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .status-badge::before {
-      content: ""; width: 6px; height: 6px; background: #4ade80; border-radius: 50%;
-    }
-    .stats {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;
-    }
-    .stat-card {
-      background: #0f0f12; border: 1px solid #27272a;
-      border-radius: 16px; padding: 16px;
-    }
-    .stat-card .label { color: #a1a1aa; font-size: 0.75rem; margin-bottom: 4px; }
-    .stat-card .value { font-size: 1.2rem; font-weight: 700; }
-    .card {
-      background: #0f0f12; border: 1px solid #27272a;
-      border-radius: 18px; padding: 20px; margin-bottom: 16px;
-    }
-    .card h3 { font-size: 1rem; margin-bottom: 12px; }
-    .claim-btn {
-      width: 100%; background: #18181b; border: 1px solid #3f3f46;
-      color: #a1a1aa; border-radius: 14px; padding: 14px;
-      font-size: 0.95rem; font-weight: 600; margin-top: 8px;
-    }
-    .activity {
-      text-align: center; color: #71717a; padding: 30px 10px; font-size: 0.9rem;
-    }
-    .business-list { margin-top: 10px; }
-    .business-item {
-      background: #18181b; border: 1px solid #27272a;
-      border-radius: 14px; padding: 16px; margin-bottom: 12px;
-    }
-    .business-item h4 { font-size: 1rem; margin-bottom: 4px; }
-    .business-item p { color: #a1a1aa; font-size: 0.8rem; margin-bottom: 6px; }
-    .token-id { color: #4ade80; font-size: 0.8rem; font-weight: 600; }
+    .wallet-bar .addr { font-size: 0.85rem; color: #a1a1aa; }
     .btn {
-      width: 100%; border: none; border-radius: 14px; padding: 14px;
-      font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 10px;
-    }
-    .btn-secondary {
-      background: #18181b; border: 1px solid #3f3f46; color: #e4e4e7;
-    }
-    /* NEW – Create Business Account button */
-    .create-btn {
-      margin-top: 12px;
-      width: 100%;
       background: linear-gradient(135deg, #22c55e, #16a34a);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 12px;
-      font-weight: 600;
-      font-size: 0.95rem;
+      color: white; border: none; border-radius: 12px;
+      padding: 10px 16px; font-weight: 600; font-size: 0.9rem;
       cursor: pointer;
     }
-    .create-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #3f3f46;
+      color: #e4e4e7;
     }
+    .btn-sm { padding: 8px 12px; font-size: 0.8rem; border-radius: 10px; }
+
+    .business-card {
+      background: #111114;
+      border: 1px solid #27272a;
+      border-radius: 18px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+    .business-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #f4f4f5;
+    }
+    .business-card .desc {
+      color: #a1a1aa;
+      font-size: 0.9rem;
+      margin-bottom: 14px;
+    }
+    .token-id {
+      font-size: 0.75rem;
+      color: #71717a;
+      margin-bottom: 12px;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .stat {
+      background: #18181b;
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .stat .label { font-size: 0.75rem; color: #71717a; }
+    .stat .value { font-size: 1.1rem; font-weight: 700; color: #4ade80; }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(34, 197, 94, 0.12);
+      color: #4ade80;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+    }
+    .status-badge::before {
+      content: "";
+      width: 6px; height: 6px;
+      background: #4ade80;
+      border-radius: 50%;
+    }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .activity {
+      background: #18181b;
+      border-radius: 12px;
+      padding: 14px;
+      color: #a1a1aa;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+    .empty { text-align: center; padding: 40px 20px; color: #71717a; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="topbar">
       <div class="logo">
-        <div class="logo-box">◈</div>
-        <span>My Businesses</span>
+        <div class="logo-box">🤖</div>
+        <span>Business NFT</span>
       </div>
-      <a href="index.html" class="back">← Back</a>
+      <a href="./index.html" class="back">← Mint</a>
     </div>
 
     <div class="header">
       <h1>Owner Dashboard</h1>
-      <div class="sub">Your Autonomous Business NFTs</div>
-      <div class="status-badge">Active on Testnet</div>
+      <div class="sub">Your Autonomous Businesses</div>
     </div>
 
-    <div class="stats">
-      <div class="stat-card">
-        <div class="label">Treasury</div>
-        <div class="value">$0</div>
+    <div class="wallet-bar" id="walletBar" style="display:none;">
+      <div>
+        <div style="font-size:0.75rem;color:#71717a;">Connected</div>
+        <div class="addr" id="accountDisplay">—</div>
       </div>
-      <div class="stat-card">
-        <div class="label">This Month</div>
-        <div class="value">$0</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Jobs Done</div>
-        <div class="value">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="label">Success Rate</div>
-        <div class="value">—</div>
-      </div>
+      <button class="btn btn-outline btn-sm" id="disconnectBtn">Disconnect</button>
     </div>
 
-    <div class="card">
-      <h3>Claim Profits</h3>
-      <p style="color:#a1a1aa; font-size:0.85rem; margin-bottom:8px;">No profits available to claim yet</p>
-      <button class="claim-btn" disabled>🔒 Claim Profits</button>
+    <div id="connectSection">
+      <button class="btn" id="connectBtn" style="width:100%;padding:14px;">Connect Wallet</button>
     </div>
 
-    <div class="card">
-      <h3>Your Businesses</h3>
-      <div id="list" class="business-list">
-        <div class="activity">Loading your businesses...</div>
-      </div>
-      <button class="btn btn-secondary" id="refreshBtn">Refresh</button>
-    </div>
-
-    <div class="card">
-      <h3>Agent Status</h3>
-      <p style="color:#4ade80; font-size:0.9rem;">● Ready – Waiting for first job</p>
-      <p style="color:#a1a1aa; font-size:0.8rem; margin-top:6px;">Your agent is live on the network and available to accept jobs.</p>
+    <div id="list" style="margin-top:20px;">
+      <div class="activity">Connect wallet to see your businesses</div>
     </div>
   </div>
 
-  <script type="importmap">
-  {
-    "imports": {
-      "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@0.12.0"
-    }
-  }
-  </script>
-
   <script type="module">
-    import { NearConnector } from "@hot-labs/near-connect";
+    import { setupWalletSelector } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/core@8.9.1/dist/esm/index.js";
+    import { setupModal } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/modal-ui@8.9.1/dist/esm/index.js";
+    import { setupMeteorWallet } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/meteor-wallet@8.9.1/dist/esm/index.js";
+    import { setupHereWallet } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/here-wallet@8.9.1/dist/esm/index.js";
+    import { setupMyNearWallet } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/my-near-wallet@8.9.1/dist/esm/index.js";
 
     const CONTRACT_ID = "buildingfromthetop.testnet";
-    let accountId = null;
-    let connector = null;
+    const NETWORK = "testnet";
 
-    const listEl = document.getElementById("list");
-    const refreshBtn = document.getElementById("refreshBtn");
+    let selector = null;
+    let modal = null;
+    let accountId = null;
 
     async function init() {
-      connector = new NearConnector({
-        network: "testnet",
-        features: { signAndSendTransaction: true, testnet: true }
+      selector = await setupWalletSelector({
+        network: NETWORK,
+        modules: [
+          setupMeteorWallet(),
+          setupHereWallet(),
+          setupMyNearWallet(),
+        ],
       });
 
-      try {
-        const wallet = await connector.wallet();
-        const accounts = await wallet.getAccounts();
-        if (accounts && accounts.length > 0) {
-          accountId = accounts[0].accountId;
-          loadDashboard();
+      modal = setupModal(selector, {
+        contractId: CONTRACT_ID,
+      });
+
+      const state = selector.store.getState();
+      if (state.accounts.length > 0) {
+        accountId = state.accounts[0].accountId;
+        updateUI();
+        loadDashboard();
+      }
+
+      selector.subscribe((state) => {
+        if (state.accounts.length > 0) {
+          accountId = state.accounts[0].accountId;
         } else {
-          listEl.innerHTML = `<div class="activity">Please connect wallet on the main page first.</div>`;
+          accountId = null;
         }
-      } catch (e) {
-        listEl.innerHTML = `<div class="activity">Please connect wallet on the main page first.</div>`;
+        updateUI();
+        if (accountId) loadDashboard();
+      });
+    }
+
+    function updateUI() {
+      const connectSection = document.getElementById("connectSection");
+      const walletBar = document.getElementById("walletBar");
+      const accountDisplay = document.getElementById("accountDisplay");
+
+      if (accountId) {
+        connectSection.style.display = "none";
+        walletBar.style.display = "flex";
+        accountDisplay.innerText = accountId;
+      } else {
+        connectSection.style.display = "block";
+        walletBar.style.display = "none";
       }
     }
 
+    document.getElementById("connectBtn").addEventListener("click", () => {
+      modal.show();
+    });
+
+    document.getElementById("disconnectBtn").addEventListener("click", async () => {
+      const wallet = await selector.wallet();
+      await wallet.signOut();
+      accountId = null;
+      updateUI();
+      document.getElementById("list").innerHTML = `<div class="activity">Connect wallet to see your businesses</div>`;
+    });
+
     async function loadDashboard() {
-      if (!accountId) return;
-      listEl.innerHTML = `<div class="activity">Loading...</div>`;
+      const listEl = document.getElementById("list");
+      listEl.innerHTML = `<div class="activity">Loading your businesses...</div>`;
 
       try {
         const res = await fetch("https://rpc.testnet.near.org", {
@@ -211,74 +248,102 @@
 
         const data = await res.json();
         const bytes = data.result?.result;
-
         if (!bytes) {
-          listEl.innerHTML = `<div class="activity">No businesses yet.<br>Go back and mint one.</div>`;
+          listEl.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
           return;
         }
 
         const tokens = JSON.parse(String.fromCharCode(...bytes));
-
         if (!tokens || tokens.length === 0) {
-          listEl.innerHTML = `<div class="activity">No businesses yet.<br>Go back and mint one.</div>`;
+          listEl.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
           return;
         }
 
         listEl.innerHTML = "";
         tokens.forEach(token => {
-          const div = document.createElement("div");
-          div.className = "business-item";
-          div.innerHTML = `
-            <h4>${token.metadata?.title || "Untitled Business"}</h4>
-            <p>${token.metadata?.description || "No description"}</p>
-            <div class="token-id">Token ID: ${token.token_id}</div>
+          const title = token.metadata?.title || "Untitled Business";
+          const desc = token.metadata?.description || "No description";
+          const businessAcc = token.business_account || `business-\( {token.token_id}. \){CONTRACT_ID}`;
+
+          const card = document.createElement("div");
+          card.className = "business-card";
+          card.innerHTML = `
+            <div class="status-badge">Agent Ready</div>
+            <h3>${title}</h3>
+            <div class="desc">${desc}</div>
+            <div class="token-id">Token #${token.token_id} · ${businessAcc}</div>
+
+            <div class="stats">
+              <div class="stat">
+                <div class="label">Treasury</div>
+                <div class="value">0.00 Ⓝ</div>
+              </div>
+              <div class="stat">
+                <div class="label">Jobs Done</div>
+                <div class="value">0</div>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-sm activate-btn" data-token="\( {token.token_id}" data-account=" \){businessAcc}">
+                Activate Business
+              </button>
+              <button class="btn btn-outline btn-sm" disabled>Claim Profits</button>
+            </div>
           `;
-
-          // NEW – Create Business Account button
-          const createBtn = document.createElement("button");
-          createBtn.className = "create-btn";
-          createBtn.innerText = "Create Business Account (0.1 NEAR)";
-          createBtn.onclick = async () => {
-            try {
-              createBtn.disabled = true;
-              createBtn.innerText = "Confirm in wallet...";
-
-              const wallet = await connector.wallet();
-              await wallet.signAndSendTransaction({
-                receiverId: CONTRACT_ID,
-                actions: [{
-                  type: "FunctionCall",
-                  params: {
-                    methodName: "create_business_account",
-                    args: {
-                      token_id: token.token_id,
-                      public_key: "ed25519:6E8sCci9badyRkXb3JoRpBj5p8C6Tw41ELDZoiihKEtp"
-                    },
-                    gas: "100000000000000",
-                    deposit: "100000000000000000000000" // 0.1 NEAR
-                  }
-                }]
-              });
-
-              createBtn.innerText = "✅ Business Account Created!";
-            } catch (err) {
-              console.error(err);
-              createBtn.disabled = false;
-              createBtn.innerText = "Create Business Account (0.1 NEAR)";
-              alert(err.message || "Failed");
-            }
-          };
-          div.appendChild(createBtn);
-
-          listEl.appendChild(div);
+          listEl.appendChild(card);
         });
+
+        // Attach activate buttons
+        document.querySelectorAll(".activate-btn").forEach(btn => {
+          btn.addEventListener("click", async (e) => {
+            const tokenId = e.target.dataset.token;
+            const businessAccount = e.target.dataset.account;
+            await activateBusiness(tokenId, businessAccount, e.target);
+          });
+        });
+
       } catch (err) {
         console.error(err);
         listEl.innerHTML = `<div class="activity">Failed to load businesses</div>`;
       }
     }
 
-    refreshBtn.addEventListener("click", loadDashboard);
+    async function activateBusiness(tokenId, businessAccount, btn) {
+      try {
+        btn.disabled = true;
+        btn.innerText = "Confirm in wallet...";
+
+        const wallet = await selector.wallet();
+
+        // Create the real sub-account + fund it with 0.1 NEAR
+        // Transaction is sent TO the new account itself
+        await wallet.signAndSendTransaction({
+          receiverId: businessAccount,
+          actions: [
+            {
+              type: "CreateAccount"
+            },
+            {
+              type: "Transfer",
+              params: {
+                deposit: "100000000000000000000000" // 0.1 NEAR
+              }
+            }
+          ]
+        });
+
+        btn.innerText = "✅ Activated";
+        btn.style.background = "#3f3f46";
+        alert(`Business account ${businessAccount} created and funded with 0.1 NEAR!`);
+      } catch (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerText = "Activate Business";
+        alert(err.message || "Transaction cancelled or failed");
+      }
+    }
+
     init();
   </script>
 </body>
