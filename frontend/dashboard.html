@@ -74,6 +74,23 @@
     .btn-secondary {
       background: #18181b; border: 1px solid #3f3f46; color: #e4e4e7;
     }
+    /* NEW – Create Business Account button */
+    .create-btn {
+      margin-top: 12px;
+      width: 100%;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .create-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body>
@@ -216,6 +233,43 @@
             <p>${token.metadata?.description || "No description"}</p>
             <div class="token-id">Token ID: ${token.token_id}</div>
           `;
+
+          // NEW – Create Business Account button
+          const createBtn = document.createElement("button");
+          createBtn.className = "create-btn";
+          createBtn.innerText = "Create Business Account (0.1 NEAR)";
+          createBtn.onclick = async () => {
+            try {
+              createBtn.disabled = true;
+              createBtn.innerText = "Confirm in wallet...";
+
+              const wallet = await connector.wallet();
+              await wallet.signAndSendTransaction({
+                receiverId: CONTRACT_ID,
+                actions: [{
+                  type: "FunctionCall",
+                  params: {
+                    methodName: "create_business_account",
+                    args: {
+                      token_id: token.token_id,
+                      public_key: "ed25519:6E8sCci9badyRkXb3JoRpBj5p8C6Tw41ELDZoiihKEtp"
+                    },
+                    gas: "100000000000000",
+                    deposit: "100000000000000000000000" // 0.1 NEAR
+                  }
+                }]
+              });
+
+              createBtn.innerText = "✅ Business Account Created!";
+            } catch (err) {
+              console.error(err);
+              createBtn.disabled = false;
+              createBtn.innerText = "Create Business Account (0.1 NEAR)";
+              alert(err.message || "Failed");
+            }
+          };
+          div.appendChild(createBtn);
+
           listEl.appendChild(div);
         });
       } catch (err) {
