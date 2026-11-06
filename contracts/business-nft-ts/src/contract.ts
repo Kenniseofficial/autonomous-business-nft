@@ -4,8 +4,6 @@ import { NearBindgen, near, call, view, initialize } from "near-sdk-js";
 class Contract {
   owner_id: string = "";
   next_token_id: number = 1;
-  // Simple storage: we store everything as JSON strings under fixed keys
-  // This avoids the LookupMap reconstruction bug
 
   @initialize({})
   init({ owner_id }: { owner_id: string }) {
@@ -25,13 +23,23 @@ class Contract {
     const token_id = this.next_token_id.toString();
     this.next_token_id += 1;
 
-    // Store owner
+    // 1. Owner
     near.storageWrite(`token_owner:${token_id}`, receiver_id);
 
-    // Store metadata  ← ONLY THIS LINE WAS FIXED
-    near.storageWrite(`token_meta:\( {token_id}`, ` \){title}|${description}`);
+    // 2. Proper metadata as JSON (title + image)
+    const metadata = {
+      title: title || "Autonomous Business NFT",
+      description: description || "An NFT that runs its own business on NEAR",
+      media: "https://near.org/wp-content/themes/near-19/assets/img/brand-icon.png",
+      copies: 1
+    };
+    near.storageWrite(`token_meta:${token_id}`, JSON.stringify(metadata));
 
-    // Add to owner's list
+    // 3. Business sub-account name (future autonomous agent)
+    const businessAccount = `business-\( {token_id}. \){near.currentAccountId()}`;
+    near.storageWrite(`business_account:${token_id}`, businessAccount);
+
+    // 4. Owner's list of tokens
     const ownerKey = `owner_tokens:${receiver_id}`;
     let list = near.storageRead(ownerKey) || "";
     if (list === "") {
@@ -41,7 +49,7 @@ class Contract {
     }
     near.storageWrite(ownerKey, list);
 
-    // Emit event for wallets
+    // 5. Event for wallets
     const event = {
       standard: "nep171",
       version: "1.2.0",
@@ -71,18 +79,30 @@ class Contract {
     const owner = near.storageRead(`token_owner:${token_id}`);
     if (!owner) return null;
 
-    const metaStr = near.storageRead(`token_meta:${token_id}`) || "Untitled|No description";
-    const parts = metaStr.split("|");
+    const metaRaw = near.storageRead(`token_meta:${token_id}`);
+    let metadata = {
+      title: "Untitled",
+      description: "No description",
+      media: "https://near.org/wp-content/themes/near-19/assets/img/brand-icon.png",
+      copies: 1
+    };
+
+    if (metaRaw) {
+      try {
+        metadata = JSON.parse(metaRaw);
+      } catch (e) {
+        // fallback for old tokens that used title|description format
+        const parts = metaRaw.split("|");
+        metadata.title = parts[0] || "Untitled";
+        metadata.description = parts[1] || "";
+      }
+    }
 
     return {
       token_id: token_id,
       owner_id: owner,
-      metadata: {
-        title: parts[0] || "Untitled",
-        description: parts[1] || "",
-        media: "https://near.org/wp-content/themes/near-19/assets/img/brand-icon.png",
-        copies: 1,
-      },
+      metadata: metadata,
+      business_account: near.storageRead(`business_account:${token_id}`) || null
     };
   }
 
@@ -117,6 +137,11 @@ class Contract {
     const list = near.storageRead(`owner_tokens:${account_id}`);
     if (!list) return "0";
     return list.split(",").length.toString();
+  }
+
+  @view({})
+  get_business_account({ token_id }: { token_id: string }): string | null {
+    return near.storageRead(`business_account:${token_id}`) || null;
   }
 
   @view({})
