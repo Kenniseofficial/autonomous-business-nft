@@ -1,4 +1,5 @@
-import { NearBindgen, near, call, view, initialize, NearPromise, PublicKey } from "near-sdk-js";
+import { NearBindgen, near, call, view, initialize, NearPromise } from "near-sdk-js";
+import { PublicKey } from "near-sdk-js/lib/types";
 
 @NearBindgen({})
 class Contract {
@@ -33,17 +34,14 @@ class Contract {
     };
     near.storageWrite(`token_meta:${token_id}`, JSON.stringify(metadata));
 
-    // Planned business sub-account name
     const businessAccount = `business-\( {token_id}. \){near.currentAccountId()}`;
     near.storageWrite(`business_account:${token_id}`, businessAccount);
 
-    // Owner token list
     const ownerKey = `owner_tokens:${receiver_id}`;
     let list = near.storageRead(ownerKey) || "";
     list = list === "" ? token_id : list + "," + token_id;
     near.storageWrite(ownerKey, list);
 
-    // Event for wallets
     const event = {
       standard: "nep171",
       version: "1.2.0",
@@ -55,14 +53,14 @@ class Contract {
     return token_id;
   }
 
-  // ========== NEW: Create the real sub-account + Function-Call Key ==========
+  // ========== Create real sub-account + Function-Call Key ==========
   @call({ payableFunction: true })
   create_business_account({
     token_id,
     public_key,
   }: {
     token_id: string;
-    public_key: string; // ed25519:...
+    public_key: string;
   }) {
     const owner = near.storageRead(`token_owner:${token_id}`);
     if (!owner) {
@@ -77,23 +75,22 @@ class Contract {
       near.panicUtf8("Business account name not found");
     }
 
-    // Minimum storage for a new account (\~0.1 NEAR is safe)
     const storageCost = BigInt("100000000000000000000000"); // 0.1 NEAR
 
     if (near.attachedDeposit() < storageCost) {
-      near.panicUtf8("Attach at least 0.1 NEAR to create the business account");
+      near.panicUtf8("Attach at least 0.1 NEAR");
     }
 
     // Create the sub-account and add a Function-Call Key
-    // The key can only call methods on THIS contract (safe for autonomous agent)
+    // The key can only call methods on THIS contract
     const promise = NearPromise.new(businessAccount)
       .createAccount()
       .transfer(storageCost)
       .addAccessKey(
-        new PublicKey(public_key),
-        BigInt("0"),                    // unlimited allowance
-        near.currentAccountId(),        // can only call this contract
-        ""                              // empty = all methods
+        PublicKey.fromString(public_key),
+        BigInt("0"),                      // unlimited gas allowance
+        near.currentAccountId(),          // only this contract
+        ""                                // empty = all methods
       );
 
     return promise;
