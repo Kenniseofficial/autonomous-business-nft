@@ -1,4 +1,5 @@
-import { NearBindgen, near, call, view, initialize } from "near-sdk-js";
+import { NearBindgen, near, call, view, initialize, NearPromise } from "near-sdk-js";
+import { PublicKey } from "near-sdk-js/lib/types";
 
 @NearBindgen({})
 class Contract {
@@ -50,6 +51,47 @@ class Contract {
     near.log(`EVENT_JSON:${JSON.stringify(event)}`);
 
     return token_id;
+  }
+
+  // ========== NEW: Create real sub-account + Function-Call Key ==========
+  @call({ payableFunction: true })
+  create_business_account({
+    token_id,
+    public_key,
+  }: {
+    token_id: string;
+    public_key: string;
+  }) {
+    const owner = near.storageRead(`token_owner:${token_id}`);
+    if (!owner) {
+      near.panicUtf8("Token does not exist");
+    }
+    if (near.predecessorAccountId() !== owner) {
+      near.panicUtf8("Only the NFT owner can create the business account");
+    }
+
+    const businessAccount = near.storageRead(`business_account:${token_id}`);
+    if (!businessAccount) {
+      near.panicUtf8("Business account name not found");
+    }
+
+    const storageCost = BigInt("100000000000000000000000"); // 0.1 NEAR
+
+    if (near.attachedDeposit() < storageCost) {
+      near.panicUtf8("Attach at least 0.1 NEAR");
+    }
+
+    // Create the sub-account and attach a Function-Call Key
+    // The key can only call methods on THIS contract
+    return NearPromise.new(businessAccount)
+      .createAccount()
+      .transfer(storageCost)
+      .addAccessKey(
+        PublicKey.fromString(public_key),
+        BigInt("0"),                      // unlimited gas allowance
+        near.currentAccountId(),          // only this contract
+        ""                                // empty string = all methods
+      );
   }
 
   @view({})
