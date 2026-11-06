@@ -52,7 +52,7 @@ class Contract {
     return token_id;
   }
 
-  // Temporary version – creates the sub-account only (no Function-Call Key yet)
+  // Creates the real sub-account and funds it with 0.1 NEAR
   @call({ payableFunction: true })
   create_business_account({
     token_id,
@@ -78,7 +78,6 @@ class Contract {
       near.panicUtf8("Attach at least 0.1 NEAR");
     }
 
-    // Create the sub-account and fund it
     return NearPromise.new(businessAccount)
       .createAccount()
       .transfer(storageCost);
