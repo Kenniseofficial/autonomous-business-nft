@@ -10,6 +10,20 @@ class Contract {
     this.owner_id = owner_id;
   }
 
+  // ========== REQUIRED BY WALLETS ==========
+  @view({})
+  nft_metadata() {
+    return {
+      spec: "nft-1.0.0",
+      name: "Autonomous Business NFT",
+      symbol: "ABNFT",
+      icon: "https://near.org/wp-content/themes/near-19/assets/img/brand-icon.png",
+      base_uri: null,
+      reference: null,
+      reference_hash: null
+    };
+  }
+
   @call({ payableFunction: true })
   nft_mint({
     receiver_id,
@@ -23,10 +37,10 @@ class Contract {
     const token_id = this.next_token_id.toString();
     this.next_token_id += 1;
 
-    // Owner
+    // Owner of this token
     near.storageWrite(`token_owner:${token_id}`, receiver_id);
 
-    // Metadata as JSON
+    // Metadata
     const metadata = {
       title: title || "Autonomous Business NFT",
       description: description || "An NFT that runs its own business on NEAR",
@@ -35,13 +49,13 @@ class Contract {
     };
     near.storageWrite(`token_meta:${token_id}`, JSON.stringify(metadata));
 
-    // Owner → list of tokens
+    // Owner → list of token_ids
     const ownerKey = `owner_tokens:${receiver_id}`;
     const current = near.storageRead(ownerKey) || "";
     const newList = current ? `\( {current}, \){token_id}` : token_id;
     near.storageWrite(ownerKey, newList);
 
-    // NEP-171 event so wallets can index it
+    // Emit the event wallets look for
     near.log(
       `EVENT_JSON:{"standard":"nep171","version":"1.0.0","event":"nft_mint","data":[{"owner_id":"\( {receiver_id}","token_ids":[" \){token_id}"]}]}`
     );
@@ -88,9 +102,9 @@ class Contract {
     const tokensStr = near.storageRead(`owner_tokens:${account_id}`);
     if (!tokensStr) return [];
 
-    const tokenIds = tokensStr.split(",");
-    const start = parseInt(from_index);
-    const end = Math.min(start + limit, tokenIds.length);
+    const tokenIds = tokensStr.split(",").filter(id => id.length > 0);
+    const start = parseInt(from_index) || 0;
+    const end = Math.min(start + (limit || 50), tokenIds.length);
 
     const result = [];
     for (let i = start; i < end; i++) {
@@ -104,7 +118,7 @@ class Contract {
   nft_supply_for_owner({ account_id }: { account_id: string }): string {
     const tokensStr = near.storageRead(`owner_tokens:${account_id}`);
     if (!tokensStr) return "0";
-    return tokensStr.split(",").length.toString();
+    return tokensStr.split(",").filter(id => id.length > 0).length.toString();
   }
 
   @view({})
