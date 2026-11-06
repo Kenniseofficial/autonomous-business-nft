@@ -1,4 +1,4 @@
-import { NearBindgen, near, call, view, initialize } from "near-sdk-js";
+import { NearBindgen, near, call, view, initialize, NearPromise, PublicKey } from "near-sdk-js";
 
 @NearBindgen({})
 class Contract {
@@ -23,10 +23,8 @@ class Contract {
     const token_id = this.next_token_id.toString();
     this.next_token_id += 1;
 
-    // 1. Owner
     near.storageWrite(`token_owner:${token_id}`, receiver_id);
 
-    // 2. Proper metadata as JSON (title + image)
     const metadata = {
       title: title || "Autonomous Business NFT",
       description: description || "An NFT that runs its own business on NEAR",
@@ -35,21 +33,17 @@ class Contract {
     };
     near.storageWrite(`token_meta:${token_id}`, JSON.stringify(metadata));
 
-    // 3. Business sub-account name (future autonomous agent)
+    // Planned business sub-account name
     const businessAccount = `business-\( {token_id}. \){near.currentAccountId()}`;
     near.storageWrite(`business_account:${token_id}`, businessAccount);
 
-    // 4. Owner's list of tokens
+    // Owner token list
     const ownerKey = `owner_tokens:${receiver_id}`;
     let list = near.storageRead(ownerKey) || "";
-    if (list === "") {
-      list = token_id;
-    } else {
-      list = list + "," + token_id;
-    }
+    list = list === "" ? token_id : list + "," + token_id;
     near.storageWrite(ownerKey, list);
 
-    // 5. Event for wallets
+    // Event for wallets
     const event = {
       standard: "nep171",
       version: "1.2.0",
@@ -59,6 +53,50 @@ class Contract {
     near.log(`EVENT_JSON:${JSON.stringify(event)}`);
 
     return token_id;
+  }
+
+  // ========== NEW: Create the real sub-account + Function-Call Key ==========
+  @call({ payableFunction: true })
+  create_business_account({
+    token_id,
+    public_key,
+  }: {
+    token_id: string;
+    public_key: string; // ed25519:...
+  }) {
+    const owner = near.storageRead(`token_owner:${token_id}`);
+    if (!owner) {
+      near.panicUtf8("Token does not exist");
+    }
+    if (near.predecessorAccountId() !== owner) {
+      near.panicUtf8("Only the NFT owner can create the business account");
+    }
+
+    const businessAccount = near.storageRead(`business_account:${token_id}`);
+    if (!businessAccount) {
+      near.panicUtf8("Business account name not found");
+    }
+
+    // Minimum storage for a new account (\~0.1 NEAR is safe)
+    const storageCost = BigInt("100000000000000000000000"); // 0.1 NEAR
+
+    if (near.attachedDeposit() < storageCost) {
+      near.panicUtf8("Attach at least 0.1 NEAR to create the business account");
+    }
+
+    // Create the sub-account and add a Function-Call Key
+    // The key can only call methods on THIS contract (safe for autonomous agent)
+    const promise = NearPromise.new(businessAccount)
+      .createAccount()
+      .transfer(storageCost)
+      .addAccessKey(
+        new PublicKey(public_key),
+        BigInt("0"),                    // unlimited allowance
+        near.currentAccountId(),        // can only call this contract
+        ""                              // empty = all methods
+      );
+
+    return promise;
   }
 
   @view({})
@@ -91,7 +129,6 @@ class Contract {
       try {
         metadata = JSON.parse(metaRaw);
       } catch (e) {
-        // fallback for old tokens that used title|description format
         const parts = metaRaw.split("|");
         metadata.title = parts[0] || "Untitled";
         metadata.description = parts[1] || "";
@@ -99,9 +136,9 @@ class Contract {
     }
 
     return {
-      token_id: token_id,
+      token_id,
       owner_id: owner,
-      metadata: metadata,
+      metadata,
       business_account: near.storageRead(`business_account:${token_id}`) || null
     };
   }
@@ -121,7 +158,7 @@ class Contract {
 
     const tokenIds = list.split(",");
     const start = from_index ? parseInt(from_index) : 0;
-    const max = limit ? limit : 50;
+    const max = limit || 50;
     const end = Math.min(start + max, tokenIds.length);
 
     const result = [];
