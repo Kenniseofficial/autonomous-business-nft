@@ -1,5 +1,4 @@
 import { NearBindgen, near, call, view, initialize, NearPromise } from "near-sdk-js";
-import { PublicKey } from "near-sdk-js/lib/types";
 
 @NearBindgen({})
 class Contract {
@@ -53,14 +52,12 @@ class Contract {
     return token_id;
   }
 
-  // ========== NEW: Create real sub-account + Function-Call Key ==========
+  // Temporary version – creates the sub-account only (no Function-Call Key yet)
   @call({ payableFunction: true })
   create_business_account({
     token_id,
-    public_key,
   }: {
     token_id: string;
-    public_key: string;
   }) {
     const owner = near.storageRead(`token_owner:${token_id}`);
     if (!owner) {
@@ -81,17 +78,10 @@ class Contract {
       near.panicUtf8("Attach at least 0.1 NEAR");
     }
 
-    // Create the sub-account and attach a Function-Call Key
-    // The key can only call methods on THIS contract
+    // Create the sub-account and fund it
     return NearPromise.new(businessAccount)
       .createAccount()
-      .transfer(storageCost)
-      .addAccessKey(
-        PublicKey.fromString(public_key),
-        BigInt("0"),                      // unlimited gas allowance
-        near.currentAccountId(),          // only this contract
-        ""                                // empty string = all methods
-      );
+      .transfer(storageCost);
   }
 
   @view({})
