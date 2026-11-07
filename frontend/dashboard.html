@@ -13,120 +13,177 @@
       min-height: 100vh;
       line-height: 1.5;
     }
-    .container { max-width: 440px; margin: 0 auto; padding: 16px 16px 80px; }
+    .container {
+      max-width: 440px;
+      margin: 0 auto;
+      padding: 16px 16px 80px;
+    }
     .topbar {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 8px 0 20px;
-    }
-    .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; }
-    .logo-box {
-      width: 32px; height: 32px;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      border-radius: 9px; display: grid; place-items: center;
-    }
-    .back { color: #a1a1aa; text-decoration: none; font-size: 0.9rem; }
-    .header { margin-bottom: 24px; }
-    .header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
-    .header .sub { color: #a1a1aa; font-size: 0.9rem; }
-
-    .wallet-bar {
-      background: #111114;
-      border: 1px solid #27272a;
-      border-radius: 14px;
-      padding: 12px 16px;
-      margin-bottom: 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 8px 0 20px;
     }
-    .wallet-bar .addr { font-size: 0.85rem; color: #a1a1aa; }
-    .btn {
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+    .logo-box {
+      width: 32px;
+      height: 32px;
       background: linear-gradient(135deg, #22c55e, #16a34a);
-      color: white; border: none; border-radius: 12px;
-      padding: 10px 16px; font-weight: 600; font-size: 0.9rem;
-      cursor: pointer;
+      border-radius: 9px;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
     }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #3f3f46;
-      color: #e4e4e7;
+    .back {
+      color: #a1a1aa;
+      text-decoration: none;
+      font-size: 0.9rem;
     }
-    .btn-sm { padding: 8px 12px; font-size: 0.8rem; border-radius: 10px; }
-
-    .business-card {
-      background: #111114;
-      border: 1px solid #27272a;
-      border-radius: 18px;
-      padding: 18px;
-      margin-bottom: 16px;
+    .header {
+      margin-bottom: 24px;
     }
-    .business-card h3 {
-      font-size: 1.15rem;
+    .header h1 {
+      font-size: 1.6rem;
       font-weight: 700;
       margin-bottom: 6px;
-      color: #f4f4f5;
     }
-    .business-card .desc {
+    .header .sub {
       color: #a1a1aa;
-      font-size: 0.9rem;
-      margin-bottom: 14px;
+      font-size: 0.95rem;
     }
-    .token-id {
-      font-size: 0.75rem;
-      color: #71717a;
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 15px;
+      padding: 16px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-primary {
+      background: linear-gradient(90deg, #16a34a, #22c55e);
+      color: white;
+    }
+    .btn-secondary {
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      color: #e4e4e7;
       margin-bottom: 12px;
     }
-    .stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-    .stat {
-      background: #18181b;
-      border-radius: 12px;
+    .btn-disconnect {
+      background: transparent;
+      border: 1px solid #ef4444;
+      color: #f87171;
+      margin-bottom: 14px;
       padding: 12px;
+      font-size: 0.95rem;
+      display: none;
     }
-    .stat .label { font-size: 0.75rem; color: #71717a; }
-    .stat .value { font-size: 1.1rem; font-weight: 700; color: #4ade80; }
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(34, 197, 94, 0.12);
-      color: #4ade80;
+    .btn-activate {
+      background: linear-gradient(90deg, #16a34a, #22c55e);
+      color: white;
+      margin-top: 12px;
+      padding: 12px;
+      font-size: 0.95rem;
+    }
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .account-box {
+      background: #0f0f12;
+      border: 1px solid #27272a;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    .account-box .label {
       font-size: 0.75rem;
+      color: #a1a1aa;
+      margin-bottom: 4px;
+    }
+    .account-box .value {
+      font-size: 0.95rem;
       font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 20px;
+      word-break: break-all;
+    }
+    .business-list {
+      margin-top: 10px;
+    }
+    .business-item {
+      background: #0f0f12;
+      border: 1px solid #27272a;
+      border-radius: 18px;
+      padding: 18px 16px;
       margin-bottom: 14px;
     }
-    .status-badge::before {
-      content: "";
-      width: 6px; height: 6px;
-      background: #4ade80;
-      border-radius: 50%;
+    .business-item h4 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 6px;
     }
-    .actions { display: flex; gap: 10px; flex-wrap: wrap; }
-    .activity {
-      background: #18181b;
-      border-radius: 12px;
-      padding: 14px;
+    .business-item p {
       color: #a1a1aa;
-      font-size: 0.9rem;
-      text-align: center;
+      font-size: 0.88rem;
+      margin-bottom: 10px;
     }
-    .empty { text-align: center; padding: 40px 20px; color: #71717a; }
+    .token-id {
+      font-size: 0.78rem;
+      color: #71717a;
+      margin-bottom: 4px;
+    }
+    .business-account {
+      font-size: 0.78rem;
+      color: #4ade80;
+      word-break: break-all;
+      margin-bottom: 8px;
+    }
+    .status {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      display: none;
+    }
+    .status.success {
+      background: #14532d;
+      color: #bbf7d0;
+      display: block;
+    }
+    .status.error {
+      background: #450a0a;
+      color: #fecaca;
+      display: block;
+    }
+    .empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: #71717a;
+      font-size: 0.95rem;
+    }
+    .loading {
+      text-align: center;
+      padding: 30px;
+      color: #a1a1aa;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="topbar">
       <div class="logo">
-        <div class="logo-box">🤖</div>
+        <div class="logo-box">◈</div>
         <span>Business NFT</span>
       </div>
-      <a href="./index.html" class="back">← Mint</a>
+      <a href="index.html" class="back">← Mint</a>
     </div>
 
     <div class="header">
@@ -134,99 +191,130 @@
       <div class="sub">Your Autonomous Businesses</div>
     </div>
 
-    <div class="wallet-bar" id="walletBar" style="display:none;">
-      <div>
-        <div style="font-size:0.75rem;color:#71717a;">Connected</div>
-        <div class="addr" id="accountDisplay">—</div>
-      </div>
-      <button class="btn btn-outline btn-sm" id="disconnectBtn">Disconnect</button>
+    <button class="btn btn-secondary" id="connectBtn">
+      Connect Wallet
+    </button>
+
+    <button class="btn btn-disconnect" id="disconnectBtn">
+      Disconnect Wallet
+    </button>
+
+    <div class="account-box" id="accountBox">
+      <div class="label">Connected as</div>
+      <div class="value" id="accountDisplay"></div>
     </div>
 
-    <div id="connectSection">
-      <button class="btn" id="connectBtn" style="width:100%;padding:14px;">Connect Wallet</button>
-    </div>
+    <div id="status" class="status"></div>
 
-    <div id="list" style="margin-top:20px;">
-      <div class="activity">Connect wallet to see your businesses</div>
+    <div class="business-list" id="businessList">
+      <div class="empty">Connect wallet to see your businesses</div>
     </div>
   </div>
 
+  <script type="importmap">
+  {
+    "imports": {
+      "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@0.12.0"
+    }
+  }
+  </script>
+
   <script type="module">
-    import { setupWalletSelector } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/core@8.9.1/dist/esm/index.js";
-    import { setupModal } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/modal-ui@8.9.1/dist/esm/index.js";
-    import { setupMeteorWallet } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/meteor-wallet@8.9.1/dist/esm/index.js";
-    import { setupHereWallet } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/here-wallet@8.9.1/dist/esm/index.js";
-    import { setupMyNearWallet } from "https://cdn.jsdelivr.net/npm/@near-wallet-selector/my-near-wallet@8.9.1/dist/esm/index.js";
+    import { NearConnector } from "@hot-labs/near-connect";
 
     const CONTRACT_ID = "buildingfromthetop.testnet";
-    const NETWORK = "testnet";
 
-    let selector = null;
-    let modal = null;
+    const connectBtn = document.getElementById("connectBtn");
+    const disconnectBtn = document.getElementById("disconnectBtn");
+    const accountBox = document.getElementById("accountBox");
+    const accountDisplay = document.getElementById("accountDisplay");
+    const businessList = document.getElementById("businessList");
+    const statusEl = document.getElementById("status");
+
+    let connector = null;
     let accountId = null;
 
     async function init() {
-      selector = await setupWalletSelector({
-        network: NETWORK,
-        modules: [
-          setupMeteorWallet(),
-          setupHereWallet(),
-          setupMyNearWallet(),
-        ],
-      });
-
-      modal = setupModal(selector, {
-        contractId: CONTRACT_ID,
-      });
-
-      const state = selector.store.getState();
-      if (state.accounts.length > 0) {
-        accountId = state.accounts[0].accountId;
-        updateUI();
-        loadDashboard();
-      }
-
-      selector.subscribe((state) => {
-        if (state.accounts.length > 0) {
-          accountId = state.accounts[0].accountId;
-        } else {
-          accountId = null;
+      connector = new NearConnector({
+        network: "testnet",
+        features: {
+          signAndSendTransaction: true,
+          testnet: true
         }
-        updateUI();
-        if (accountId) loadDashboard();
       });
+
+      connector.on("wallet:signIn", async (event) => {
+        accountId = event.accounts[0]?.accountId || null;
+        updateUI();
+        if (accountId) loadBusinesses();
+      });
+
+      connector.on("wallet:signOut", () => {
+        accountId = null;
+        updateUI();
+        businessList.innerHTML = `<div class="empty">Connect wallet to see your businesses</div>`;
+      });
+
+      try {
+        const wallet = await connector.wallet();
+        const accounts = await wallet.getAccounts();
+        if (accounts && accounts.length > 0) {
+          accountId = accounts[0].accountId;
+          updateUI();
+          loadBusinesses();
+        }
+      } catch (e) {}
     }
 
     function updateUI() {
-      const connectSection = document.getElementById("connectSection");
-      const walletBar = document.getElementById("walletBar");
-      const accountDisplay = document.getElementById("accountDisplay");
-
       if (accountId) {
-        connectSection.style.display = "none";
-        walletBar.style.display = "flex";
+        const short = accountId.length > 22 
+          ? accountId.slice(0, 10) + "..." + accountId.slice(-8) 
+          : accountId;
+        connectBtn.style.display = "none";
+        disconnectBtn.style.display = "block";
+        accountBox.style.display = "block";
         accountDisplay.innerText = accountId;
       } else {
-        connectSection.style.display = "block";
-        walletBar.style.display = "none";
+        connectBtn.style.display = "block";
+        connectBtn.innerText = "Connect Wallet";
+        disconnectBtn.style.display = "none";
+        accountBox.style.display = "none";
       }
     }
 
-    document.getElementById("connectBtn").addEventListener("click", () => {
-      modal.show();
+    connectBtn.addEventListener("click", async () => {
+      if (accountId) return;
+      try {
+        await connector.connect();
+      } catch (err) {
+        console.error(err);
+        showStatus(err.message || "Connection cancelled", "error");
+      }
     });
 
-    document.getElementById("disconnectBtn").addEventListener("click", async () => {
-      const wallet = await selector.wallet();
-      await wallet.signOut();
+    disconnectBtn.addEventListener("click", async () => {
+      try {
+        if (connector) {
+          await connector.disconnect();
+        }
+      } catch (e) {}
       accountId = null;
       updateUI();
-      document.getElementById("list").innerHTML = `<div class="activity">Connect wallet to see your businesses</div>`;
+      businessList.innerHTML = `<div class="empty">Connect wallet to see your businesses</div>`;
+      statusEl.style.display = "none";
     });
 
-    async function loadDashboard() {
-      const listEl = document.getElementById("list");
-      listEl.innerHTML = `<div class="activity">Loading your businesses...</div>`;
+    function showStatus(msg, type) {
+      statusEl.className = "status " + type;
+      statusEl.style.display = "block";
+      statusEl.innerText = msg;
+    }
+
+    async function loadBusinesses() {
+      if (!accountId) return;
+
+      businessList.innerHTML = `<div class="loading">Loading your businesses...</div>`;
 
       try {
         const res = await fetch("https://rpc.testnet.near.org", {
@@ -234,7 +322,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             jsonrpc: "2.0",
-            id: "1",
+            id: "dontcare",
             method: "query",
             params: {
               request_type: "call_function",
@@ -248,76 +336,76 @@
 
         const data = await res.json();
         const bytes = data.result?.result;
+
         if (!bytes) {
-          listEl.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
+          businessList.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
           return;
         }
 
         const tokens = JSON.parse(String.fromCharCode(...bytes));
+
         if (!tokens || tokens.length === 0) {
-          listEl.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
+          businessList.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
           return;
         }
 
-        listEl.innerHTML = "";
+        businessList.innerHTML = "";
         tokens.forEach(token => {
+          const div = document.createElement("div");
+          div.className = "business-item";
+
           const title = token.metadata?.title || "Untitled Business";
-          const desc = token.metadata?.description || "No description";
-          const businessAcc = token.business_account || `business-\( {token.token_id}. \){CONTRACT_ID}`;
+          const description = token.metadata?.description || "No description";
+          const tokenId = token.token_id;
+          const businessAccount = token.business_account || `business-\( {tokenId}. \){CONTRACT_ID}`;
 
-          const card = document.createElement("div");
-          card.className = "business-card";
-          card.innerHTML = `
-            <div class="status-badge">Agent Ready</div>
-            <h3>${title}</h3>
-            <div class="desc">${desc}</div>
-            <div class="token-id">Token #${token.token_id} · ${businessAcc}</div>
-
-            <div class="stats">
-              <div class="stat">
-                <div class="label">Treasury</div>
-                <div class="value">0.00 Ⓝ</div>
-              </div>
-              <div class="stat">
-                <div class="label">Jobs Done</div>
-                <div class="value">0</div>
-              </div>
-            </div>
-
-            <div class="actions">
-              <button class="btn btn-sm activate-btn" data-token="\( {token.token_id}" data-account=" \){businessAcc}">
-                Activate Business
-              </button>
-              <button class="btn btn-outline btn-sm" disabled>Claim Profits</button>
-            </div>
+          div.innerHTML = `
+            <h4>${title}</h4>
+            <p>${description}</p>
+            <div class="token-id">Token ID: ${tokenId}</div>
+            <div class="business-account">Treasury: ${businessAccount}</div>
+            <button class="btn btn-activate" data-token="\( {tokenId}" data-account=" \){businessAccount}">
+              Activate Business
+            </button>
+            <div class="status" style="display:none; margin-top:10px;"></div>
           `;
-          listEl.appendChild(card);
+
+          businessList.appendChild(div);
         });
 
         // Attach activate buttons
-        document.querySelectorAll(".activate-btn").forEach(btn => {
-          btn.addEventListener("click", async (e) => {
-            const tokenId = e.target.dataset.token;
-            const businessAccount = e.target.dataset.account;
-            await activateBusiness(tokenId, businessAccount, e.target);
+        document.querySelectorAll(".btn-activate").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const tokenId = btn.getAttribute("data-token");
+            const businessAccount = btn.getAttribute("data-account");
+            await activateBusiness(tokenId, businessAccount, btn);
           });
         });
 
       } catch (err) {
         console.error(err);
-        listEl.innerHTML = `<div class="activity">Failed to load businesses</div>`;
+        businessList.innerHTML = `<div class="empty">Failed to load businesses</div>`;
       }
     }
 
     async function activateBusiness(tokenId, businessAccount, btn) {
+      if (!accountId) {
+        showStatus("Please connect wallet first", "error");
+        return;
+      }
+
+      const statusDiv = btn.nextElementSibling;
+
       try {
         btn.disabled = true;
         btn.innerText = "Confirm in wallet...";
+        statusDiv.style.display = "block";
+        statusDiv.className = "status";
+        statusDiv.innerText = "Creating sub-account... Confirm in your wallet";
 
-        const wallet = await selector.wallet();
+        const wallet = await connector.wallet();
 
-        // Create the real sub-account + fund it with 0.1 NEAR
-        // Transaction is sent TO the new account itself
+        // Create the business sub-account + fund it with 0.1 NEAR
         await wallet.signAndSendTransaction({
           receiverId: businessAccount,
           actions: [
@@ -333,14 +421,16 @@
           ]
         });
 
-        btn.innerText = "✅ Activated";
-        btn.style.background = "#3f3f46";
-        alert(`Business account ${businessAccount} created and funded with 0.1 NEAR!`);
+        statusDiv.className = "status success";
+        statusDiv.innerText = "✅ Business activated! Sub-account created.";
+        btn.innerText = "Activated ✓";
       } catch (err) {
         console.error(err);
+        statusDiv.className = "status error";
+        statusDiv.style.display = "block";
+        statusDiv.innerText = err.message || "Activation failed or cancelled";
         btn.disabled = false;
         btn.innerText = "Activate Business";
-        alert(err.message || "Transaction cancelled or failed");
       }
     }
 
