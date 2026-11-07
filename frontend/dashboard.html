@@ -39,9 +39,7 @@
     .btn-primary:active { transform: scale(0.98); }
     .btn-danger {
       background: transparent; border: 1.5px solid #ef4444; color: #ef4444;
-    }
-    .btn-secondary {
-      background: #18181b; color: #f4f4f5; border: 1px solid #27272a;
+      margin-top: 10px;
     }
     .btn-disabled {
       background: #166534; color: #86efac; cursor: default;
@@ -61,7 +59,7 @@
     .business-card h3 { font-size: 1.1rem; margin-bottom: 6px; }
     .business-card .desc { color: #a1a1aa; font-size: 0.9rem; margin-bottom: 10px; }
     .meta { font-size: 0.8rem; color: #71717a; margin-bottom: 4px; }
-    .treasury { color: #4ade80; font-size: 0.85rem; margin-bottom: 12px; font-weight: 500; }
+    .treasury { color: #4ade80; font-size: 0.85rem; margin-bottom: 8px; font-weight: 500; }
     .balance { color: #fbbf24; font-size: 0.9rem; margin-bottom: 12px; }
 
     .status-badge {
@@ -98,7 +96,7 @@
     </div>
 
     <button id="connectBtn" class="btn btn-primary">Connect Wallet</button>
-    <button id="disconnectBtn" class="btn btn-danger" style="display:none; margin-top:10px;">Disconnect Wallet</button>
+    <button id="disconnectBtn" class="btn btn-danger" style="display:none;">Disconnect Wallet</button>
 
     <div id="accountBox" class="account-box" style="display:none;">
       <span>Connected as</span>
@@ -139,30 +137,41 @@
         features: { signAndSendTransaction: true, testnet: true }
       });
 
-      connector.on("wallet:signIn", async () => {
-        const accounts = await connector.getAccounts();
-        if (accounts && accounts.length > 0) {
-          accountId = accounts[0].accountId;
-          updateUI();
-          loadBusinesses();
+      // Listen for sign-in
+      connector.on("wallet:signIn", async (event) => {
+        try {
+          const accounts = event?.accounts || await connector.getAccounts();
+          if (accounts && accounts.length > 0) {
+            accountId = accounts[0].accountId;
+            updateUI();
+            loadBusinesses();
+          }
+        } catch (e) {
+          console.error("signIn handler error", e);
         }
       });
 
+      // Listen for sign-out
       connector.on("wallet:signOut", () => {
         accountId = null;
         updateUI();
         listEl.innerHTML = `<div class="empty">Connect wallet to see your businesses</div>`;
       });
 
-      // Auto-detect if already connected
+      // Try to restore existing session (this is the key part)
       try {
+        // Small delay helps on mobile when navigating between pages
+        await new Promise(r => setTimeout(r, 300));
+
         const accounts = await connector.getAccounts();
         if (accounts && accounts.length > 0) {
           accountId = accounts[0].accountId;
           updateUI();
           loadBusinesses();
         }
-      } catch (e) {}
+      } catch (e) {
+        console.log("No existing session found");
+      }
     }
 
     function updateUI() {
@@ -189,6 +198,9 @@
     disconnectBtn.addEventListener("click", async () => {
       try {
         await connector.disconnect();
+        accountId = null;
+        updateUI();
+        listEl.innerHTML = `<div class="empty">Connect wallet to see your businesses</div>`;
       } catch (e) {
         console.error(e);
       }
@@ -264,11 +276,10 @@
 
         for (const token of tokens) {
           const tokenId = token.token_id;
-          const businessAccount = `business-\( {tokenId}. \){CONTRACT_ID}`;
+          const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
           const title = token.metadata?.title || "Untitled Business";
           const description = token.metadata?.description || "No description";
 
-          // Check if sub-account exists by trying to get its balance
           const balance = await getAccountBalance(businessAccount);
           const isActivated = balance !== "—" && parseFloat(balance) > 0;
 
@@ -288,8 +299,8 @@
           `;
           listEl.appendChild(card);
 
-          const actionsEl = document.getElementById(`actions-${tokenId}`);
-          const statusEl = document.getElementById(`status-${tokenId}`);
+          const actionsEl = document.getElementById("actions-" + tokenId);
+          const statusEl = document.getElementById("status-" + tokenId);
 
           if (!isActivated) {
             const activateBtn = document.createElement("button");
@@ -303,9 +314,6 @@
             activatedBtn.innerText = "Activated ✓";
             activatedBtn.disabled = true;
             actionsEl.appendChild(activatedBtn);
-
-            // Placeholder for future Function Call Key button
-            // (we will enable this in the next iteration once we have a clean way to get publicKey)
           }
         }
       } catch (err) {
@@ -341,7 +349,6 @@
         btn.innerText = "Activated ✓";
         btn.disabled = true;
 
-        // Refresh balance after a short delay
         setTimeout(() => loadBusinesses(), 2500);
       } catch (err) {
         console.error(err);
