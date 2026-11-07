@@ -351,7 +351,7 @@
           const description = token.metadata?.description || "No description";
           const tokenId = token.token_id;
 
-          // SAFE construction (no template literal)
+          // Reconstruct account name safely
           const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
 
           div.innerHTML = `
@@ -359,7 +359,7 @@
             <p>${description}</p>
             <div class="token-id">Token ID: ${tokenId}</div>
             <div class="business-account">Treasury: ${businessAccount}</div>
-            <button class="btn btn-activate" data-token="\( {tokenId}" data-account=" \){businessAccount}">
+            <button class="btn btn-activate" data-token="${tokenId}">
               Activate Business
             </button>
             <div class="status" style="display:none; margin-top:10px;"></div>
@@ -368,11 +368,11 @@
           businessList.appendChild(div);
         });
 
-        // Attach activate buttons
+        // Attach click handlers — reconstruct account name HERE
         document.querySelectorAll(".btn-activate").forEach(btn => {
           btn.addEventListener("click", async () => {
             const tokenId = btn.getAttribute("data-token");
-            const businessAccount = btn.getAttribute("data-account");
+            const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
             await activateBusiness(tokenId, businessAccount, btn);
           });
         });
@@ -400,6 +400,7 @@
 
         const wallet = await connector.wallet();
 
+        // This is the correct NEAR pattern for creating a sub-account
         await wallet.signAndSendTransaction({
           receiverId: businessAccount,
           actions: [
@@ -409,7 +410,7 @@
             {
               type: "Transfer",
               params: {
-                deposit: "100000000000000000000000"
+                deposit: "100000000000000000000000" // 0.1 NEAR
               }
             }
           ]
