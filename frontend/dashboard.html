@@ -13,173 +13,83 @@
       min-height: 100vh;
       line-height: 1.5;
     }
-    .container {
-      max-width: 440px;
-      margin: 0 auto;
-      padding: 16px 16px 80px;
-    }
+    .container { max-width: 440px; margin: 0 auto; padding: 16px 16px 80px; }
     .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
       padding: 8px 0 20px;
     }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 700;
-      font-size: 1rem;
-    }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; }
     .logo-box {
-      width: 32px;
-      height: 32px;
+      width: 32px; height: 32px;
       background: linear-gradient(135deg, #22c55e, #16a34a);
-      border-radius: 9px;
-      display: grid;
-      place-items: center;
+      border-radius: 9px; display: grid; place-items: center;
       font-size: 16px;
     }
-    .back {
-      color: #a1a1aa;
-      text-decoration: none;
-      font-size: 0.9rem;
-    }
-    .header {
-      margin-bottom: 24px;
-    }
-    .header h1 {
-      font-size: 1.6rem;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-    .header .sub {
-      color: #a1a1aa;
-      font-size: 0.95rem;
-    }
+    .back { color: #a1a1aa; text-decoration: none; font-size: 0.9rem; }
+    .header { margin-bottom: 20px; }
+    .header h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+    .header .sub { color: #a1a1aa; font-size: 0.9rem; }
+
     .btn {
-      width: 100%;
-      border: none;
-      border-radius: 15px;
-      padding: 16px;
-      font-size: 1.05rem;
-      font-weight: 600;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
+      width: 100%; padding: 14px; border: none; border-radius: 14px;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: #22c55e; color: #000; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-danger {
+      background: transparent; border: 1.5px solid #ef4444; color: #ef4444;
     }
     .btn-secondary {
-      background: #18181b;
-      border: 1px solid #3f3f46;
-      color: #e4e4e7;
-      margin-bottom: 12px;
+      background: #18181b; color: #f4f4f5; border: 1px solid #27272a;
     }
-    .btn-disconnect {
-      background: transparent;
-      border: 1px solid #ef4444;
-      color: #f87171;
-      margin-bottom: 14px;
-      padding: 12px;
-      font-size: 0.95rem;
-      display: none;
+    .btn-disabled {
+      background: #166534; color: #86efac; cursor: default;
     }
-    .btn-activate {
-      background: linear-gradient(90deg, #16a34a, #22c55e);
-      color: white;
-      margin-top: 12px;
-      padding: 12px;
-      font-size: 0.95rem;
-    }
-    .btn:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
+
     .account-box {
-      background: #0f0f12;
-      border: 1px solid #27272a;
-      border-radius: 14px;
-      padding: 14px 16px;
-      margin-bottom: 20px;
-      display: none;
+      background: #18181b; border: 1px solid #27272a;
+      border-radius: 14px; padding: 14px 16px; margin: 16px 0;
+      font-size: 0.9rem;
     }
-    .account-box .label {
-      font-size: 0.75rem;
-      color: #a1a1aa;
-      margin-bottom: 4px;
+    .account-box span { color: #a1a1aa; display: block; font-size: 0.8rem; margin-bottom: 2px; }
+
+    .business-card {
+      background: #18181b; border: 1px solid #27272a;
+      border-radius: 18px; padding: 18px; margin-bottom: 16px;
     }
-    .account-box .value {
-      font-size: 0.95rem;
-      font-weight: 600;
-      word-break: break-all;
+    .business-card h3 { font-size: 1.1rem; margin-bottom: 6px; }
+    .business-card .desc { color: #a1a1aa; font-size: 0.9rem; margin-bottom: 10px; }
+    .meta { font-size: 0.8rem; color: #71717a; margin-bottom: 4px; }
+    .treasury { color: #4ade80; font-size: 0.85rem; margin-bottom: 12px; font-weight: 500; }
+    .balance { color: #fbbf24; font-size: 0.9rem; margin-bottom: 12px; }
+
+    .status-badge {
+      display: inline-block; font-size: 0.75rem; font-weight: 600;
+      padding: 4px 10px; border-radius: 20px; margin-bottom: 12px;
     }
-    .business-list {
-      margin-top: 10px;
+    .badge-active { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .badge-pending { background: rgba(251,191,36,0.12); color: #fbbf24; }
+
+    .status-msg {
+      margin-top: 10px; padding: 10px 14px; border-radius: 12px;
+      font-size: 0.85rem; display: none;
     }
-    .business-item {
-      background: #0f0f12;
-      border: 1px solid #27272a;
-      border-radius: 18px;
-      padding: 18px 16px;
-      margin-bottom: 14px;
-    }
-    .business-item h4 {
-      font-size: 1.05rem;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-    .business-item p {
-      color: #a1a1aa;
-      font-size: 0.88rem;
-      margin-bottom: 10px;
-    }
-    .token-id {
-      font-size: 0.78rem;
-      color: #71717a;
-      margin-bottom: 4px;
-    }
-    .business-account {
-      font-size: 0.78rem;
-      color: #4ade80;
-      word-break: break-all;
-      margin-bottom: 8px;
-    }
-    .status {
-      margin-top: 12px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      font-size: 0.88rem;
-      display: none;
-    }
-    .status.success {
-      background: #14532d;
-      color: #bbf7d0;
-      display: block;
-    }
-    .status.error {
-      background: #450a0a;
-      color: #fecaca;
-      display: block;
-    }
-    .empty {
-      text-align: center;
-      padding: 40px 20px;
-      color: #71717a;
-      font-size: 0.95rem;
-    }
-    .loading {
-      text-align: center;
-      padding: 30px;
-      color: #a1a1aa;
-    }
+    .status-msg.success { background: rgba(34,197,94,0.12); color: #4ade80; display: block; }
+    .status-msg.error { background: rgba(239,68,68,0.12); color: #f87171; display: block; }
+    .status-msg.info { background: rgba(59,130,246,0.12); color: #60a5fa; display: block; }
+
+    .empty { text-align: center; color: #71717a; padding: 40px 20px; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="topbar">
       <div class="logo">
-        <div class="logo-box">◈</div>
+        <div class="logo-box">◆</div>
         <span>Business NFT</span>
       </div>
-      <a href="index.html" class="back">← Mint</a>
+      <a href="/" class="back">← Mint</a>
     </div>
 
     <div class="header">
@@ -187,22 +97,15 @@
       <div class="sub">Your Autonomous Businesses</div>
     </div>
 
-    <button class="btn btn-secondary" id="connectBtn">
-      Connect Wallet
-    </button>
+    <button id="connectBtn" class="btn btn-primary">Connect Wallet</button>
+    <button id="disconnectBtn" class="btn btn-danger" style="display:none; margin-top:10px;">Disconnect Wallet</button>
 
-    <button class="btn btn-disconnect" id="disconnectBtn">
-      Disconnect Wallet
-    </button>
-
-    <div class="account-box" id="accountBox">
-      <div class="label">Connected as</div>
-      <div class="value" id="accountDisplay"></div>
+    <div id="accountBox" class="account-box" style="display:none;">
+      <span>Connected as</span>
+      <strong id="accountIdDisplay"></strong>
     </div>
 
-    <div id="status" class="status"></div>
-
-    <div class="business-list" id="businessList">
+    <div id="list" style="margin-top:20px;">
       <div class="empty">Connect wallet to see your businesses</div>
     </div>
   </div>
@@ -210,7 +113,7 @@
   <script type="importmap">
   {
     "imports": {
-      "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@0.12.0"
+      "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@latest"
     }
   }
   </script>
@@ -219,41 +122,41 @@
     import { NearConnector } from "@hot-labs/near-connect";
 
     const CONTRACT_ID = "buildingfromthetop.testnet";
-
-    const connectBtn = document.getElementById("connectBtn");
-    const disconnectBtn = document.getElementById("disconnectBtn");
-    const accountBox = document.getElementById("accountBox");
-    const accountDisplay = document.getElementById("accountDisplay");
-    const businessList = document.getElementById("businessList");
-    const statusEl = document.getElementById("status");
+    const NETWORK = "testnet";
 
     let connector = null;
     let accountId = null;
 
+    const connectBtn = document.getElementById("connectBtn");
+    const disconnectBtn = document.getElementById("disconnectBtn");
+    const accountBox = document.getElementById("accountBox");
+    const accountIdDisplay = document.getElementById("accountIdDisplay");
+    const listEl = document.getElementById("list");
+
     async function init() {
       connector = new NearConnector({
-        network: "testnet",
-        features: {
-          signAndSendTransaction: true,
-          testnet: true
-        }
+        network: NETWORK,
+        features: { signAndSendTransaction: true, testnet: true }
       });
 
-      connector.on("wallet:signIn", async (event) => {
-        accountId = event.accounts[0]?.accountId || null;
-        updateUI();
-        if (accountId) loadBusinesses();
+      connector.on("wallet:signIn", async () => {
+        const accounts = await connector.getAccounts();
+        if (accounts && accounts.length > 0) {
+          accountId = accounts[0].accountId;
+          updateUI();
+          loadBusinesses();
+        }
       });
 
       connector.on("wallet:signOut", () => {
         accountId = null;
         updateUI();
-        businessList.innerHTML = `<div class="empty">Connect wallet to see your businesses</div>`;
+        listEl.innerHTML = `<div class="empty">Connect wallet to see your businesses</div>`;
       });
 
+      // Auto-detect if already connected
       try {
-        const wallet = await connector.wallet();
-        const accounts = await wallet.getAccounts();
+        const accounts = await connector.getAccounts();
         if (accounts && accounts.length > 0) {
           accountId = accounts[0].accountId;
           updateUI();
@@ -267,47 +170,62 @@
         connectBtn.style.display = "none";
         disconnectBtn.style.display = "block";
         accountBox.style.display = "block";
-        accountDisplay.innerText = accountId;
+        accountIdDisplay.innerText = accountId;
       } else {
         connectBtn.style.display = "block";
-        connectBtn.innerText = "Connect Wallet";
         disconnectBtn.style.display = "none";
         accountBox.style.display = "none";
       }
     }
 
     connectBtn.addEventListener("click", async () => {
-      if (accountId) return;
       try {
         await connector.connect();
-      } catch (err) {
-        console.error(err);
-        showStatus(err.message || "Connection cancelled", "error");
+      } catch (e) {
+        console.error(e);
       }
     });
 
     disconnectBtn.addEventListener("click", async () => {
       try {
-        if (connector) {
-          await connector.disconnect();
-        }
-      } catch (e) {}
-      accountId = null;
-      updateUI();
-      businessList.innerHTML = `<div class="empty">Connect wallet to see your businesses</div>`;
-      statusEl.style.display = "none";
+        await connector.disconnect();
+      } catch (e) {
+        console.error(e);
+      }
     });
 
-    function showStatus(msg, type) {
-      statusEl.className = "status " + type;
-      statusEl.style.display = "block";
-      statusEl.innerText = msg;
+    async function getAccountBalance(accountId) {
+      try {
+        const res = await fetch("https://rpc.testnet.near.org", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: "dontcare",
+            method: "query",
+            params: {
+              request_type: "view_account",
+              finality: "final",
+              account_id: accountId
+            }
+          })
+        });
+        const data = await res.json();
+        if (data.result && data.result.amount) {
+          const yocto = BigInt(data.result.amount);
+          const near = Number(yocto) / 1e24;
+          return near.toFixed(4);
+        }
+        return "0.0000";
+      } catch (e) {
+        return "—";
+      }
     }
 
     async function loadBusinesses() {
       if (!accountId) return;
 
-      businessList.innerHTML = `<div class="loading">Loading your businesses...</div>`;
+      listEl.innerHTML = `<div class="empty">Loading your businesses...</div>`;
 
       try {
         const res = await fetch("https://rpc.testnet.near.org", {
@@ -331,99 +249,105 @@
         const bytes = data.result?.result;
 
         if (!bytes) {
-          businessList.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
+          listEl.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
           return;
         }
 
         const tokens = JSON.parse(String.fromCharCode(...bytes));
 
         if (!tokens || tokens.length === 0) {
-          businessList.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
+          listEl.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
           return;
         }
 
-        businessList.innerHTML = "";
-        tokens.forEach(token => {
-          const div = document.createElement("div");
-          div.className = "business-item";
+        listEl.innerHTML = "";
 
+        for (const token of tokens) {
+          const tokenId = token.token_id;
+          const businessAccount = `business-\( {tokenId}. \){CONTRACT_ID}`;
           const title = token.metadata?.title || "Untitled Business";
           const description = token.metadata?.description || "No description";
-          const tokenId = token.token_id;
 
-          // Reconstruct account name safely
-          const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
+          // Check if sub-account exists by trying to get its balance
+          const balance = await getAccountBalance(businessAccount);
+          const isActivated = balance !== "—" && parseFloat(balance) > 0;
 
-          div.innerHTML = `
-            <h4>${title}</h4>
-            <p>${description}</p>
-            <div class="token-id">Token ID: ${tokenId}</div>
-            <div class="business-account">Treasury: ${businessAccount}</div>
-            <button class="btn btn-activate" data-token="${tokenId}">
-              Activate Business
-            </button>
-            <div class="status" style="display:none; margin-top:10px;"></div>
+          const card = document.createElement("div");
+          card.className = "business-card";
+          card.innerHTML = `
+            <h3>${title}</h3>
+            <div class="desc">${description}</div>
+            <div class="meta">Token ID: ${tokenId}</div>
+            <div class="treasury">Treasury: ${businessAccount}</div>
+            <div class="balance">Balance: ${isActivated ? balance + " NEAR" : "Not created yet"}</div>
+            <div class="status-badge ${isActivated ? "badge-active" : "badge-pending"}">
+              ${isActivated ? "● Active" : "○ Pending Activation"}
+            </div>
+            <div id="actions-${tokenId}"></div>
+            <div id="status-${tokenId}" class="status-msg"></div>
           `;
+          listEl.appendChild(card);
 
-          businessList.appendChild(div);
-        });
+          const actionsEl = document.getElementById(`actions-${tokenId}`);
+          const statusEl = document.getElementById(`status-${tokenId}`);
 
-        // Attach click handlers — reconstruct account name HERE
-        document.querySelectorAll(".btn-activate").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const tokenId = btn.getAttribute("data-token");
-            const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
-            await activateBusiness(tokenId, businessAccount, btn);
-          });
-        });
+          if (!isActivated) {
+            const activateBtn = document.createElement("button");
+            activateBtn.className = "btn btn-primary";
+            activateBtn.innerText = "Activate Business";
+            activateBtn.onclick = () => activateBusiness(tokenId, businessAccount, activateBtn, statusEl);
+            actionsEl.appendChild(activateBtn);
+          } else {
+            const activatedBtn = document.createElement("button");
+            activatedBtn.className = "btn btn-disabled";
+            activatedBtn.innerText = "Activated ✓";
+            activatedBtn.disabled = true;
+            actionsEl.appendChild(activatedBtn);
 
+            // Placeholder for future Function Call Key button
+            // (we will enable this in the next iteration once we have a clean way to get publicKey)
+          }
+        }
       } catch (err) {
         console.error(err);
-        businessList.innerHTML = `<div class="empty">Failed to load businesses</div>`;
+        listEl.innerHTML = `<div class="empty">Failed to load businesses</div>`;
       }
     }
 
-    async function activateBusiness(tokenId, businessAccount, btn) {
-      if (!accountId) {
-        showStatus("Please connect wallet first", "error");
-        return;
-      }
-
-      const statusDiv = btn.nextElementSibling;
-
+    async function activateBusiness(tokenId, businessAccount, btn, statusEl) {
       try {
         btn.disabled = true;
         btn.innerText = "Confirm in wallet...";
-        statusDiv.style.display = "block";
-        statusDiv.className = "status";
-        statusDiv.innerText = "Creating sub-account... Confirm in your wallet";
+        statusEl.className = "status-msg info";
+        statusEl.style.display = "block";
+        statusEl.innerText = "Creating sub-account... Confirm in your wallet";
 
         const wallet = await connector.wallet();
 
-        // This is the correct NEAR pattern for creating a sub-account
         await wallet.signAndSendTransaction({
           receiverId: businessAccount,
           actions: [
-            {
-              type: "CreateAccount"
-            },
+            { type: "CreateAccount" },
             {
               type: "Transfer",
-              params: {
-                deposit: "100000000000000000000000" // 0.1 NEAR
-              }
+              params: { deposit: "100000000000000000000000" } // 0.1 NEAR
             }
           ]
         });
 
-        statusDiv.className = "status success";
-        statusDiv.innerText = "✅ Business activated! Sub-account created.";
+        statusEl.className = "status-msg success";
+        statusEl.innerText = "✅ Business activated! Sub-account created.";
+        btn.className = "btn btn-disabled";
         btn.innerText = "Activated ✓";
+        btn.disabled = true;
+
+        // Refresh balance after a short delay
+        setTimeout(() => loadBusinesses(), 2500);
       } catch (err) {
         console.error(err);
-        statusDiv.className = "status error";
-        statusDiv.style.display = "block";
-        statusDiv.innerText = err.message || "Activation failed or cancelled";
+        statusEl.className = "status-msg error";
+        statusEl.style.display = "block";
+        statusEl.innerText = err.message || "Activation failed or cancelled";
         btn.disabled = false;
         btn.innerText = "Activate Business";
       }
