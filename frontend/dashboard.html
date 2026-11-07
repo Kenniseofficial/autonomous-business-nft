@@ -67,10 +67,6 @@
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }
-    .btn-primary {
-      background: linear-gradient(90deg, #16a34a, #22c55e);
-      color: white;
-    }
     .btn-secondary {
       background: #18181b;
       border: 1px solid #3f3f46;
@@ -355,8 +351,8 @@
           const description = token.metadata?.description || "No description";
           const tokenId = token.token_id;
 
-          // ALWAYS construct the correct sub-account name (ignore broken stored value)
-          const businessAccount = `business-\( {tokenId}. \){CONTRACT_ID}`;
+          // SAFE construction (no template literal)
+          const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
 
           div.innerHTML = `
             <h4>${title}</h4>
@@ -404,7 +400,6 @@
 
         const wallet = await connector.wallet();
 
-        // Create the business sub-account + fund it with 0.1 NEAR
         await wallet.signAndSendTransaction({
           receiverId: businessAccount,
           actions: [
@@ -414,7 +409,7 @@
             {
               type: "Transfer",
               params: {
-                deposit: "100000000000000000000000" // 0.1 NEAR
+                deposit: "100000000000000000000000"
               }
             }
           ]
