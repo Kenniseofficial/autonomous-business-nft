@@ -108,7 +108,7 @@
       padding: 12px;
       margin-top: 12px;
       font-family: monospace;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       word-break: break-all;
       display: none;
     }
@@ -116,10 +116,11 @@
     .warning {
       background: rgba(234,179,8,0.12);
       color: #eab308;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       padding: 10px;
       border-radius: 8px;
       margin-top: 8px;
+      line-height: 1.4;
     }
   </style>
 </head>
@@ -153,14 +154,14 @@
   {
     "imports": {
       "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@0.12.0",
-      "@noble/ed25519": "https://esm.sh/@noble/ed25519@2.1.0"
+      "tweetnacl": "https://esm.sh/tweetnacl@1.0.3"
     }
   }
   </script>
 
   <script type="module">
     import { NearConnector } from "@hot-labs/near-connect";
-    import * as ed from "@noble/ed25519";
+    import nacl from "tweetnacl";
 
     const CONTRACT_ID = "buildingfromthetop.testnet";
     const NETWORK = "testnet";
@@ -174,31 +175,34 @@
     const accountIdDisplay = document.getElementById("accountIdDisplay");
     const listEl = document.getElementById("list");
 
-    // ========== helpers ==========
+    // ========== Base58 (reliable) ==========
     function toBase58(bytes) {
       const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
       let num = BigInt(0);
-      for (const b of bytes) num = (num << 8n) + BigInt(b);
+      for (let i = 0; i < bytes.length; i++) {
+        num = (num << 8n) + BigInt(bytes[i]);
+      }
       let str = "";
       while (num > 0n) {
         str = ALPHABET[Number(num % 58n)] + str;
         num = num / 58n;
       }
-      for (const b of bytes) {
-        if (b === 0) str = "1" + str;
-        else break;
+      for (let i = 0; i < bytes.length && bytes[i] === 0; i++) {
+        str = "1" + str;
       }
       return str;
     }
 
-    async function generateKeyPair() {
-      const privateKey = ed.utils.randomPrivateKey();
-      const publicKey = await ed.getPublicKeyAsync(privateKey);
+    // ========== Key generation (tweetnacl – works on mobile) ==========
+    function generateKeyPair() {
+      const kp = nacl.sign.keyPair();
+      const seed = kp.secretKey.slice(0, 32);      // 32-byte private seed
+      const publicKey = kp.publicKey;              // 32-byte public key
 
-      const privateKeyStr = "ed25519:" + toBase58(privateKey);
-      const publicKeyStr = "ed25519:" + toBase58(publicKey);
-
-      return { privateKeyStr, publicKeyStr };
+      return {
+        privateKeyStr: "ed25519:" + toBase58(seed),
+        publicKeyStr: "ed25519:" + toBase58(publicKey)
+      };
     }
 
     async function getAccountBalance(accountId) {
@@ -241,7 +245,7 @@
       }
     }
 
-    // ========== wallet ==========
+    // ========== Wallet ==========
     async function init() {
       connector = new NearConnector({
         network: NETWORK,
@@ -263,7 +267,6 @@
         updateUI();
       });
 
-      // restore session
       await new Promise(r => setTimeout(r, 400));
       try {
         const connected = await connector.getConnectedWallet();
@@ -293,7 +296,7 @@
       }
     });
 
-    // ========== load businesses ==========
+    // ========== Load businesses ==========
     async function loadBusinesses() {
       if (!accountId) return;
       listEl.innerHTML = `<div style="color:#a1a1aa;padding:20px 0;text-align:center;">Loading your businesses...</div>`;
@@ -371,7 +374,6 @@
           listEl.appendChild(card);
         }
 
-        // bind buttons
         document.querySelectorAll(".activate-btn").forEach(btn => {
           btn.addEventListener("click", () => activateBusiness(btn.dataset.token, btn));
         });
@@ -385,7 +387,7 @@
       }
     }
 
-    // ========== activate ==========
+    // ========== Activate ==========
     async function activateBusiness(tokenId, btn) {
       const statusEl = document.getElementById("status-" + tokenId);
       const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
@@ -401,7 +403,7 @@
           receiverId: businessAccount,
           actions: [
             { type: "CreateAccount" },
-            { type: "Transfer", params: { deposit: "100000000000000000000000" } } // 0.1 NEAR
+            { type: "Transfer", params: { deposit: "100000000000000000000000" } }
           ]
         });
 
@@ -418,7 +420,7 @@
       }
     }
 
-    // ========== GRANT AGENT ACCESS (FIXED) ==========
+    // ========== GRANT AGENT ACCESS (FIXED with tweetnacl) ==========
     async function grantAgentAccess(tokenId, businessAccount, btn) {
       const statusEl = document.getElementById("status-" + tokenId);
       const keyBox = document.getElementById("keybox-" + tokenId);
@@ -427,27 +429,34 @@
         btn.disabled = true;
         btn.innerText = "Generating key...";
         statusEl.className = "status-msg info";
-        statusEl.innerText = "Generating new Function-Call key...";
+        statusEl.innerText = "Generating Function-Call key...";
 
-        // 1. Generate brand new keypair
-        const { privateKeyStr, publicKeyStr } = await generateKeyPair();
+        // Generate key (synchronous & reliable)
+        let privateKeyStr, publicKeyStr;
+        try {
+          const result = generateKeyPair();
+          privateKeyStr = result.privateKeyStr;
+          publicKeyStr = result.publicKeyStr;
+        } catch (genErr) {
+          throw new Error("Key generation failed: " + (genErr.message || genErr));
+        }
 
-        // 2. Show private key to user (IMPORTANT)
+        // Show private key IMMEDIATELY
         keyBox.className = "key-box show";
         keyBox.innerHTML = `
-          <div style="color:#4ade80;margin-bottom:6px;font-weight:600;">🔑 Agent Private Key (copy this now!)</div>
-          <div>${privateKeyStr}</div>
+          <div style="color:#4ade80;margin-bottom:6px;font-weight:600;">🔑 Agent Private Key (COPY THIS NOW)</div>
+          <div style="user-select:all;">${privateKeyStr}</div>
           <div class="warning">
-            ⚠️ Copy this private key and store it safely.<br>
+            ⚠️ Copy this private key right now and store it safely.<br>
             This is the only time it will be shown.<br>
-            You will give this key to your AI agent later.
+            You will later give this key to your AI agent.
           </div>
         `;
 
-        // 3. Add the public key as limited Function-Call key
+        statusEl.innerText = "Key generated! Now confirm the transaction in your wallet...";
         btn.innerText = "Confirm in wallet...";
-        statusEl.innerText = "Adding limited Function-Call key... Confirm in your wallet";
 
+        // Add the public key as limited Function-Call key
         const wallet = await connector.wallet();
         await wallet.signAndSendTransaction({
           receiverId: businessAccount,
@@ -461,8 +470,8 @@
                   permission: {
                     functionCall: {
                       receiverId: businessAccount,
-                      methodNames: [],           // empty = can call any method on this account
-                      allowance: "250000000000000000000000" // 0.25 NEAR gas allowance
+                      methodNames: [],
+                      allowance: "250000000000000000000000" // 0.25 NEAR
                     }
                   }
                 }
@@ -472,14 +481,14 @@
         });
 
         statusEl.className = "status-msg success";
-        statusEl.innerText = "✅ Agent key granted successfully! Copy the private key above.";
+        statusEl.innerText = "✅ Agent key granted successfully! Make sure you copied the private key above.";
         btn.innerText = "Agent Key Granted ✓";
         btn.disabled = true;
 
       } catch (err) {
         console.error(err);
         statusEl.className = "status-msg error";
-        statusEl.innerText = err.message || "Failed to grant key. Try again.";
+        statusEl.innerText = err.message || "Failed to grant key";
         btn.disabled = false;
         btn.innerText = "Grant Agent Access (Function-Call Key)";
       }
