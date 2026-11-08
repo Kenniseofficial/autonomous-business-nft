@@ -122,6 +122,29 @@
       margin-top: 8px;
       line-height: 1.4;
     }
+
+    /* Temporary toast (auto disappears) */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #18181b;
+      border: 1px solid #3f3f46;
+      color: #f4f4f5;
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      max-width: 90%;
+      z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    #toast.show { opacity: 1; }
+    #toast.error { border-color: #ef4444; color: #f87171; }
+    #toast.success { border-color: #22c55e; color: #4ade80; }
   </style>
 </head>
 <body>
@@ -150,7 +173,9 @@
     <div id="list"></div>
   </div>
 
-  <!-- Reliable tweetnacl load -->
+  <div id="toast"></div>
+
+  <!-- Reliable tweetnacl -->
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
 
   <script type="importmap">
@@ -175,6 +200,17 @@
     const accountBox = document.getElementById("accountBox");
     const accountIdDisplay = document.getElementById("accountIdDisplay");
     const listEl = document.getElementById("list");
+    const toastEl = document.getElementById("toast");
+
+    // Temporary toast (auto hide after 4 seconds)
+    function showToast(message, type = "info") {
+      toastEl.textContent = message;
+      toastEl.className = "show " + type;
+      clearTimeout(toastEl._timer);
+      toastEl._timer = setTimeout(() => {
+        toastEl.className = "";
+      }, 4000);
+    }
 
     // ========== Base58 ==========
     function toBase58(bytes) {
@@ -197,12 +233,11 @@
     // ========== Key generation ==========
     function generateKeyPair() {
       if (typeof nacl === "undefined") {
-        throw new Error("tweetnacl failed to load. Please refresh the page.");
+        throw new Error("Crypto library not loaded. Please refresh.");
       }
       const kp = nacl.sign.keyPair();
       const seed = kp.secretKey.slice(0, 32);
       const publicKey = kp.publicKey;
-
       return {
         privateKeyStr: "ed25519:" + toBase58(seed),
         publicKeyStr: "ed25519:" + toBase58(publicKey)
@@ -286,7 +321,7 @@
       try {
         await connector.connect();
       } catch (err) {
-        alert("Connect failed: " + (err.message || err));
+        showToast(err.message || "Connect failed", "error");
       }
     });
 
@@ -371,13 +406,13 @@
             <button class="btn btn-outline grant-btn" data-token="\( {tokenId}" data-account=" \){businessAccount}" ${!isActive ? "disabled" : ""}>
               Grant Agent Access (Function-Call Key)
             </button>
-            <div class="status-msg" id="status-${tokenId}"></div>
-            <div class="key-box" id="keybox-${tokenId}"></div>
+            <div class="status-msg"></div>
+            <div class="key-box"></div>
           `;
           listEl.appendChild(card);
         }
 
-        // Attach listeners AFTER the cards are in the DOM
+        // Attach listeners AFTER cards are in DOM
         document.querySelectorAll(".activate-btn").forEach(btn => {
           btn.addEventListener("click", () => activateBusiness(btn.dataset.token, btn));
         });
@@ -387,12 +422,14 @@
 
       } catch (err) {
         listEl.innerHTML = `<div style="color:#f87171;padding:20px 0;text-align:center;">Failed to load businesses</div>`;
+        showToast("Failed to load businesses", "error");
       }
     }
 
     // ========== Activate ==========
     async function activateBusiness(tokenId, btn) {
-      const statusEl = document.getElementById("status-" + tokenId);
+      const card = btn.closest(".business-card");
+      const statusEl = card ? card.querySelector(".status-msg") : null;
       const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
 
       try {
@@ -417,90 +454,59 @@
           statusEl.innerText = "✅ Business activated!";
         }
         btn.innerText = "Activated ✓";
+        showToast("Business activated successfully", "success");
         setTimeout(() => loadBusinesses(), 2000);
       } catch (err) {
         if (statusEl) {
           statusEl.className = "status-msg error";
           statusEl.innerText = err.message || "Activation failed or cancelled";
         }
+        showToast(err.message || "Activation failed", "error");
         btn.disabled = false;
         btn.innerText = "Activate Business";
       }
     }
 
-    // ========== GRANT AGENT ACCESS (FIXED) ==========
+    // ========== GRANT AGENT ACCESS (FIXED with relative lookup) ==========
     async function grantAgentAccess(tokenId, businessAccount, btn) {
-      const statusEl = document.getElementById("status-" + tokenId);
-      const keyBox = document.getElementById("keybox-" + tokenId);
-
-      // Safety check
-      if (!statusEl || !keyBox) {
-        alert("Internal error: status elements missing. Please refresh the page.");
+      // Get elements relative to the button (most reliable way)
+      const card = btn.closest(".business-card");
+      if (!card) {
+        showToast("Card not found. Please refresh.", "error");
         return;
       }
+      const statusEl = card.querySelector(".status-msg");
+      const keyBox = card.querySelector(".key-box");
 
       try {
         btn.disabled = true;
         btn.innerText = "Generating key...";
-        statusEl.className = "status-msg info";
-        statusEl.innerText = "Generating Function-Call key...";
+        if (statusEl) {
+          statusEl.className = "status-msg info";
+          statusEl.innerText = "Generating Function-Call key...";
+        }
 
         // Generate key
         const { privateKeyStr, publicKeyStr } = generateKeyPair();
 
-        // Show private key immediately so user can copy it
-        keyBox.className = "key-box show";
-        keyBox.innerHTML = `
-          <div style="color:#4ade80;margin-bottom:6px;font-weight:600;">🔑 Agent Private Key (COPY THIS NOW)</div>
-          <div style="user-select:all;word-break:break-all;">${privateKeyStr}</div>
-          <div class="warning">
-            ⚠️ Copy this private key right now and store it safely.<br>
-            This is the only time it will be shown.<br>
-            You will later give this key to your AI agent.
-          </div>
-        `;
+        // Show private key immediately
+        if (keyBox) {
+          keyBox.className = "key-box show";
+          keyBox.innerHTML = `
+            <div style="color:#4ade80;margin-bottom:6px;font-weight:600;">🔑 Agent Private Key (COPY THIS NOW)</div>
+            <div style="user-select:all;word-break:break-all;">${privateKeyStr}</div>
+            <div class="warning">
+              ⚠️ Copy this private key right now and store it safely.<br>
+              This is the only time it will be shown.<br>
+              You will later give this key to your AI agent.
+            </div>
+          `;
+        }
 
-        statusEl.innerText = "Key generated! Now confirm the transaction in your wallet...";
+        if (statusEl) {
+          statusEl.innerText = "Key generated! Now confirm the transaction in your wallet...";
+        }
         btn.innerText = "Confirm in wallet...";
+        showToast("Key generated – confirm in wallet", "info");
 
         // Send AddKey transaction
-        const wallet = await connector.wallet();
-
-        await wallet.signAndSendTransaction({
-          receiverId: businessAccount,
-          actions: [
-            {
-              type: "AddKey",
-              params: {
-                publicKey: publicKeyStr,
-                accessKey: {
-                  nonce: 0,
-                  permission: {
-                    receiverId: businessAccount,
-                    methodNames: [],
-                    allowance: "250000000000000000000000"
-                  }
-                }
-              }
-            }
-          ]
-        });
-
-        statusEl.className = "status-msg success";
-        statusEl.innerText = "✅ Agent key granted successfully! Make sure you copied the private key above.";
-        btn.innerText = "Agent Key Granted ✓";
-        btn.disabled = true;
-
-      } catch (err) {
-        statusEl.className = "status-msg error";
-        statusEl.innerText = err.message || "Failed to grant key";
-        btn.disabled = false;
-        btn.innerText = "Grant Agent Access (Function-Call Key)";
-      }
-    }
-
-    // Start
-    init();
-  </script>
-</body>
-</html>
