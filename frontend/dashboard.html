@@ -122,8 +122,6 @@
       margin-top: 8px;
       line-height: 1.4;
     }
-
-    /* Temporary toast (auto disappears) */
     #toast {
       position: fixed;
       bottom: 24px;
@@ -175,7 +173,6 @@
 
   <div id="toast"></div>
 
-  <!-- Reliable tweetnacl -->
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
 
   <script type="importmap">
@@ -202,7 +199,6 @@
     const listEl = document.getElementById("list");
     const toastEl = document.getElementById("toast");
 
-    // Temporary toast (auto hide after 4 seconds)
     function showToast(message, type = "info") {
       toastEl.textContent = message;
       toastEl.className = "show " + type;
@@ -212,7 +208,6 @@
       }, 4000);
     }
 
-    // ========== Base58 ==========
     function toBase58(bytes) {
       const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
       let num = BigInt(0);
@@ -230,7 +225,6 @@
       return str;
     }
 
-    // ========== Key generation ==========
     function generateKeyPair() {
       if (typeof nacl === "undefined") {
         throw new Error("Crypto library not loaded. Please refresh.");
@@ -284,7 +278,24 @@
       }
     }
 
-    // ========== Wallet ==========
+    // ========== STRONG SESSION RESTORE (from last working version) ==========
+    async function restoreSession() {
+      try {
+        // Try multiple times because mobile wallets need a moment
+        for (let i = 0; i < 3; i++) {
+          const connected = await connector.getConnectedWallet();
+          if (connected?.accounts?.length) {
+            accountId = connected.accounts[0].accountId;
+            updateUI();
+            loadBusinesses();
+            return true;
+          }
+          await new Promise(r => setTimeout(r, 300));
+        }
+      } catch (e) {}
+      return false;
+    }
+
     async function init() {
       connector = new NearConnector({
         network: NETWORK,
@@ -306,15 +317,9 @@
         updateUI();
       });
 
-      await new Promise(r => setTimeout(r, 400));
-      try {
-        const connected = await connector.getConnectedWallet();
-        if (connected?.accounts?.length) {
-          accountId = connected.accounts[0].accountId;
-          updateUI();
-          loadBusinesses();
-        }
-      } catch (e) {}
+      // Give the wallet a moment to restore, then force check
+      await new Promise(r => setTimeout(r, 500));
+      await restoreSession();
     }
 
     connectBtn.addEventListener("click", async () => {
@@ -333,7 +338,6 @@
       } catch (err) {}
     });
 
-    // ========== Load businesses ==========
     async function loadBusinesses() {
       if (!accountId) return;
       listEl.innerHTML = `<div style="color:#a1a1aa;padding:20px 0;text-align:center;">Loading your businesses...</div>`;
@@ -375,138 +379,4 @@
           const tokenId = String(token.token_id);
           const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
           const title = token.metadata?.title || "Untitled";
-          const description = token.metadata?.description || "No description";
-
-          const balance = await getAccountBalance(businessAccount);
-          const isActive = balance !== null;
-
-          const card = document.createElement("div");
-          card.className = "business-card";
-          card.innerHTML = `
-            <h3>${title}</h3>
-            <p>${description}</p>
-            <div class="token-id">Token ID: ${tokenId}</div>
-            <div class="treasury">Treasury: ${businessAccount}</div>
-            <div class="stats">
-              <div class="stat">
-                <div class="label">Treasury Balance</div>
-                <div class="value">${isActive ? balance + " Ⓝ" : "—"}</div>
-              </div>
-              <div class="stat">
-                <div class="label">Status</div>
-                <div class="value">${isActive ? "Live" : "Pending"}</div>
-              </div>
-            </div>
-            <div class="badge ${isActive ? "badge-live" : "badge-pending"}">
-              ${isActive ? "● Active" : "○ Pending Activation"}
-            </div>
-            <button class="btn btn-green activate-btn" data-token="${tokenId}" ${isActive ? "disabled" : ""}>
-              ${isActive ? "Activated ✓" : "Activate Business"}
-            </button>
-            <button class="btn btn-outline grant-btn" data-token="\( {tokenId}" data-account=" \){businessAccount}" ${!isActive ? "disabled" : ""}>
-              Grant Agent Access (Function-Call Key)
-            </button>
-            <div class="status-msg"></div>
-            <div class="key-box"></div>
-          `;
-          listEl.appendChild(card);
-        }
-
-        // Attach listeners AFTER cards are in DOM
-        document.querySelectorAll(".activate-btn").forEach(btn => {
-          btn.addEventListener("click", () => activateBusiness(btn.dataset.token, btn));
-        });
-        document.querySelectorAll(".grant-btn").forEach(btn => {
-          btn.addEventListener("click", () => grantAgentAccess(btn.dataset.token, btn.dataset.account, btn));
-        });
-
-      } catch (err) {
-        listEl.innerHTML = `<div style="color:#f87171;padding:20px 0;text-align:center;">Failed to load businesses</div>`;
-        showToast("Failed to load businesses", "error");
-      }
-    }
-
-    // ========== Activate ==========
-    async function activateBusiness(tokenId, btn) {
-      const card = btn.closest(".business-card");
-      const statusEl = card ? card.querySelector(".status-msg") : null;
-      const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
-
-      try {
-        btn.disabled = true;
-        btn.innerText = "Confirm in wallet...";
-        if (statusEl) {
-          statusEl.className = "status-msg info";
-          statusEl.innerText = "Creating & funding treasury... Confirm in your wallet";
-        }
-
-        const wallet = await connector.wallet();
-        await wallet.signAndSendTransaction({
-          receiverId: businessAccount,
-          actions: [
-            { type: "CreateAccount" },
-            { type: "Transfer", params: { deposit: "100000000000000000000000" } }
-          ]
-        });
-
-        if (statusEl) {
-          statusEl.className = "status-msg success";
-          statusEl.innerText = "✅ Business activated!";
-        }
-        btn.innerText = "Activated ✓";
-        showToast("Business activated successfully", "success");
-        setTimeout(() => loadBusinesses(), 2000);
-      } catch (err) {
-        if (statusEl) {
-          statusEl.className = "status-msg error";
-          statusEl.innerText = err.message || "Activation failed or cancelled";
-        }
-        showToast(err.message || "Activation failed", "error");
-        btn.disabled = false;
-        btn.innerText = "Activate Business";
-      }
-    }
-
-    // ========== GRANT AGENT ACCESS (FIXED with relative lookup) ==========
-    async function grantAgentAccess(tokenId, businessAccount, btn) {
-      // Get elements relative to the button (most reliable way)
-      const card = btn.closest(".business-card");
-      if (!card) {
-        showToast("Card not found. Please refresh.", "error");
-        return;
-      }
-      const statusEl = card.querySelector(".status-msg");
-      const keyBox = card.querySelector(".key-box");
-
-      try {
-        btn.disabled = true;
-        btn.innerText = "Generating key...";
-        if (statusEl) {
-          statusEl.className = "status-msg info";
-          statusEl.innerText = "Generating Function-Call key...";
-        }
-
-        // Generate key
-        const { privateKeyStr, publicKeyStr } = generateKeyPair();
-
-        // Show private key immediately
-        if (keyBox) {
-          keyBox.className = "key-box show";
-          keyBox.innerHTML = `
-            <div style="color:#4ade80;margin-bottom:6px;font-weight:600;">🔑 Agent Private Key (COPY THIS NOW)</div>
-            <div style="user-select:all;word-break:break-all;">${privateKeyStr}</div>
-            <div class="warning">
-              ⚠️ Copy this private key right now and store it safely.<br>
-              This is the only time it will be shown.<br>
-              You will later give this key to your AI agent.
-            </div>
-          `;
-        }
-
-        if (statusEl) {
-          statusEl.innerText = "Key generated! Now confirm the transaction in your wallet...";
-        }
-        btn.innerText = "Confirm in wallet...";
-        showToast("Key generated – confirm in wallet", "info");
-
-        // Send AddKey transaction
+          const description = token.metadata?.description || "
