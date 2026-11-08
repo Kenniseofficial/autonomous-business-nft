@@ -111,7 +111,7 @@
   <script type="importmap">
   {
     "imports": {
-      "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@latest"
+      "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@0.12.0"
     }
   }
   </script>
@@ -134,19 +134,21 @@
     async function init() {
       connector = new NearConnector({
         network: NETWORK,
-        features: { signAndSendTransaction: true, testnet: true }
+        autoConnect: true,
+        features: { signAndSendTransaction: true }
       });
 
+      // Event listeners
       connector.on("wallet:signIn", async (event) => {
         try {
-          const accounts = event?.accounts || await connector.getAccounts();
+          const accounts = event?.accounts || (await connector.getConnectedWallet()).accounts;
           if (accounts && accounts.length > 0) {
             accountId = accounts[0].accountId;
             updateUI();
             loadBusinesses();
           }
         } catch (e) {
-          console.error(e);
+          console.error("signIn handler error", e);
         }
       });
 
@@ -156,18 +158,21 @@
         listEl.innerHTML = `<div class="empty">Connect wallet to see your businesses</div>`;
       });
 
-      // Aggressive session restore (multiple attempts)
-      for (let i = 0; i < 4; i++) {
-        try {
-          await new Promise(r => setTimeout(r, 250 * (i + 1)));
-          const accounts = await connector.getAccounts();
-          if (accounts && accounts.length > 0) {
-            accountId = accounts[0].accountId;
-            updateUI();
-            loadBusinesses();
-            return;
-          }
-        } catch (e) {}
+      // === THE KEY RESTORE METHOD (this is what worked before) ===
+      try {
+        // Small delay so the connector finishes loading the manifest + storage
+        await new Promise(r => setTimeout(r, 400));
+
+        const connected = await connector.getConnectedWallet();
+        if (connected && connected.accounts && connected.accounts.length > 0) {
+          accountId = connected.accounts[0].accountId;
+          updateUI();
+          loadBusinesses();
+          return;
+        }
+      } catch (e) {
+        // No existing session – this is normal
+        console.log("No existing session found");
       }
     }
 
@@ -274,4 +279,90 @@
         for (const token of tokens) {
           const tokenId = token.token_id;
           const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
-          const title = token.metadata?.title || "Untitled
+          const title = token.metadata?.title || "Untitled Business";
+          const description = token.metadata?.description || "No description";
+
+          const balance = await getAccountBalance(businessAccount);
+          const isActivated = balance !== "—" && parseFloat(balance) > 0;
+
+          const card = document.createElement("div");
+          card.className = "business-card";
+          card.innerHTML = `
+            <h3>${title}</h3>
+            <div class="desc">${description}</div>
+            <div class="meta">Token ID: ${tokenId}</div>
+            <div class="treasury">Treasury: ${businessAccount}</div>
+            <div class="balance">Balance: ${isActivated ? balance + " NEAR" : "Not created yet"}</div>
+            <div class="status-badge ${isActivated ? "badge-active" : "badge-pending"}">
+              ${isActivated ? "● Active" : "○ Pending Activation"}
+            </div>
+            <div id="actions-${tokenId}"></div>
+            <div id="status-${tokenId}" class="status-msg"></div>
+          `;
+          listEl.appendChild(card);
+
+          const actionsEl = document.getElementById("actions-" + tokenId);
+          const statusEl = document.getElementById("status-" + tokenId);
+
+          if (!isActivated) {
+            const activateBtn = document.createElement("button");
+            activateBtn.className = "btn btn-primary";
+            activateBtn.innerText = "Activate Business";
+            activateBtn.onclick = () => activateBusiness(tokenId, businessAccount, activateBtn, statusEl);
+            actionsEl.appendChild(activateBtn);
+          } else {
+            const activatedBtn = document.createElement("button");
+            activatedBtn.className = "btn btn-disabled";
+            activatedBtn.innerText = "Activated ✓";
+            activatedBtn.disabled = true;
+            actionsEl.appendChild(activatedBtn);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        listEl.innerHTML = `<div class="empty">Failed to load businesses</div>`;
+      }
+    }
+
+    async function activateBusiness(tokenId, businessAccount, btn, statusEl) {
+      try {
+        btn.disabled = true;
+        btn.innerText = "Confirm in wallet...";
+        statusEl.className = "status-msg info";
+        statusEl.style.display = "block";
+        statusEl.innerText = "Creating sub-account... Confirm in your wallet";
+
+        const wallet = await connector.wallet();
+
+        await wallet.signAndSendTransaction({
+          receiverId: businessAccount,
+          actions: [
+            { type: "CreateAccount" },
+            {
+              type: "Transfer",
+              params: { deposit: "100000000000000000000000" } // 0.1 NEAR
+            }
+          ]
+        });
+
+        statusEl.className = "status-msg success";
+        statusEl.innerText = "✅ Business activated! Sub-account created.";
+        btn.className = "btn btn-disabled";
+        btn.innerText = "Activated ✓";
+        btn.disabled = true;
+
+        setTimeout(() => loadBusinesses(), 2500);
+      } catch (err) {
+        console.error(err);
+        statusEl.className = "status-msg error";
+        statusEl.style.display = "block";
+        statusEl.innerText = err.message || "Activation failed or cancelled";
+        btn.disabled = false;
+        btn.innerText = "Activate Business";
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
