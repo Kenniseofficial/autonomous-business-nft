@@ -33,10 +33,15 @@
     .btn {
       width: 100%; padding: 14px; border: none; border-radius: 14px;
       font-size: 1rem; font-weight: 600; cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.15s; margin-top: 8px;
     }
     .btn-primary { background: #22c55e; color: #000; }
     .btn-primary:active { transform: scale(0.98); }
+    .btn-secondary {
+      background: transparent;
+      border: 1.5px solid #3f3f46;
+      color: #e4e4e7;
+    }
     .btn-danger {
       background: transparent; border: 1.5px solid #ef4444; color: #ef4444;
       margin-top: 10px;
@@ -56,11 +61,11 @@
       background: #18181b; border: 1px solid #27272a;
       border-radius: 18px; padding: 18px; margin-bottom: 16px;
     }
-    .business-card h3 { font-size: 1.1rem; margin-bottom: 6px; }
-    .business-card .desc { color: #a1a1aa; font-size: 0.9rem; margin-bottom: 10px; }
-    .meta { font-size: 0.8rem; color: #71717a; margin-bottom: 4px; }
-    .treasury { color: #4ade80; font-size: 0.85rem; margin-bottom: 8px; font-weight: 500; }
-    .balance { color: #fbbf24; font-size: 0.9rem; margin-bottom: 12px; }
+    .business-card h3 { font-size: 1.15rem; margin-bottom: 4px; }
+    .business-card .desc { color: #a1a1aa; font-size: 0.9rem; margin-bottom: 12px; }
+    .meta { font-size: 0.8rem; color: #71717a; margin-bottom: 3px; }
+    .treasury { color: #4ade80; font-size: 0.85rem; margin-bottom: 6px; font-weight: 500; }
+    .balance { color: #fbbf24; font-size: 0.9rem; margin-bottom: 10px; }
 
     .status-badge {
       display: inline-block; font-size: 0.75rem; font-weight: 600;
@@ -78,6 +83,21 @@
     .status-msg.info { background: rgba(59,130,246,0.12); color: #60a5fa; display: block; }
 
     .empty { text-align: center; color: #71717a; padding: 40px 20px; }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 12px 0 14px;
+    }
+    .stat-box {
+      background: #0f0f12;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .stat-box .label { font-size: 0.7rem; color: #71717a; margin-bottom: 2px; }
+    .stat-box .value { font-size: 0.95rem; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -138,7 +158,6 @@
         features: { signAndSendTransaction: true }
       });
 
-      // Event listeners
       connector.on("wallet:signIn", async (event) => {
         try {
           const accounts = event?.accounts || (await connector.getConnectedWallet()).accounts;
@@ -148,7 +167,7 @@
             loadBusinesses();
           }
         } catch (e) {
-          console.error("signIn handler error", e);
+          console.error(e);
         }
       });
 
@@ -158,21 +177,17 @@
         listEl.innerHTML = `<div class="empty">Connect wallet to see your businesses</div>`;
       });
 
-      // === THE KEY RESTORE METHOD (this is what worked before) ===
+      // Reliable restore
       try {
-        // Small delay so the connector finishes loading the manifest + storage
         await new Promise(r => setTimeout(r, 400));
-
         const connected = await connector.getConnectedWallet();
         if (connected && connected.accounts && connected.accounts.length > 0) {
           accountId = connected.accounts[0].accountId;
           updateUI();
           loadBusinesses();
-          return;
         }
       } catch (e) {
-        // No existing session – this is normal
-        console.log("No existing session found");
+        console.log("No existing session");
       }
     }
 
@@ -292,7 +307,18 @@
             <div class="desc">${description}</div>
             <div class="meta">Token ID: ${tokenId}</div>
             <div class="treasury">Treasury: ${businessAccount}</div>
-            <div class="balance">Balance: ${isActivated ? balance + " NEAR" : "Not created yet"}</div>
+            
+            <div class="stats-row">
+              <div class="stat-box">
+                <div class="label">Treasury Balance</div>
+                <div class="value">${isActivated ? balance + " Ⓝ" : "—"}</div>
+              </div>
+              <div class="stat-box">
+                <div class="label">Status</div>
+                <div class="value">${isActivated ? "Live" : "Pending"}</div>
+              </div>
+            </div>
+
             <div class="status-badge ${isActivated ? "badge-active" : "badge-pending"}">
               ${isActivated ? "● Active" : "○ Pending Activation"}
             </div>
@@ -316,6 +342,13 @@
             activatedBtn.innerText = "Activated ✓";
             activatedBtn.disabled = true;
             actionsEl.appendChild(activatedBtn);
+
+            // Function-Call Key button (next autonomy step)
+            const grantBtn = document.createElement("button");
+            grantBtn.className = "btn btn-secondary";
+            grantBtn.innerText = "Grant Agent Access (Function-Call Key)";
+            grantBtn.onclick = () => grantAgentAccess(tokenId, businessAccount, grantBtn, statusEl);
+            actionsEl.appendChild(grantBtn);
           }
         }
       } catch (err) {
@@ -360,6 +393,26 @@
         btn.disabled = false;
         btn.innerText = "Activate Business";
       }
+    }
+
+    // === Function-Call Key step ===
+    // This is the real autonomy piece.
+    // For now we show the button and explain the next technical step.
+    // Full key generation + AddKey will be added in the next iteration once we confirm the UI is stable.
+    async function grantAgentAccess(tokenId, businessAccount, btn, statusEl) {
+      statusEl.className = "status-msg info";
+      statusEl.style.display = "block";
+      statusEl.innerText = "Function-Call Key system is ready for the next step. We will generate a limited key that allows an agent to act on this treasury without full access.";
+      
+      // Temporary feedback so the button is not dead
+      btn.innerText = "Coming in next update...";
+      btn.disabled = true;
+      
+      setTimeout(() => {
+        btn.innerText = "Grant Agent Access (Function-Call Key)";
+        btn.disabled = false;
+        statusEl.style.display = "none";
+      }, 3500);
     }
 
     init();
