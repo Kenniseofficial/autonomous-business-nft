@@ -23,80 +23,104 @@
       width: 32px; height: 32px;
       background: linear-gradient(135deg, #22c55e, #16a34a);
       border-radius: 9px; display: grid; place-items: center;
-      font-size: 16px;
     }
     .back { color: #a1a1aa; text-decoration: none; font-size: 0.9rem; }
     .header { margin-bottom: 20px; }
     .header h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
     .header .sub { color: #a1a1aa; font-size: 0.9rem; }
-
-    .btn {
-      width: 100%; padding: 14px; border: none; border-radius: 14px;
-      font-size: 1rem; font-weight: 600; cursor: pointer;
-      transition: all 0.15s; margin-top: 8px;
-    }
-    .btn-primary { background: #22c55e; color: #000; }
-    .btn-primary:active { transform: scale(0.98); }
-    .btn-secondary {
-      background: transparent;
-      border: 1.5px solid #3f3f46;
-      color: #e4e4e7;
-    }
-    .btn-danger {
-      background: transparent; border: 1.5px solid #ef4444; color: #ef4444;
-      margin-top: 10px;
-    }
-    .btn-disabled {
-      background: #166534; color: #86efac; cursor: default;
-    }
-
     .account-box {
-      background: #18181b; border: 1px solid #27272a;
-      border-radius: 14px; padding: 14px 16px; margin: 16px 0;
+      background: #111114;
+      border: 1px solid #27272a;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
       font-size: 0.9rem;
     }
-    .account-box span { color: #a1a1aa; display: block; font-size: 0.8rem; margin-bottom: 2px; }
-
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+    .btn-green { background: #22c55e; color: #000; }
+    .btn-red { background: transparent; border: 1px solid #ef4444; color: #ef4444; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #3f3f46;
+      color: #f4f4f5;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .business-card {
-      background: #18181b; border: 1px solid #27272a;
-      border-radius: 18px; padding: 18px; margin-bottom: 16px;
+      background: #111114;
+      border: 1px solid #27272a;
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
     }
-    .business-card h3 { font-size: 1.15rem; margin-bottom: 4px; }
-    .business-card .desc { color: #a1a1aa; font-size: 0.9rem; margin-bottom: 12px; }
-    .meta { font-size: 0.8rem; color: #71717a; margin-bottom: 3px; }
-    .treasury { color: #4ade80; font-size: 0.85rem; margin-bottom: 6px; font-weight: 500; }
-
-    .status-badge {
-      display: inline-block; font-size: 0.75rem; font-weight: 600;
-      padding: 4px 10px; border-radius: 20px; margin-bottom: 12px;
-    }
-    .badge-active { background: rgba(34,197,94,0.15); color: #4ade80; }
-    .badge-pending { background: rgba(251,191,36,0.12); color: #fbbf24; }
-
-    .status-msg {
-      margin-top: 10px; padding: 10px 14px; border-radius: 12px;
-      font-size: 0.85rem; display: none;
-    }
-    .status-msg.success { background: rgba(34,197,94,0.12); color: #4ade80; display: block; }
-    .status-msg.error { background: rgba(239,68,68,0.12); color: #f87171; display: block; }
-    .status-msg.info { background: rgba(59,130,246,0.12); color: #60a5fa; display: block; }
-
-    .empty { text-align: center; color: #71717a; padding: 40px 20px; }
-
-    .stats-row {
+    .business-card h3 { font-size: 1.15rem; margin-bottom: 6px; }
+    .business-card p { color: #a1a1aa; font-size: 0.9rem; margin-bottom: 10px; }
+    .token-id { font-size: 0.8rem; color: #71717a; margin-bottom: 8px; }
+    .treasury { color: #4ade80; font-size: 0.85rem; word-break: break-all; margin-bottom: 12px; }
+    .stats {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin: 12px 0 14px;
+      margin-bottom: 14px;
     }
-    .stat-box {
-      background: #0f0f12;
-      border: 1px solid #27272a;
-      border-radius: 12px;
+    .stat {
+      background: #18181b;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+    .stat .label { font-size: 0.75rem; color: #71717a; }
+    .stat .value { font-size: 1.05rem; font-weight: 600; margin-top: 2px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      margin-bottom: 12px;
+    }
+    .badge-live { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .badge-pending { background: rgba(234,179,8,0.15); color: #eab308; }
+    .status-msg {
+      font-size: 0.85rem;
       padding: 10px 12px;
+      border-radius: 10px;
+      margin-top: 10px;
+      display: none;
     }
-    .stat-box .label { font-size: 0.7rem; color: #71717a; margin-bottom: 2px; }
-    .stat-box .value { font-size: 0.95rem; font-weight: 600; }
+    .status-msg.error { background: rgba(239,68,68,0.15); color: #f87171; display: block; }
+    .status-msg.success { background: rgba(34,197,94,0.15); color: #4ade80; display: block; }
+    .status-msg.info { background: rgba(59,130,246,0.15); color: #60a5fa; display: block; }
+    .key-box {
+      background: #0c0c0e;
+      border: 1px solid #3f3f46;
+      border-radius: 10px;
+      padding: 12px;
+      margin-top: 12px;
+      font-family: monospace;
+      font-size: 0.75rem;
+      word-break: break-all;
+      display: none;
+    }
+    .key-box.show { display: block; }
+    .warning {
+      background: rgba(234,179,8,0.12);
+      color: #eab308;
+      font-size: 0.8rem;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
@@ -114,29 +138,29 @@
       <div class="sub">Your Autonomous Businesses</div>
     </div>
 
-    <button id="connectBtn" class="btn btn-primary">Connect Wallet</button>
-    <button id="disconnectBtn" class="btn btn-danger" style="display:none;">Disconnect Wallet</button>
+    <button id="connectBtn" class="btn btn-green">Connect Wallet</button>
+    <button id="disconnectBtn" class="btn btn-red" style="display:none;">Disconnect Wallet</button>
 
     <div id="accountBox" class="account-box" style="display:none;">
-      <span>Connected as</span>
+      Connected as<br>
       <strong id="accountIdDisplay"></strong>
     </div>
 
-    <div id="list" style="margin-top:20px;">
-      <div class="empty">Connect wallet to see your businesses</div>
-    </div>
+    <div id="list"></div>
   </div>
 
   <script type="importmap">
   {
     "imports": {
-      "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@0.12.0"
+      "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@0.12.0",
+      "@noble/ed25519": "https://esm.sh/@noble/ed25519@2.1.0"
     }
   }
   </script>
 
   <script type="module">
     import { NearConnector } from "@hot-labs/near-connect";
+    import * as ed from "@noble/ed25519";
 
     const CONTRACT_ID = "buildingfromthetop.testnet";
     const NETWORK = "testnet";
@@ -150,76 +174,32 @@
     const accountIdDisplay = document.getElementById("accountIdDisplay");
     const listEl = document.getElementById("list");
 
-    async function init() {
-      connector = new NearConnector({
-        network: NETWORK,
-        autoConnect: true,
-        features: { signAndSendTransaction: true }
-      });
-
-      connector.on("wallet:signIn", async (event) => {
-        try {
-          const accounts = event?.accounts || (await connector.getConnectedWallet()).accounts;
-          if (accounts && accounts.length > 0) {
-            accountId = accounts[0].accountId;
-            updateUI();
-            loadBusinesses();
-          }
-        } catch (e) {
-          console.error(e);
-        }
-      });
-
-      connector.on("wallet:signOut", () => {
-        accountId = null;
-        updateUI();
-        listEl.innerHTML = `<div class="empty">Connect wallet to see your businesses</div>`;
-      });
-
-      try {
-        await new Promise(r => setTimeout(r, 400));
-        const connected = await connector.getConnectedWallet();
-        if (connected && connected.accounts && connected.accounts.length > 0) {
-          accountId = connected.accounts[0].accountId;
-          updateUI();
-          loadBusinesses();
-        }
-      } catch (e) {
-        console.log("No existing session");
+    // ========== helpers ==========
+    function toBase58(bytes) {
+      const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+      let num = BigInt(0);
+      for (const b of bytes) num = (num << 8n) + BigInt(b);
+      let str = "";
+      while (num > 0n) {
+        str = ALPHABET[Number(num % 58n)] + str;
+        num = num / 58n;
       }
+      for (const b of bytes) {
+        if (b === 0) str = "1" + str;
+        else break;
+      }
+      return str;
     }
 
-    function updateUI() {
-      if (accountId) {
-        connectBtn.style.display = "none";
-        disconnectBtn.style.display = "block";
-        accountBox.style.display = "block";
-        accountIdDisplay.innerText = accountId;
-      } else {
-        connectBtn.style.display = "block";
-        disconnectBtn.style.display = "none";
-        accountBox.style.display = "none";
-      }
+    async function generateKeyPair() {
+      const privateKey = ed.utils.randomPrivateKey();
+      const publicKey = await ed.getPublicKeyAsync(privateKey);
+
+      const privateKeyStr = "ed25519:" + toBase58(privateKey);
+      const publicKeyStr = "ed25519:" + toBase58(publicKey);
+
+      return { privateKeyStr, publicKeyStr };
     }
-
-    connectBtn.addEventListener("click", async () => {
-      try {
-        await connector.connect();
-      } catch (e) {
-        console.error(e);
-      }
-    });
-
-    disconnectBtn.addEventListener("click", async () => {
-      try {
-        await connector.disconnect();
-        accountId = null;
-        updateUI();
-        listEl.innerHTML = `<div class="empty">Connect wallet to see your businesses</div>`;
-      } catch (e) {
-        console.error(e);
-      }
-    });
 
     async function getAccountBalance(accountId) {
       try {
@@ -228,7 +208,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             jsonrpc: "2.0",
-            id: "dontcare",
+            id: "1",
             method: "query",
             params: {
               request_type: "view_account",
@@ -239,20 +219,84 @@
         });
         const data = await res.json();
         if (data.result && data.result.amount) {
-          const yocto = BigInt(data.result.amount);
-          const near = Number(yocto) / 1e24;
-          return near.toFixed(4);
+          return (Number(data.result.amount) / 1e24).toFixed(4);
         }
-        return "0.0000";
+        return null;
       } catch (e) {
-        return "—";
+        return null;
       }
     }
 
+    function updateUI() {
+      if (accountId) {
+        connectBtn.style.display = "none";
+        disconnectBtn.style.display = "block";
+        accountBox.style.display = "block";
+        accountIdDisplay.textContent = accountId;
+      } else {
+        connectBtn.style.display = "block";
+        disconnectBtn.style.display = "none";
+        accountBox.style.display = "none";
+        listEl.innerHTML = "";
+      }
+    }
+
+    // ========== wallet ==========
+    async function init() {
+      connector = new NearConnector({
+        network: NETWORK,
+        features: { signAndSendTransaction: true },
+        autoConnect: true
+      });
+
+      connector.on("wallet:signIn", async () => {
+        const connected = await connector.getConnectedWallet();
+        if (connected?.accounts?.length) {
+          accountId = connected.accounts[0].accountId;
+          updateUI();
+          loadBusinesses();
+        }
+      });
+
+      connector.on("wallet:signOut", () => {
+        accountId = null;
+        updateUI();
+      });
+
+      // restore session
+      await new Promise(r => setTimeout(r, 400));
+      try {
+        const connected = await connector.getConnectedWallet();
+        if (connected?.accounts?.length) {
+          accountId = connected.accounts[0].accountId;
+          updateUI();
+          loadBusinesses();
+        }
+      } catch (e) {}
+    }
+
+    connectBtn.addEventListener("click", async () => {
+      try {
+        await connector.connect();
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    disconnectBtn.addEventListener("click", async () => {
+      try {
+        await connector.disconnect();
+        accountId = null;
+        updateUI();
+      } catch (err) {
+        console.error(err);
+      }
+    });
+
+    // ========== load businesses ==========
     async function loadBusinesses() {
       if (!accountId) return;
-
-      listEl.innerHTML = `<div class="empty">Loading your businesses...</div>`;
+      listEl.innerHTML = `<div style="color:#a1a1aa;padding:20px 0;text-align:center;">Loading your businesses...</div>`;
 
       try {
         const res = await fetch("https://rpc.testnet.near.org", {
@@ -260,7 +304,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             jsonrpc: "2.0",
-            id: "dontcare",
+            id: "1",
             method: "query",
             params: {
               request_type: "call_function",
@@ -274,158 +318,152 @@
 
         const data = await res.json();
         const bytes = data.result?.result;
-
         if (!bytes) {
-          listEl.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
+          listEl.innerHTML = `<div style="color:#a1a1aa;padding:20px 0;text-align:center;">No businesses yet.<br>Go back and mint one.</div>`;
           return;
         }
 
         const tokens = JSON.parse(String.fromCharCode(...bytes));
-
         if (!tokens || tokens.length === 0) {
-          listEl.innerHTML = `<div class="empty">No businesses yet.<br>Go back and mint one.</div>`;
+          listEl.innerHTML = `<div style="color:#a1a1aa;padding:20px 0;text-align:center;">No businesses yet.<br>Go back and mint one.</div>`;
           return;
         }
 
         listEl.innerHTML = "";
-
         for (const token of tokens) {
           const tokenId = token.token_id;
           const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
-          const title = token.metadata?.title || "Untitled Business";
+          const title = token.metadata?.title || "Untitled";
           const description = token.metadata?.description || "No description";
 
           const balance = await getAccountBalance(businessAccount);
-          const isActivated = balance !== "—" && parseFloat(balance) > 0;
+          const isActive = balance !== null;
 
           const card = document.createElement("div");
           card.className = "business-card";
           card.innerHTML = `
             <h3>${title}</h3>
-            <div class="desc">${description}</div>
-            <div class="meta">Token ID: ${tokenId}</div>
+            <p>${description}</p>
+            <div class="token-id">Token ID: ${tokenId}</div>
             <div class="treasury">Treasury: ${businessAccount}</div>
-            
-            <div class="stats-row">
-              <div class="stat-box">
+            <div class="stats">
+              <div class="stat">
                 <div class="label">Treasury Balance</div>
-                <div class="value">${isActivated ? balance + " Ⓝ" : "—"}</div>
+                <div class="value">${isActive ? balance + " Ⓝ" : "—"}</div>
               </div>
-              <div class="stat-box">
+              <div class="stat">
                 <div class="label">Status</div>
-                <div class="value">${isActivated ? "Live" : "Pending"}</div>
+                <div class="value">${isActive ? "Live" : "Pending"}</div>
               </div>
             </div>
-
-            <div class="status-badge ${isActivated ? "badge-active" : "badge-pending"}">
-              ${isActivated ? "● Active" : "○ Pending Activation"}
+            <div class="badge ${isActive ? "badge-live" : "badge-pending"}">
+              ${isActive ? "● Active" : "○ Pending Activation"}
             </div>
-            <div id="actions-${tokenId}"></div>
-            <div id="status-${tokenId}" class="status-msg"></div>
+            <button class="btn btn-green activate-btn" data-token="${tokenId}" ${isActive ? "disabled" : ""}>
+              ${isActive ? "Activated ✓" : "Activate Business"}
+            </button>
+            <button class="btn btn-outline grant-btn" data-token="\( {tokenId}" data-account=" \){businessAccount}" ${!isActive ? "disabled" : ""}>
+              Grant Agent Access (Function-Call Key)
+            </button>
+            <div class="status-msg" id="status-${tokenId}"></div>
+            <div class="key-box" id="keybox-${tokenId}"></div>
           `;
           listEl.appendChild(card);
-
-          const actionsEl = document.getElementById("actions-" + tokenId);
-          const statusEl = document.getElementById("status-" + tokenId);
-
-          if (!isActivated) {
-            const activateBtn = document.createElement("button");
-            activateBtn.className = "btn btn-primary";
-            activateBtn.innerText = "Activate Business";
-            activateBtn.onclick = () => activateBusiness(tokenId, businessAccount, activateBtn, statusEl);
-            actionsEl.appendChild(activateBtn);
-          } else {
-            const activatedBtn = document.createElement("button");
-            activatedBtn.className = "btn btn-disabled";
-            activatedBtn.innerText = "Activated ✓";
-            activatedBtn.disabled = true;
-            actionsEl.appendChild(activatedBtn);
-
-            // Real Function-Call Key button
-            const grantBtn = document.createElement("button");
-            grantBtn.className = "btn btn-secondary";
-            grantBtn.innerText = "Grant Agent Access (Function-Call Key)";
-            grantBtn.onclick = () => grantAgentAccess(tokenId, businessAccount, grantBtn, statusEl);
-            actionsEl.appendChild(grantBtn);
-          }
         }
+
+        // bind buttons
+        document.querySelectorAll(".activate-btn").forEach(btn => {
+          btn.addEventListener("click", () => activateBusiness(btn.dataset.token, btn));
+        });
+        document.querySelectorAll(".grant-btn").forEach(btn => {
+          btn.addEventListener("click", () => grantAgentAccess(btn.dataset.token, btn.dataset.account, btn));
+        });
+
       } catch (err) {
         console.error(err);
-        listEl.innerHTML = `<div class="empty">Failed to load businesses</div>`;
+        listEl.innerHTML = `<div style="color:#f87171;padding:20px 0;text-align:center;">Failed to load businesses</div>`;
       }
     }
 
-    async function activateBusiness(tokenId, businessAccount, btn, statusEl) {
+    // ========== activate ==========
+    async function activateBusiness(tokenId, btn) {
+      const statusEl = document.getElementById("status-" + tokenId);
+      const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
+
       try {
         btn.disabled = true;
         btn.innerText = "Confirm in wallet...";
         statusEl.className = "status-msg info";
-        statusEl.style.display = "block";
-        statusEl.innerText = "Creating sub-account... Confirm in your wallet";
+        statusEl.innerText = "Creating & funding treasury... Confirm in your wallet";
 
         const wallet = await connector.wallet();
-
         await wallet.signAndSendTransaction({
           receiverId: businessAccount,
           actions: [
             { type: "CreateAccount" },
-            {
-              type: "Transfer",
-              params: { deposit: "100000000000000000000000" } // 0.1 NEAR
-            }
+            { type: "Transfer", params: { deposit: "100000000000000000000000" } } // 0.1 NEAR
           ]
         });
 
         statusEl.className = "status-msg success";
         statusEl.innerText = "✅ Business activated! Sub-account created.";
-        btn.className = "btn btn-disabled";
         btn.innerText = "Activated ✓";
-        btn.disabled = true;
-
-        setTimeout(() => loadBusinesses(), 2500);
+        setTimeout(() => loadBusinesses(), 2000);
       } catch (err) {
         console.error(err);
         statusEl.className = "status-msg error";
-        statusEl.style.display = "block";
         statusEl.innerText = err.message || "Activation failed or cancelled";
         btn.disabled = false;
         btn.innerText = "Activate Business";
       }
     }
 
-    // === REAL Function-Call Key ===
-    async function grantAgentAccess(tokenId, businessAccount, btn, statusEl) {
+    // ========== GRANT AGENT ACCESS (FIXED) ==========
+    async function grantAgentAccess(tokenId, businessAccount, btn) {
+      const statusEl = document.getElementById("status-" + tokenId);
+      const keyBox = document.getElementById("keybox-" + tokenId);
+
       try {
         btn.disabled = true;
-        btn.innerText = "Confirm in wallet...";
+        btn.innerText = "Generating key...";
         statusEl.className = "status-msg info";
-        statusEl.style.display = "block";
+        statusEl.innerText = "Generating new Function-Call key...";
+
+        // 1. Generate brand new keypair
+        const { privateKeyStr, publicKeyStr } = await generateKeyPair();
+
+        // 2. Show private key to user (IMPORTANT)
+        keyBox.className = "key-box show";
+        keyBox.innerHTML = `
+          <div style="color:#4ade80;margin-bottom:6px;font-weight:600;">🔑 Agent Private Key (copy this now!)</div>
+          <div>${privateKeyStr}</div>
+          <div class="warning">
+            ⚠️ Copy this private key and store it safely.<br>
+            This is the only time it will be shown.<br>
+            You will give this key to your AI agent later.
+          </div>
+        `;
+
+        // 3. Add the public key as limited Function-Call key
+        btn.innerText = "Confirm in wallet...";
         statusEl.innerText = "Adding limited Function-Call key... Confirm in your wallet";
 
         const wallet = await connector.wallet();
-
-        // We use the connected account's public key and give it limited FunctionCall permission.
-        // This is the standard way to demonstrate agent access on NEAR without generating a new keypair on mobile.
-        const accounts = await connector.getConnectedWallet();
-        const publicKey = accounts?.accounts?.[0]?.publicKey;
-
-        if (!publicKey) {
-          throw new Error("Could not get public key from wallet. Try reconnecting.");
-        }
-
         await wallet.signAndSendTransaction({
           receiverId: businessAccount,
           actions: [
             {
               type: "AddKey",
               params: {
-                publicKey: publicKey,
+                publicKey: publicKeyStr,
                 accessKey: {
                   nonce: 0,
                   permission: {
-                    receiverId: businessAccount,
-                    allowance: "250000000000000000000000", // 0.25 NEAR allowance
-                    methodNames: []                        // empty = any method on this account
+                    functionCall: {
+                      receiverId: businessAccount,
+                      methodNames: [],           // empty = can call any method on this account
+                      allowance: "250000000000000000000000" // 0.25 NEAR gas allowance
+                    }
                   }
                 }
               }
@@ -434,16 +472,14 @@
         });
 
         statusEl.className = "status-msg success";
-        statusEl.innerText = "✅ Function-Call Key granted! Agent can now act with limited permissions.";
-        btn.innerText = "Agent Access Granted ✓";
-        btn.className = "btn btn-disabled";
+        statusEl.innerText = "✅ Agent key granted successfully! Copy the private key above.";
+        btn.innerText = "Agent Key Granted ✓";
         btn.disabled = true;
 
       } catch (err) {
         console.error(err);
         statusEl.className = "status-msg error";
-        statusEl.style.display = "block";
-        statusEl.innerText = err.message || "Failed to grant access or cancelled";
+        statusEl.innerText = err.message || "Failed to grant key. Try again.";
         btn.disabled = false;
         btn.innerText = "Grant Agent Access (Function-Call Key)";
       }
