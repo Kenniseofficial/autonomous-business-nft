@@ -13,7 +13,7 @@
       min-height: 100vh;
       line-height: 1.5;
     }
-    .container { max-width: 440px; margin: 0 auto; padding: 16px 16px 100px; }
+    .container { max-width: 440px; margin: 0 auto; padding: 16px 16px 80px; }
     .topbar {
       display: flex; justify-content: space-between; align-items: center;
       padding: 8px 0 20px;
@@ -122,26 +122,6 @@
       margin-top: 8px;
       line-height: 1.4;
     }
-    /* Debug log */
-    #debugLog {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #0a0a0c;
-      border-top: 1px solid #333;
-      max-height: 160px;
-      overflow-y: auto;
-      font-family: monospace;
-      font-size: 11px;
-      padding: 8px 12px;
-      color: #a1a1aa;
-      z-index: 999;
-    }
-    #debugLog div { margin-bottom: 3px; }
-    .log-ok { color: #4ade80; }
-    .log-err { color: #f87171; }
-    .log-info { color: #60a5fa; }
   </style>
 </head>
 <body>
@@ -170,9 +150,7 @@
     <div id="list"></div>
   </div>
 
-  <div id="debugLog"></div>
-
-  <!-- Load tweetnacl the reliable way (classic script) -->
+  <!-- Reliable tweetnacl load -->
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
 
   <script type="importmap">
@@ -197,15 +175,6 @@
     const accountBox = document.getElementById("accountBox");
     const accountIdDisplay = document.getElementById("accountIdDisplay");
     const listEl = document.getElementById("list");
-    const debugLog = document.getElementById("debugLog");
-
-    function log(msg, type = "info") {
-      const d = document.createElement("div");
-      d.className = type === "ok" ? "log-ok" : type === "err" ? "log-err" : "log-info";
-      d.textContent = new Date().toLocaleTimeString() + " → " + msg;
-      debugLog.prepend(d);
-      console.log(msg);
-    }
 
     // ========== Base58 ==========
     function toBase58(bytes) {
@@ -227,19 +196,17 @@
 
     // ========== Key generation ==========
     function generateKeyPair() {
-      log("Starting key generation...");
       if (typeof nacl === "undefined") {
-        throw new Error("tweetnacl (nacl) is not loaded");
+        throw new Error("tweetnacl failed to load. Please refresh the page.");
       }
       const kp = nacl.sign.keyPair();
       const seed = kp.secretKey.slice(0, 32);
       const publicKey = kp.publicKey;
 
-      const privateKeyStr = "ed25519:" + toBase58(seed);
-      const publicKeyStr = "ed25519:" + toBase58(publicKey);
-
-      log("Key generated successfully", "ok");
-      return { privateKeyStr, publicKeyStr };
+      return {
+        privateKeyStr: "ed25519:" + toBase58(seed),
+        publicKeyStr: "ed25519:" + toBase58(publicKey)
+      };
     }
 
     async function getAccountBalance(accountId) {
@@ -284,7 +251,6 @@
 
     // ========== Wallet ==========
     async function init() {
-      log("Initializing connector...");
       connector = new NearConnector({
         network: NETWORK,
         features: { signAndSendTransaction: true },
@@ -295,7 +261,6 @@
         const connected = await connector.getConnectedWallet();
         if (connected?.accounts?.length) {
           accountId = connected.accounts[0].accountId;
-          log("Wallet signed in: " + accountId, "ok");
           updateUI();
           loadBusinesses();
         }
@@ -303,7 +268,6 @@
 
       connector.on("wallet:signOut", () => {
         accountId = null;
-        log("Wallet disconnected");
         updateUI();
       });
 
@@ -312,23 +276,17 @@
         const connected = await connector.getConnectedWallet();
         if (connected?.accounts?.length) {
           accountId = connected.accounts[0].accountId;
-          log("Restored session: " + accountId, "ok");
           updateUI();
           loadBusinesses();
-        } else {
-          log("No existing session");
         }
-      } catch (e) {
-        log("Session restore error: " + e.message, "err");
-      }
+      } catch (e) {}
     }
 
     connectBtn.addEventListener("click", async () => {
       try {
-        log("Connecting wallet...");
         await connector.connect();
       } catch (err) {
-        log("Connect error: " + err.message, "err");
+        alert("Connect failed: " + (err.message || err));
       }
     });
 
@@ -337,16 +295,13 @@
         await connector.disconnect();
         accountId = null;
         updateUI();
-      } catch (err) {
-        log("Disconnect error: " + err.message, "err");
-      }
+      } catch (err) {}
     });
 
     // ========== Load businesses ==========
     async function loadBusinesses() {
       if (!accountId) return;
       listEl.innerHTML = `<div style="color:#a1a1aa;padding:20px 0;text-align:center;">Loading your businesses...</div>`;
-      log("Loading businesses for " + accountId);
 
       try {
         const res = await fetch("https://rpc.testnet.near.org", {
@@ -379,11 +334,10 @@
           return;
         }
 
-        log("Found " + tokens.length + " business(es)", "ok");
         listEl.innerHTML = "";
 
         for (const token of tokens) {
-          const tokenId = token.token_id;
+          const tokenId = String(token.token_id);
           const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
           const title = token.metadata?.title || "Untitled";
           const description = token.metadata?.description || "No description";
@@ -423,6 +377,7 @@
           listEl.appendChild(card);
         }
 
+        // Attach listeners AFTER the cards are in the DOM
         document.querySelectorAll(".activate-btn").forEach(btn => {
           btn.addEventListener("click", () => activateBusiness(btn.dataset.token, btn));
         });
@@ -431,7 +386,6 @@
         });
 
       } catch (err) {
-        log("Load businesses error: " + err.message, "err");
         listEl.innerHTML = `<div style="color:#f87171;padding:20px 0;text-align:center;">Failed to load businesses</div>`;
       }
     }
@@ -444,9 +398,10 @@
       try {
         btn.disabled = true;
         btn.innerText = "Confirm in wallet...";
-        statusEl.className = "status-msg info";
-        statusEl.innerText = "Creating & funding treasury... Confirm in your wallet";
-        log("Activating " + businessAccount);
+        if (statusEl) {
+          statusEl.className = "status-msg info";
+          statusEl.innerText = "Creating & funding treasury... Confirm in your wallet";
+        }
 
         const wallet = await connector.wallet();
         await wallet.signAndSendTransaction({
@@ -457,47 +412,47 @@
           ]
         });
 
-        statusEl.className = "status-msg success";
-        statusEl.innerText = "✅ Business activated!";
+        if (statusEl) {
+          statusEl.className = "status-msg success";
+          statusEl.innerText = "✅ Business activated!";
+        }
         btn.innerText = "Activated ✓";
-        log("Activation success", "ok");
         setTimeout(() => loadBusinesses(), 2000);
       } catch (err) {
-        log("Activation error: " + err.message, "err");
-        statusEl.className = "status-msg error";
-        statusEl.innerText = err.message || "Activation failed or cancelled";
+        if (statusEl) {
+          statusEl.className = "status-msg error";
+          statusEl.innerText = err.message || "Activation failed or cancelled";
+        }
         btn.disabled = false;
         btn.innerText = "Activate Business";
       }
     }
 
-    // ========== GRANT AGENT ACCESS ==========
+    // ========== GRANT AGENT ACCESS (FIXED) ==========
     async function grantAgentAccess(tokenId, businessAccount, btn) {
       const statusEl = document.getElementById("status-" + tokenId);
       const keyBox = document.getElementById("keybox-" + tokenId);
+
+      // Safety check
+      if (!statusEl || !keyBox) {
+        alert("Internal error: status elements missing. Please refresh the page.");
+        return;
+      }
 
       try {
         btn.disabled = true;
         btn.innerText = "Generating key...";
         statusEl.className = "status-msg info";
         statusEl.innerText = "Generating Function-Call key...";
-        log("Grant Agent Access clicked for " + businessAccount);
 
         // Generate key
-        let privateKeyStr, publicKeyStr;
-        try {
-          const result = generateKeyPair();
-          privateKeyStr = result.privateKeyStr;
-          publicKeyStr = result.publicKeyStr;
-        } catch (genErr) {
-          throw new Error("Key generation failed: " + (genErr.message || genErr));
-        }
+        const { privateKeyStr, publicKeyStr } = generateKeyPair();
 
-        // Show private key immediately
+        // Show private key immediately so user can copy it
         keyBox.className = "key-box show";
         keyBox.innerHTML = `
           <div style="color:#4ade80;margin-bottom:6px;font-weight:600;">🔑 Agent Private Key (COPY THIS NOW)</div>
-          <div style="user-select:all;">${privateKeyStr}</div>
+          <div style="user-select:all;word-break:break-all;">${privateKeyStr}</div>
           <div class="warning">
             ⚠️ Copy this private key right now and store it safely.<br>
             This is the only time it will be shown.<br>
@@ -507,11 +462,9 @@
 
         statusEl.innerText = "Key generated! Now confirm the transaction in your wallet...";
         btn.innerText = "Confirm in wallet...";
-        log("Private key shown to user", "ok");
 
-        // AddKey transaction
+        // Send AddKey transaction
         const wallet = await connector.wallet();
-        log("Sending AddKey transaction...");
 
         await wallet.signAndSendTransaction({
           receiverId: businessAccount,
@@ -523,11 +476,9 @@
                 accessKey: {
                   nonce: 0,
                   permission: {
-                    functionCall: {
-                      receiverId: businessAccount,
-                      methodNames: [],
-                      allowance: "250000000000000000000000"
-                    }
+                    receiverId: businessAccount,
+                    methodNames: [],
+                    allowance: "250000000000000000000000"
                   }
                 }
               }
@@ -539,10 +490,8 @@
         statusEl.innerText = "✅ Agent key granted successfully! Make sure you copied the private key above.";
         btn.innerText = "Agent Key Granted ✓";
         btn.disabled = true;
-        log("AddKey transaction success", "ok");
 
       } catch (err) {
-        log("Grant error: " + (err.message || err), "err");
         statusEl.className = "status-msg error";
         statusEl.innerText = err.message || "Failed to grant key";
         btn.disabled = false;
@@ -551,7 +500,6 @@
     }
 
     // Start
-    log("Page loaded");
     init();
   </script>
 </body>
