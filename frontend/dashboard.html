@@ -143,13 +143,6 @@
     #toast.show { opacity: 1; }
     #toast.error { border-color: #ef4444; color: #f87171; }
     #toast.success { border-color: #22c55e; color: #4ade80; }
-    #restoreStatus {
-      text-align: center;
-      color: #a1a1aa;
-      font-size: 0.85rem;
-      padding: 12px 0;
-      display: none;
-    }
   </style>
 </head>
 <body>
@@ -166,8 +159,6 @@
       <h1>Owner Dashboard</h1>
       <div class="sub">Your Autonomous Businesses</div>
     </div>
-
-    <div id="restoreStatus">Restoring wallet session...</div>
 
     <button id="connectBtn" class="btn btn-green">Connect Wallet</button>
     <button id="disconnectBtn" class="btn btn-red" style="display:none;">Disconnect Wallet</button>
@@ -207,7 +198,6 @@
     const accountIdDisplay = document.getElementById("accountIdDisplay");
     const listEl = document.getElementById("list");
     const toastEl = document.getElementById("toast");
-    const restoreStatus = document.getElementById("restoreStatus");
 
     function showToast(message, type = "info") {
       toastEl.textContent = message;
@@ -280,37 +270,12 @@
         disconnectBtn.style.display = "block";
         accountBox.style.display = "block";
         accountIdDisplay.textContent = accountId;
-        restoreStatus.style.display = "none";
       } else {
         connectBtn.style.display = "block";
         disconnectBtn.style.display = "none";
         accountBox.style.display = "none";
         listEl.innerHTML = "";
       }
-    }
-
-    // ========== VERY STRONG RESTORE ==========
-    async function tryRestore() {
-      restoreStatus.style.display = "block";
-      restoreStatus.innerText = "Restoring wallet session...";
-
-      for (let attempt = 1; attempt <= 6; attempt++) {
-        try {
-          const connected = await connector.getConnectedWallet();
-          if (connected?.accounts?.length) {
-            accountId = connected.accounts[0].accountId;
-            updateUI();
-            loadBusinesses();
-            return true;
-          }
-        } catch (e) {
-          // ignore and retry
-        }
-        await new Promise(r => setTimeout(r, 400));
-      }
-
-      restoreStatus.style.display = "none";
-      return false;
     }
 
     async function init() {
@@ -320,15 +285,13 @@
         autoConnect: true
       });
 
-      connector.on("wallet:signIn", async (payload) => {
-        try {
-          const accounts = payload?.accounts || (await connector.getConnectedWallet())?.accounts;
-          if (accounts?.length) {
-            accountId = accounts[0].accountId;
-            updateUI();
-            loadBusinesses();
-          }
-        } catch (e) {}
+      connector.on("wallet:signIn", async () => {
+        const connected = await connector.getConnectedWallet();
+        if (connected?.accounts?.length) {
+          accountId = connected.accounts[0].accountId;
+          updateUI();
+          loadBusinesses();
+        }
       });
 
       connector.on("wallet:signOut", () => {
@@ -336,8 +299,247 @@
         updateUI();
       });
 
-      // Start restore after a short delay so storage is ready
-      setTimeout(async () => {
-        const restored = await tryRestore();
-        if (!restored) {
-          restore
+      // This is the restore pattern that previously worked
+      await new Promise(r => setTimeout(r, 500));
+      try {
+        const connected = await connector.getConnectedWallet();
+        if (connected?.accounts?.length) {
+          accountId = connected.accounts[0].accountId;
+          updateUI();
+          loadBusinesses();
+        }
+      } catch (e) {}
+    }
+
+    connectBtn.addEventListener("click", async () => {
+      try {
+        await connector.connect();
+      } catch (err) {
+        showToast(err.message || "Connect failed", "error");
+      }
+    });
+
+    disconnectBtn.addEventListener("click", async () => {
+      try {
+        await connector.disconnect();
+        accountId = null;
+        updateUI();
+      } catch (err) {}
+    });
+
+    async function loadBusinesses() {
+      if (!accountId) return;
+      listEl.innerHTML = `<div style="color:#a1a1aa;padding:20px 0;text-align:center;">Loading your businesses...</div>`;
+
+      try {
+        const res = await fetch("https://rpc.testnet.near.org", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: "1",
+            method: "query",
+            params: {
+              request_type: "call_function",
+              finality: "final",
+              account_id: CONTRACT_ID,
+              method_name: "nft_tokens_for_owner",
+              args_base64: btoa(JSON.stringify({ account_id: accountId }))
+            }
+          })
+        });
+
+        const data = await res.json();
+        const bytes = data.result?.result;
+        if (!bytes) {
+          listEl.innerHTML = `<div style="color:#a1a1aa;padding:20px 0;text-align:center;">No businesses yet.<br>Go back and mint one.</div>`;
+          return;
+        }
+
+        const tokens = JSON.parse(String.fromCharCode(...bytes));
+        if (!tokens || tokens.length === 0) {
+          listEl.innerHTML = `<div style="color:#a1a1aa;padding:20px 0;text-align:center;">No businesses yet.<br>Go back and mint one.</div>`;
+          return;
+        }
+
+        listEl.innerHTML = "";
+
+        for (const token of tokens) {
+          const tokenId = String(token.token_id);
+          const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
+          const title = token.metadata?.title || "Untitled";
+          const description = token.metadata?.description || "No description";
+
+          const balance = await getAccountBalance(businessAccount);
+          const isActive = balance !== null;
+
+          const card = document.createElement("div");
+          card.className = "business-card";
+          card.innerHTML = `
+            <h3>${title}</h3>
+            <p>${description}</p>
+            <div class="token-id">Token ID: ${tokenId}</div>
+            <div class="treasury">Treasury: ${businessAccount}</div>
+            <div class="stats">
+              <div class="stat">
+                <div class="label">Treasury Balance</div>
+                <div class="value">${isActive ? balance + " Ⓝ" : "—"}</div>
+              </div>
+              <div class="stat">
+                <div class="label">Status</div>
+                <div class="value">${isActive ? "Live" : "Pending"}</div>
+              </div>
+            </div>
+            <div class="badge ${isActive ? "badge-live" : "badge-pending"}">
+              ${isActive ? "● Active" : "○ Pending Activation"}
+            </div>
+            <button class="btn btn-green activate-btn" data-token="${tokenId}" ${isActive ? "disabled" : ""}>
+              ${isActive ? "Activated ✓" : "Activate Business"}
+            </button>
+            <button class="btn btn-outline grant-btn" data-token="\( {tokenId}" data-account=" \){businessAccount}" ${!isActive ? "disabled" : ""}>
+              Grant Agent Access (Function-Call Key)
+            </button>
+            <div class="status-msg"></div>
+            <div class="key-box"></div>
+          `;
+          listEl.appendChild(card);
+        }
+
+        document.querySelectorAll(".activate-btn").forEach(btn => {
+          btn.addEventListener("click", () => activateBusiness(btn.dataset.token, btn));
+        });
+        document.querySelectorAll(".grant-btn").forEach(btn => {
+          btn.addEventListener("click", () => grantAgentAccess(btn.dataset.token, btn.dataset.account, btn));
+        });
+
+      } catch (err) {
+        listEl.innerHTML = `<div style="color:#f87171;padding:20px 0;text-align:center;">Failed to load businesses</div>`;
+        showToast("Failed to load businesses", "error");
+      }
+    }
+
+    async function activateBusiness(tokenId, btn) {
+      const card = btn.closest(".business-card");
+      const statusEl = card ? card.querySelector(".status-msg") : null;
+      const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
+
+      try {
+        btn.disabled = true;
+        btn.innerText = "Confirm in wallet...";
+        if (statusEl) {
+          statusEl.className = "status-msg info";
+          statusEl.innerText = "Creating & funding treasury... Confirm in your wallet";
+        }
+
+        const wallet = await connector.wallet();
+        await wallet.signAndSendTransaction({
+          receiverId: businessAccount,
+          actions: [
+            { type: "CreateAccount" },
+            { type: "Transfer", params: { deposit: "100000000000000000000000" } }
+          ]
+        });
+
+        if (statusEl) {
+          statusEl.className = "status-msg success";
+          statusEl.innerText = "✅ Business activated!";
+        }
+        btn.innerText = "Activated ✓";
+        showToast("Business activated successfully", "success");
+        setTimeout(() => loadBusinesses(), 2000);
+      } catch (err) {
+        if (statusEl) {
+          statusEl.className = "status-msg error";
+          statusEl.innerText = err.message || "Activation failed or cancelled";
+        }
+        showToast(err.message || "Activation failed", "error");
+        btn.disabled = false;
+        btn.innerText = "Activate Business";
+      }
+    }
+
+    async function grantAgentAccess(tokenId, businessAccount, btn) {
+      // Relative lookup – this is what fixed the null error
+      const card = btn.closest(".business-card");
+      if (!card) {
+        showToast("Card not found. Please refresh.", "error");
+        return;
+      }
+      const statusEl = card.querySelector(".status-msg");
+      const keyBox = card.querySelector(".key-box");
+
+      try {
+        btn.disabled = true;
+        btn.innerText = "Generating key...";
+        if (statusEl) {
+          statusEl.className = "status-msg info";
+          statusEl.innerText = "Generating Function-Call key...";
+        }
+
+        const { privateKeyStr, publicKeyStr } = generateKeyPair();
+
+        // Show private key immediately so user can copy it
+        if (keyBox) {
+          keyBox.className = "key-box show";
+          keyBox.innerHTML = `
+            <div style="color:#4ade80;margin-bottom:6px;font-weight:600;">🔑 Agent Private Key (COPY THIS NOW)</div>
+            <div style="user-select:all;word-break:break-all;">${privateKeyStr}</div>
+            <div class="warning">
+              ⚠️ Copy this private key right now and store it safely.<br>
+              This is the only time it will be shown.<br>
+              You will later give this key to your AI agent.
+            </div>
+          `;
+        }
+
+        if (statusEl) {
+          statusEl.innerText = "Key generated! Now confirm the transaction in your wallet...";
+        }
+        btn.innerText = "Confirm in wallet...";
+        showToast("Key generated – confirm in wallet", "info");
+
+        const wallet = await connector.wallet();
+
+        await wallet.signAndSendTransaction({
+          receiverId: businessAccount,
+          actions: [
+            {
+              type: "AddKey",
+              params: {
+                publicKey: publicKeyStr,
+                accessKey: {
+                  nonce: 0,
+                  permission: {
+                    receiverId: businessAccount,
+                    methodNames: [],
+                    allowance: "250000000000000000000000"
+                  }
+                }
+              }
+            }
+          ]
+        });
+
+        if (statusEl) {
+          statusEl.className = "status-msg success";
+          statusEl.innerText = "✅ Agent key granted successfully! Make sure you copied the private key above.";
+        }
+        btn.innerText = "Agent Key Granted ✓";
+        btn.disabled = true;
+        showToast("Agent key granted successfully!", "success");
+
+      } catch (err) {
+        if (statusEl) {
+          statusEl.className = "status-msg error";
+          statusEl.innerText = err.message || "Failed to grant key";
+        }
+        showToast(err.message || "Failed to grant key", "error");
+        btn.disabled = false;
+        btn.innerText = "Grant Agent Access (Function-Call Key)";
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
