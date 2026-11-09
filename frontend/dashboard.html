@@ -459,7 +459,7 @@
     }
 
     async function grantAgentAccess(tokenId, businessAccount, btn) {
-      // Rebuild the account ID ourselves – never trust the data-attribute
+      // Rebuild the account ID ourselves so the broken template can never reach the wallet
       const realBusinessAccount = "business-" + tokenId + "." + CONTRACT_ID;
 
       const card = btn.closest(".business-card");
@@ -480,7 +480,7 @@
 
         const { privateKeyStr, publicKeyStr } = generateKeyPair();
 
-        // Show private key immediately so you can copy it
+        // Show private key immediately so user can copy it
         if (keyBox) {
           keyBox.className = "key-box show";
           keyBox.innerHTML = `
@@ -522,24 +522,6 @@
           ]
         });
 
-        if (statusEl) {
-          statusEl.className = "status-msg success";
-          statusEl.innerText = "✅ Agent key granted successfully! Make sure you copied the private key above.";
-        }
-        btn.innerText = "Agent Key Granted ✓";
-        btn.disabled = true;
-        showToast("Agent key granted successfully!", "success");
-
-      } catch (err) {
-        if (statusEl) {
-          statusEl.className = "status-msg error";
-          statusEl.innerText = err.message || "Failed to grant key";
-        }
-        showToast(err.message || "Failed to grant key", "error");
-        btn.disabled = false;
-        btn.innerText = "Grant Agent Access (Function-Call Key)";
-      }
-    }
         if (statusEl) {
           statusEl.className = "status-msg success";
           statusEl.innerText = "✅ Agent key granted successfully! Make sure you copied the private key above.";
