@@ -475,8 +475,11 @@
           statusEl.innerText = "✅ Business activated! Agent key has been added.";
         }
         btn.innerText = "Activated ✓";
-        showToast("Business activated + agent key granted", "success");
-        setTimeout(() => loadBusinesses(), 2500);
+        showToast("Agent key granted successfully! Copy the private key now.", "success");
+        // Give the user 12 seconds to copy the private key before refreshing
+        setTimeout(() => {
+        loadBusinesses();
+        }, 12000);
       } catch (err) {
         if (statusEl) {
           statusEl.className = "status-msg error";
