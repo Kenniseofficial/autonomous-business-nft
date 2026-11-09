@@ -458,7 +458,7 @@
       }
     }
 
- async function grantAgentAccess(tokenId, businessAccount, btn) {
+    async function grantAgentAccess(tokenId, businessAccount, btn) {
       // Rebuild the account ID ourselves – never trust the data-attribute
       const realBusinessAccount = "business-" + tokenId + "." + CONTRACT_ID;
 
