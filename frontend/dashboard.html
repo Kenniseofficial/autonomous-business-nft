@@ -299,7 +299,6 @@
         updateUI();
       });
 
-      // This is the restore pattern that previously worked
       await new Promise(r => setTimeout(r, 500));
       try {
         const connected = await connector.getConnectedWallet();
@@ -393,10 +392,10 @@
             <div class="badge ${isActive ? "badge-live" : "badge-pending"}">
               ${isActive ? "● Active" : "○ Pending Activation"}
             </div>
-            <button class="btn btn-green activate-btn" data-token="${tokenId}" ${isActive ? "disabled" : ""}>
+            <button class="btn btn-green activate-btn" ${isActive ? "disabled" : ""}>
               ${isActive ? "Activated ✓" : "Activate Business"}
             </button>
-            <button class="btn btn-outline grant-btn" data-token="\( {tokenId}" data-account=" \){businessAccount}" ${!isActive ? "disabled" : ""}>
+            <button class="btn btn-outline grant-btn" ${!isActive ? "disabled" : ""}>
               Grant Agent Access (Function-Call Key)
             </button>
             <div class="status-msg"></div>
@@ -405,11 +404,23 @@
           listEl.appendChild(card);
         }
 
+        // Attach listeners using the card itself (no data-token needed)
         document.querySelectorAll(".activate-btn").forEach(btn => {
-          btn.addEventListener("click", () => activateBusiness(btn.dataset.token, btn));
+          btn.addEventListener("click", () => {
+            const card = btn.closest(".business-card");
+            const tokenIdText = card.querySelector(".token-id")?.textContent || "";
+            const tokenId = tokenIdText.replace("Token ID:", "").trim();
+            activateBusiness(tokenId, btn);
+          });
         });
+
         document.querySelectorAll(".grant-btn").forEach(btn => {
-          btn.addEventListener("click", () => grantAgentAccess(btn.dataset.token, btn.dataset.account, btn));
+          btn.addEventListener("click", () => {
+            const card = btn.closest(".business-card");
+            const tokenIdText = card.querySelector(".token-id")?.textContent || "";
+            const tokenId = tokenIdText.replace("Token ID:", "").trim();
+            grantAgentAccess(tokenId, btn);
+          });
         });
 
       } catch (err) {
@@ -458,8 +469,8 @@
       }
     }
 
-    async function grantAgentAccess(tokenId, businessAccount, btn) {
-      // Rebuild the account ID ourselves so the broken template can never reach the wallet
+    async function grantAgentAccess(tokenId, btn) {
+      // tokenId now comes clean from the card text
       const realBusinessAccount = "business-" + tokenId + "." + CONTRACT_ID;
 
       const card = btn.closest(".business-card");
@@ -480,7 +491,6 @@
 
         const { privateKeyStr, publicKeyStr } = generateKeyPair();
 
-        // Show private key immediately so user can copy it
         if (keyBox) {
           keyBox.className = "key-box show";
           keyBox.innerHTML = `
