@@ -395,9 +395,6 @@
             <button class="btn btn-green activate-btn" ${isActive ? "disabled" : ""}>
               ${isActive ? "Activated ✓" : "Activate Business"}
             </button>
-            <button class="btn btn-outline grant-btn" ${!isActive ? "disabled" : ""}>
-              Grant Agent Access (Function-Call Key)
-            </button>
             <div class="status-msg"></div>
             <div class="key-box"></div>
           `;
@@ -410,15 +407,6 @@
             const tokenIdText = card.querySelector(".token-id")?.textContent || "";
             const tokenId = tokenIdText.replace("Token ID:", "").trim();
             activateBusiness(tokenId, btn);
-          });
-        });
-
-        document.querySelectorAll(".grant-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const card = btn.closest(".business-card");
-            const tokenIdText = card.querySelector(".token-id")?.textContent || "";
-            const tokenId = tokenIdText.replace("Token ID:", "").trim();
-            grantAgentAccess(tokenId, btn);
           });
         });
 
@@ -439,21 +427,22 @@
         btn.innerText = "Confirm in wallet...";
         if (statusEl) {
           statusEl.className = "status-msg info";
-          statusEl.innerText = "Creating treasury + Full Access key... Confirm in your wallet";
+          statusEl.innerText = "Creating treasury + Agent Function-Call key... Confirm in your wallet";
         }
 
-        // Generate a Full Access key that will control the business account
+        // Generate the agent key that will be added during creation
         const { privateKeyStr, publicKeyStr } = generateKeyPair();
 
-        // Show it immediately so the user can save it
+        // Show it immediately so user can save it
         if (keyBox) {
           keyBox.className = "key-box show";
           keyBox.innerHTML = `
-            <div style="color:#4ade80;margin-bottom:6px;font-weight:600;">🔑 Business Full Access Key (SAVE THIS)</div>
+            <div style="color:#4ade80;margin-bottom:6px;font-weight:600;">🔑 Agent Function-Call Key (COPY THIS NOW)</div>
             <div style="user-select:all;word-break:break-all;">${privateKeyStr}</div>
             <div class="warning">
-              ⚠️ This is the master key of the business account.<br>
-              Save it now. You will need it to control the business later.
+              ⚠️ This is the agent key for this business.<br>
+              Copy and store it safely. This is the only time it will be shown.<br>
+              You will give this key to your AI agent later.
             </div>
           `;
         }
@@ -469,7 +458,11 @@
                 publicKey: publicKeyStr,
                 accessKey: {
                   nonce: 0,
-                  permission: "FullAccess"
+                  permission: {
+                    receiverId: businessAccount,
+                    methodNames: [],
+                    allowance: "250000000000000000000000"
+                  }
                 }
               }
             },
@@ -479,10 +472,10 @@
 
         if (statusEl) {
           statusEl.className = "status-msg success";
-          statusEl.innerText = "✅ Business activated! Full Access key has been added.";
+          statusEl.innerText = "✅ Business activated! Agent key has been added.";
         }
         btn.innerText = "Activated ✓";
-        showToast("Business activated successfully", "success");
+        showToast("Business activated + agent key granted", "success");
         setTimeout(() => loadBusinesses(), 2500);
       } catch (err) {
         if (statusEl) {
@@ -492,87 +485,6 @@
         showToast(err.message || "Activation failed", "error");
         btn.disabled = false;
         btn.innerText = "Activate Business";
-      }
-    }
-
-    async function grantAgentAccess(tokenId, btn) {
-      const realBusinessAccount = "business-" + tokenId + "." + CONTRACT_ID;
-
-      const card = btn.closest(".business-card");
-      if (!card) {
-        showToast("Card not found. Please refresh.", "error");
-        return;
-      }
-      const statusEl = card.querySelector(".status-msg");
-      const keyBox = card.querySelector(".key-box");
-
-      try {
-        btn.disabled = true;
-        btn.innerText = "Generating key...";
-        if (statusEl) {
-          statusEl.className = "status-msg info";
-          statusEl.innerText = "Generating Function-Call key...";
-        }
-
-        const { privateKeyStr, publicKeyStr } = generateKeyPair();
-
-        if (keyBox) {
-          keyBox.className = "key-box show";
-          keyBox.innerHTML = `
-            <div style="color:#4ade80;margin-bottom:6px;font-weight:600;">🔑 Agent Private Key (COPY THIS NOW)</div>
-            <div style="user-select:all;word-break:break-all;">${privateKeyStr}</div>
-            <div class="warning">
-              ⚠️ Copy this private key right now and store it safely.<br>
-              This is the only time it will be shown.<br>
-              You will later give this key to your AI agent.
-            </div>
-          `;
-        }
-
-        if (statusEl) {
-          statusEl.innerText = "Key generated! Now confirm the transaction in your wallet...";
-        }
-        btn.innerText = "Confirm in wallet...";
-        showToast("Key generated – confirm in wallet", "info");
-
-        const wallet = await connector.wallet();
-
-        await wallet.signAndSendTransaction({
-          receiverId: realBusinessAccount,
-          actions: [
-            {
-              type: "AddKey",
-              params: {
-                publicKey: publicKeyStr,
-                accessKey: {
-                  nonce: 0,
-                  permission: {
-                    receiverId: realBusinessAccount,
-                    methodNames: [],
-                    allowance: "250000000000000000000000"
-                  }
-                }
-              }
-            }
-          ]
-        });
-
-        if (statusEl) {
-          statusEl.className = "status-msg success";
-          statusEl.innerText = "✅ Agent key granted successfully! Make sure you copied the private key above.";
-        }
-        btn.innerText = "Agent Key Granted ✓";
-        btn.disabled = true;
-        showToast("Agent key granted successfully!", "success");
-
-      } catch (err) {
-        if (statusEl) {
-          statusEl.className = "status-msg error";
-          statusEl.innerText = err.message || "Failed to grant key";
-        }
-        showToast(err.message || "Failed to grant key", "error");
-        btn.disabled = false;
-        btn.innerText = "Grant Agent Access (Function-Call Key)";
       }
     }
 
