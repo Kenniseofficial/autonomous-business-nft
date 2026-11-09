@@ -404,7 +404,6 @@
           listEl.appendChild(card);
         }
 
-        // Attach listeners using the card itself (no data-token needed)
         document.querySelectorAll(".activate-btn").forEach(btn => {
           btn.addEventListener("click", () => {
             const card = btn.closest(".business-card");
@@ -432,6 +431,7 @@
     async function activateBusiness(tokenId, btn) {
       const card = btn.closest(".business-card");
       const statusEl = card ? card.querySelector(".status-msg") : null;
+      const keyBox = card ? card.querySelector(".key-box") : null;
       const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
 
       try {
@@ -439,7 +439,23 @@
         btn.innerText = "Confirm in wallet...";
         if (statusEl) {
           statusEl.className = "status-msg info";
-          statusEl.innerText = "Creating & funding treasury... Confirm in your wallet";
+          statusEl.innerText = "Creating treasury + Full Access key... Confirm in your wallet";
+        }
+
+        // Generate a Full Access key that will control the business account
+        const { privateKeyStr, publicKeyStr } = generateKeyPair();
+
+        // Show it immediately so the user can save it
+        if (keyBox) {
+          keyBox.className = "key-box show";
+          keyBox.innerHTML = `
+            <div style="color:#4ade80;margin-bottom:6px;font-weight:600;">🔑 Business Full Access Key (SAVE THIS)</div>
+            <div style="user-select:all;word-break:break-all;">${privateKeyStr}</div>
+            <div class="warning">
+              ⚠️ This is the master key of the business account.<br>
+              Save it now. You will need it to control the business later.
+            </div>
+          `;
         }
 
         const wallet = await connector.wallet();
@@ -447,17 +463,27 @@
           receiverId: businessAccount,
           actions: [
             { type: "CreateAccount" },
+            {
+              type: "AddKey",
+              params: {
+                publicKey: publicKeyStr,
+                accessKey: {
+                  nonce: 0,
+                  permission: "FullAccess"
+                }
+              }
+            },
             { type: "Transfer", params: { deposit: "100000000000000000000000" } }
           ]
         });
 
         if (statusEl) {
           statusEl.className = "status-msg success";
-          statusEl.innerText = "✅ Business activated!";
+          statusEl.innerText = "✅ Business activated! Full Access key has been added.";
         }
         btn.innerText = "Activated ✓";
         showToast("Business activated successfully", "success");
-        setTimeout(() => loadBusinesses(), 2000);
+        setTimeout(() => loadBusinesses(), 2500);
       } catch (err) {
         if (statusEl) {
           statusEl.className = "status-msg error";
@@ -470,7 +496,6 @@
     }
 
     async function grantAgentAccess(tokenId, btn) {
-      // tokenId now comes clean from the card text
       const realBusinessAccount = "business-" + tokenId + "." + CONTRACT_ID;
 
       const card = btn.closest(".business-card");
