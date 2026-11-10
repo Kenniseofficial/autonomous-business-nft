@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Owner Dashboard – Autonomous Business NFT</title>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl-fast.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@hot-labs/near-connect@0.0.17/dist/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@hot-labs/near-connect@0.1.9/dist/index.umd.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -30,15 +30,19 @@
     .header { margin-bottom: 20px; }
     .header h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
     .header .sub { color: #a1a1aa; font-size: 0.9rem; }
-    .disconnect-btn {
+    .connect-btn, .disconnect-btn {
       width: 100%; padding: 14px; border-radius: 14px;
-      background: transparent; border: 1.5px solid #ef4444;
-      color: #ef4444; font-weight: 600; font-size: 1rem;
-      margin-bottom: 16px; cursor: pointer;
+      font-weight: 600; font-size: 1rem; cursor: pointer; margin-bottom: 16px;
+    }
+    .connect-btn {
+      background: #22c55e; color: #000; border: none;
+    }
+    .disconnect-btn {
+      background: transparent; border: 1.5px solid #ef4444; color: #ef4444;
     }
     .connected-box {
       background: #18181b; border-radius: 14px; padding: 14px 16px;
-      margin-bottom: 24px; font-size: 0.9rem;
+      margin-bottom: 20px; font-size: 0.9rem;
     }
     .business-card {
       background: #18181b; border-radius: 16px; padding: 18px;
@@ -47,9 +51,7 @@
     .business-card h3 { font-size: 1.1rem; margin-bottom: 4px; }
     .business-card .desc { color: #a1a1aa; font-size: 0.85rem; margin-bottom: 10px; }
     .token-id, .treasury { font-size: 0.8rem; color: #4ade80; margin-bottom: 6px; }
-    .stats {
-      display: flex; gap: 10px; margin: 12px 0;
-    }
+    .stats { display: flex; gap: 10px; margin: 12px 0; }
     .stat {
       flex: 1; background: #27272a; border-radius: 10px;
       padding: 10px; text-align: center;
@@ -69,8 +71,7 @@
     }
     .btn-green { background: #22c55e; color: #000; }
     .btn-outline {
-      background: transparent; border: 1.5px solid #3f3f46;
-      color: #e4e4e7;
+      background: transparent; border: 1.5px solid #3f3f46; color: #e4e4e7;
     }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .key-box {
@@ -106,10 +107,13 @@
       <div class="sub">Your Autonomous Businesses</div>
     </div>
 
+    <!-- Connect / Disconnect buttons -->
+    <button id="connectBtn" class="connect-btn">Connect Wallet</button>
     <button id="disconnectBtn" class="disconnect-btn" style="display:none;">Disconnect Wallet</button>
+
     <div id="connectedBox" class="connected-box" style="display:none;"></div>
 
-    <div id="list" class="loading">Loading your businesses...</div>
+    <div id="list" class="loading">Connect your wallet to see your businesses</div>
   </div>
 
   <script>
@@ -127,7 +131,6 @@
       setTimeout(() => t.remove(), 4500);
     }
 
-    // Base58 encoding for keys
     function toBase58(buffer) {
       const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
       let digits = [0];
@@ -156,47 +159,76 @@
       return { publicKeyStr, privateKeyStr };
     }
 
+    function setConnectedUI(id) {
+      accountId = id;
+      document.getElementById("connectBtn").style.display = "none";
+      document.getElementById("disconnectBtn").style.display = "block";
+      document.getElementById("connectedBox").style.display = "block";
+      document.getElementById("connectedBox").innerHTML = `Connected as<br><strong>${id}</strong>`;
+      loadBusinesses();
+    }
+
+    function setDisconnectedUI() {
+      accountId = null;
+      document.getElementById("connectBtn").style.display = "block";
+      document.getElementById("disconnectBtn").style.display = "none";
+      document.getElementById("connectedBox").style.display = "none";
+      document.getElementById("list").innerHTML = `<div class="loading">Connect your wallet to see your businesses</div>`;
+    }
+
     async function init() {
-      connector = new nearConnect.NearConnector({ network: NETWORK });
-
-      connector.on("wallet:signIn", async () => {
-        const wallet = await connector.wallet();
-        accountId = (await wallet.getAccounts())[0].accountId;
-        document.getElementById("disconnectBtn").style.display = "block";
-        document.getElementById("connectedBox").style.display = "block";
-        document.getElementById("connectedBox").innerHTML = `Connected as<br><strong>${accountId}</strong>`;
-        loadBusinesses();
-      });
-
-      connector.on("wallet:signOut", () => {
-        accountId = null;
-        document.getElementById("disconnectBtn").style.display = "none";
-        document.getElementById("connectedBox").style.display = "none";
-        document.getElementById("list").innerHTML = `<div class="loading">Connect wallet to see your businesses</div>`;
-      });
-
-      // Auto restore
       try {
-        const wallet = await connector.wallet();
-        const accounts = await wallet.getAccounts();
-        if (accounts && accounts.length > 0) {
-          accountId = accounts[0].accountId;
-          document.getElementById("disconnectBtn").style.display = "block";
-          document.getElementById("connectedBox").style.display = "block";
-          document.getElementById("connectedBox").innerHTML = `Connected as<br><strong>${accountId}</strong>`;
-          loadBusinesses();
-        }
-      } catch (e) {}
+        connector = new nearConnect.NearConnector({ network: NETWORK });
 
+        connector.on("wallet:signIn", async (payload) => {
+          const id = payload.accounts?.[0]?.accountId;
+          if (id) setConnectedUI(id);
+        });
+
+        connector.on("wallet:signOut", () => {
+          setDisconnectedUI();
+        });
+
+        // Try to restore existing session
+        try {
+          const wallet = await connector.wallet();
+          const accounts = await wallet.getAccounts();
+          if (accounts && accounts.length > 0) {
+            setConnectedUI(accounts[0].accountId);
+          }
+        } catch (e) {
+          // not connected yet
+        }
+      } catch (err) {
+        console.error("Connector init error:", err);
+        showToast("Wallet connector failed to load", "error");
+      }
+
+      // Connect button
+      document.getElementById("connectBtn").onclick = async () => {
+        try {
+          await connector.connect();
+        } catch (err) {
+          console.error(err);
+          showToast(err.message || "Failed to connect", "error");
+        }
+      };
+
+      // Disconnect button
       document.getElementById("disconnectBtn").onclick = async () => {
-        await connector.disconnect();
+        try {
+          await connector.disconnect();
+          setDisconnectedUI();
+        } catch (err) {
+          console.error(err);
+        }
       };
     }
 
     async function loadBusinesses() {
       const listEl = document.getElementById("list");
       if (!accountId) {
-        listEl.innerHTML = `<div class="loading">Connect wallet first</div>`;
+        listEl.innerHTML = `<div class="loading">Connect your wallet to see your businesses</div>`;
         return;
       }
 
@@ -222,18 +254,21 @@
 
         const data = await res.json();
         const bytes = data.result?.result;
+
         if (!bytes) {
           listEl.innerHTML = `<div class="loading">No businesses yet.<br>Go back and mint one.</div>`;
           return;
         }
 
         const tokens = JSON.parse(String.fromCharCode(...bytes));
+
         if (!tokens || tokens.length === 0) {
           listEl.innerHTML = `<div class="loading">No businesses yet.<br>Go back and mint one.</div>`;
           return;
         }
 
         listEl.innerHTML = "";
+
         for (const token of tokens) {
           const businessAccount = token.business_account || `business-\( {token.token_id}. \){CONTRACT_ID}`;
           let balance = "—";
@@ -281,7 +316,7 @@
             <div class="status-badge ${isLive ? "live" : "pending"}">
               ${isLive ? "● Active" : "○ Pending Activation"}
             </div>
-            <div class="actions" data-token="\( {token.token_id}" data-business=" \){businessAccount}"></div>
+            <div class="actions"></div>
           `;
 
           const actions = card.querySelector(".actions");
@@ -299,21 +334,19 @@
             activated.disabled = true;
             actions.appendChild(activated);
 
-            // Claim button
             const claimBtn = document.createElement("button");
             claimBtn.className = "btn btn-outline";
             claimBtn.innerText = "Claim Revenue";
             claimBtn.onclick = () => {
-              showToast("To claim: transfer funds from the business account to your main wallet using the agent key or near-cli.", "info");
+              showToast("To claim: transfer funds from the business account using the agent private key.", "info");
             };
             actions.appendChild(claimBtn);
 
-            // Sell / Transfer button
             const sellBtn = document.createElement("button");
             sellBtn.className = "btn btn-outline";
             sellBtn.innerText = "Sell / Transfer NFT";
             sellBtn.onclick = () => {
-              showToast("To transfer ownership: use any NEP-171 marketplace or call nft_transfer on the contract. The new owner inherits the business.", "info");
+              showToast("Transfer the NFT via any NEP-171 marketplace. New owner inherits the business.", "info");
             };
             actions.appendChild(sellBtn);
           }
@@ -322,7 +355,7 @@
         }
       } catch (err) {
         console.error(err);
-        listEl.innerHTML = `<div class="loading">Failed to load businesses</div>`;
+        listEl.innerHTML = `<div class="loading">Failed to load businesses. Try reconnecting.</div>`;
       }
     }
 
@@ -333,13 +366,14 @@
       try {
         const { publicKeyStr, privateKeyStr } = generateKeyPair();
 
-        // Show the private key immediately
+        // Show private key immediately so user can copy
         const keyBox = document.createElement("div");
         keyBox.className = "key-box";
         keyBox.innerHTML = `
           <strong>⚠️ SAVE THIS PRIVATE KEY NOW</strong><br><br>
           ${privateKeyStr}<br><br>
-          <button onclick="navigator.clipboard.writeText('${privateKeyStr}'); this.innerText='Copied!';" style="margin-top:8px;padding:6px 12px;border-radius:8px;border:none;background:#22c55e;color:#000;font-weight:600;cursor:pointer;">
+          <button onclick="navigator.clipboard.writeText('${privateKeyStr}'); this.innerText='Copied!';" 
+                  style="margin-top:8px;padding:6px 12px;border-radius:8px;border:none;background:#22c55e;color:#000;font-weight:600;cursor:pointer;">
             Copy Private Key
           </button>
         `;
@@ -363,14 +397,14 @@
                   permission: {
                     receiverId: businessAccount,
                     methodNames: [],
-                    allowance: "250000000000000000000000" // 0.25 NEAR gas
+                    allowance: "250000000000000000000000"
                   }
                 }
               }
             },
             {
               type: "Transfer",
-              params: { deposit: "100000000000000000000000" } // 0.1 NEAR
+              params: { deposit: "100000000000000000000000" }
             }
           ]
         });
@@ -379,10 +413,10 @@
         btn.disabled = true;
         showToast("Business activated + agent key granted! Copy the private key above.", "success");
 
-        // Delay refresh so user can copy the key
+        // Give user time to copy the key
         setTimeout(() => {
           loadBusinesses();
-        }, 12000);
+        }, 15000);
 
       } catch (err) {
         console.error(err);
