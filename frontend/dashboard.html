@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Owner Dashboard – Autonomous Business NFT</title>
+  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl-fast.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@hot-labs/near-connect@0.0.17/dist/index.umd.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -28,129 +30,73 @@
     .header { margin-bottom: 20px; }
     .header h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
     .header .sub { color: #a1a1aa; font-size: 0.9rem; }
-    .account-box {
-      background: #111114;
-      border: 1px solid #27272a;
-      border-radius: 14px;
-      padding: 14px 16px;
-      margin-bottom: 20px;
-      font-size: 0.9rem;
+    .disconnect-btn {
+      width: 100%; padding: 14px; border-radius: 14px;
+      background: transparent; border: 1.5px solid #ef4444;
+      color: #ef4444; font-weight: 600; font-size: 1rem;
+      margin-bottom: 16px; cursor: pointer;
     }
-    .btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin-bottom: 12px;
+    .connected-box {
+      background: #18181b; border-radius: 14px; padding: 14px 16px;
+      margin-bottom: 24px; font-size: 0.9rem;
     }
-    .btn-green { background: #22c55e; color: #000; }
-    .btn-red { background: transparent; border: 1px solid #ef4444; color: #ef4444; }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #3f3f46;
-      color: #f4f4f5;
-    }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .business-card {
-      background: #111114;
-      border: 1px solid #27272a;
-      border-radius: 16px;
-      padding: 18px;
-      margin-bottom: 16px;
+      background: #18181b; border-radius: 16px; padding: 18px;
+      margin-bottom: 16px; border: 1px solid #27272a;
     }
-    .business-card h3 { font-size: 1.15rem; margin-bottom: 6px; }
-    .business-card p { color: #a1a1aa; font-size: 0.9rem; margin-bottom: 10px; }
-    .token-id { font-size: 0.8rem; color: #71717a; margin-bottom: 8px; }
-    .treasury { color: #4ade80; font-size: 0.85rem; word-break: break-all; margin-bottom: 12px; }
+    .business-card h3 { font-size: 1.1rem; margin-bottom: 4px; }
+    .business-card .desc { color: #a1a1aa; font-size: 0.85rem; margin-bottom: 10px; }
+    .token-id, .treasury { font-size: 0.8rem; color: #4ade80; margin-bottom: 6px; }
     .stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 14px;
+      display: flex; gap: 10px; margin: 12px 0;
     }
     .stat {
-      background: #18181b;
-      border-radius: 10px;
-      padding: 10px;
-      text-align: center;
+      flex: 1; background: #27272a; border-radius: 10px;
+      padding: 10px; text-align: center;
     }
-    .stat .label { font-size: 0.75rem; color: #71717a; }
-    .stat .value { font-size: 1.05rem; font-weight: 600; margin-top: 2px; }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 20px;
-      margin-bottom: 12px;
+    .stat .label { font-size: 0.7rem; color: #a1a1aa; }
+    .stat .value { font-weight: 600; margin-top: 2px; }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.8rem; font-weight: 600; margin: 8px 0 12px;
     }
-    .badge-live { background: rgba(34,197,94,0.15); color: #4ade80; }
-    .badge-pending { background: rgba(234,179,8,0.15); color: #eab308; }
-    .status-msg {
-      font-size: 0.85rem;
-      padding: 10px 12px;
-      border-radius: 10px;
-      margin-top: 10px;
-      display: none;
+    .status-badge.live { color: #4ade80; }
+    .status-badge.pending { color: #fbbf24; }
+    .btn {
+      width: 100%; padding: 13px; border-radius: 12px;
+      border: none; font-weight: 600; font-size: 0.95rem;
+      cursor: pointer; margin-bottom: 8px;
     }
-    .status-msg.error { background: rgba(239,68,68,0.15); color: #f87171; display: block; }
-    .status-msg.success { background: rgba(34,197,94,0.15); color: #4ade80; display: block; }
-    .status-msg.info { background: rgba(59,130,246,0.15); color: #60a5fa; display: block; }
+    .btn-green { background: #22c55e; color: #000; }
+    .btn-outline {
+      background: transparent; border: 1.5px solid #3f3f46;
+      color: #e4e4e7;
+    }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .key-box {
-      background: #0c0c0e;
-      border: 1px solid #3f3f46;
-      border-radius: 10px;
-      padding: 12px;
-      margin-top: 12px;
-      font-family: monospace;
-      font-size: 0.72rem;
-      word-break: break-all;
-      display: none;
+      background: #0f172a; border: 1px solid #1e293b;
+      border-radius: 12px; padding: 12px; margin-top: 12px;
+      font-size: 0.75rem; word-break: break-all;
     }
-    .key-box.show { display: block; }
-    .warning {
-      background: rgba(234,179,8,0.12);
-      color: #eab308;
-      font-size: 0.78rem;
-      padding: 10px;
-      border-radius: 8px;
-      margin-top: 8px;
-      line-height: 1.4;
+    .key-box strong { color: #fbbf24; }
+    .toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%); background: #18181b;
+      border: 1px solid #27272a; padding: 12px 20px;
+      border-radius: 12px; font-size: 0.9rem; z-index: 100;
+      max-width: 90%; text-align: center;
     }
-    #toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #18181b;
-      border: 1px solid #3f3f46;
-      color: #f4f4f5;
-      padding: 12px 18px;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      max-width: 90%;
-      z-index: 9999;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    }
-    #toast.show { opacity: 1; }
-    #toast.error { border-color: #ef4444; color: #f87171; }
-    #toast.success { border-color: #22c55e; color: #4ade80; }
+    .toast.success { border-color: #22c55e; color: #4ade80; }
+    .toast.error { border-color: #ef4444; color: #f87171; }
+    .loading { text-align: center; color: #71717a; padding: 40px 0; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="topbar">
       <div class="logo">
-        <div class="logo-box">◆</div>
-        <span>Business NFT</span>
+        <div class="logo-box">⚡</div>
+        <span>NEAR BUSINESS</span>
       </div>
       <a href="/" class="back">← Mint</a>
     </div>
@@ -160,175 +106,101 @@
       <div class="sub">Your Autonomous Businesses</div>
     </div>
 
-    <button id="connectBtn" class="btn btn-green">Connect Wallet</button>
-    <button id="disconnectBtn" class="btn btn-red" style="display:none;">Disconnect Wallet</button>
+    <button id="disconnectBtn" class="disconnect-btn" style="display:none;">Disconnect Wallet</button>
+    <div id="connectedBox" class="connected-box" style="display:none;"></div>
 
-    <div id="accountBox" class="account-box" style="display:none;">
-      Connected as<br>
-      <strong id="accountIdDisplay"></strong>
-    </div>
-
-    <div id="list"></div>
+    <div id="list" class="loading">Loading your businesses...</div>
   </div>
 
-  <div id="toast"></div>
-
-  <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
-
-  <script type="importmap">
-  {
-    "imports": {
-      "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@0.12.0"
-    }
-  }
-  </script>
-
-  <script type="module">
-    import { NearConnector } from "@hot-labs/near-connect";
-
+  <script>
     const CONTRACT_ID = "buildingfromthetop.testnet";
     const NETWORK = "testnet";
 
     let connector = null;
     let accountId = null;
 
-    const connectBtn = document.getElementById("connectBtn");
-    const disconnectBtn = document.getElementById("disconnectBtn");
-    const accountBox = document.getElementById("accountBox");
-    const accountIdDisplay = document.getElementById("accountIdDisplay");
-    const listEl = document.getElementById("list");
-    const toastEl = document.getElementById("toast");
-
-    function showToast(message, type = "info") {
-      toastEl.textContent = message;
-      toastEl.className = "show " + type;
-      clearTimeout(toastEl._timer);
-      toastEl._timer = setTimeout(() => {
-        toastEl.className = "";
-      }, 4000);
+    function showToast(msg, type = "info") {
+      const t = document.createElement("div");
+      t.className = `toast ${type}`;
+      t.innerText = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 4500);
     }
 
-    function toBase58(bytes) {
+    // Base58 encoding for keys
+    function toBase58(buffer) {
       const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
-      let num = BigInt(0);
-      for (let i = 0; i < bytes.length; i++) {
-        num = (num << 8n) + BigInt(bytes[i]);
+      let digits = [0];
+      for (let i = 0; i < buffer.length; i++) {
+        let carry = buffer[i];
+        for (let j = 0; j < digits.length; j++) {
+          carry += digits[j] << 8;
+          digits[j] = carry % 58;
+          carry = (carry / 58) | 0;
+        }
+        while (carry) {
+          digits.push(carry % 58);
+          carry = (carry / 58) | 0;
+        }
       }
       let str = "";
-      while (num > 0n) {
-        str = ALPHABET[Number(num % 58n)] + str;
-        num = num / 58n;
-      }
-      for (let i = 0; i < bytes.length && bytes[i] === 0; i++) {
-        str = "1" + str;
-      }
+      for (let k = 0; buffer[k] === 0 && k < buffer.length - 1; k++) str += ALPHABET[0];
+      for (let q = digits.length - 1; q >= 0; q--) str += ALPHABET[digits[q]];
       return str;
     }
 
     function generateKeyPair() {
-      if (typeof nacl === "undefined") {
-        throw new Error("Crypto library not loaded. Please refresh.");
-      }
       const kp = nacl.sign.keyPair();
-      const seed = kp.secretKey.slice(0, 32);
-      const publicKey = kp.publicKey;
-      return {
-        privateKeyStr: "ed25519:" + toBase58(seed),
-        publicKeyStr: "ed25519:" + toBase58(publicKey)
-      };
-    }
-
-    async function getAccountBalance(accountId) {
-      try {
-        const res = await fetch("https://rpc.testnet.near.org", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jsonrpc: "2.0",
-            id: "1",
-            method: "query",
-            params: {
-              request_type: "view_account",
-              finality: "final",
-              account_id: accountId
-            }
-          })
-        });
-        const data = await res.json();
-        if (data.result && data.result.amount) {
-          return (Number(data.result.amount) / 1e24).toFixed(4);
-        }
-        return null;
-      } catch (e) {
-        return null;
-      }
-    }
-
-    function updateUI() {
-      if (accountId) {
-        connectBtn.style.display = "none";
-        disconnectBtn.style.display = "block";
-        accountBox.style.display = "block";
-        accountIdDisplay.textContent = accountId;
-      } else {
-        connectBtn.style.display = "block";
-        disconnectBtn.style.display = "none";
-        accountBox.style.display = "none";
-        listEl.innerHTML = "";
-      }
+      const publicKeyStr = "ed25519:" + toBase58(kp.publicKey);
+      const privateKeyStr = "ed25519:" + toBase58(kp.secretKey);
+      return { publicKeyStr, privateKeyStr };
     }
 
     async function init() {
-      connector = new NearConnector({
-        network: NETWORK,
-        features: { signAndSendTransaction: true },
-        autoConnect: true
-      });
+      connector = new nearConnect.NearConnector({ network: NETWORK });
 
       connector.on("wallet:signIn", async () => {
-        const connected = await connector.getConnectedWallet();
-        if (connected?.accounts?.length) {
-          accountId = connected.accounts[0].accountId;
-          updateUI();
-          loadBusinesses();
-        }
+        const wallet = await connector.wallet();
+        accountId = (await wallet.getAccounts())[0].accountId;
+        document.getElementById("disconnectBtn").style.display = "block";
+        document.getElementById("connectedBox").style.display = "block";
+        document.getElementById("connectedBox").innerHTML = `Connected as<br><strong>${accountId}</strong>`;
+        loadBusinesses();
       });
 
       connector.on("wallet:signOut", () => {
         accountId = null;
-        updateUI();
+        document.getElementById("disconnectBtn").style.display = "none";
+        document.getElementById("connectedBox").style.display = "none";
+        document.getElementById("list").innerHTML = `<div class="loading">Connect wallet to see your businesses</div>`;
       });
 
-      await new Promise(r => setTimeout(r, 500));
+      // Auto restore
       try {
-        const connected = await connector.getConnectedWallet();
-        if (connected?.accounts?.length) {
-          accountId = connected.accounts[0].accountId;
-          updateUI();
+        const wallet = await connector.wallet();
+        const accounts = await wallet.getAccounts();
+        if (accounts && accounts.length > 0) {
+          accountId = accounts[0].accountId;
+          document.getElementById("disconnectBtn").style.display = "block";
+          document.getElementById("connectedBox").style.display = "block";
+          document.getElementById("connectedBox").innerHTML = `Connected as<br><strong>${accountId}</strong>`;
           loadBusinesses();
         }
       } catch (e) {}
+
+      document.getElementById("disconnectBtn").onclick = async () => {
+        await connector.disconnect();
+      };
     }
 
-    connectBtn.addEventListener("click", async () => {
-      try {
-        await connector.connect();
-      } catch (err) {
-        showToast(err.message || "Connect failed", "error");
-      }
-    });
-
-    disconnectBtn.addEventListener("click", async () => {
-      try {
-        await connector.disconnect();
-        accountId = null;
-        updateUI();
-      } catch (err) {}
-    });
-
     async function loadBusinesses() {
-      if (!accountId) return;
-      listEl.innerHTML = `<div style="color:#a1a1aa;padding:20px 0;text-align:center;">Loading your businesses...</div>`;
+      const listEl = document.getElementById("list");
+      if (!accountId) {
+        listEl.innerHTML = `<div class="loading">Connect wallet first</div>`;
+        return;
+      }
+
+      listEl.innerHTML = `<div class="loading">Loading your businesses...</div>`;
 
       try {
         const res = await fetch("https://rpc.testnet.near.org", {
@@ -351,103 +223,133 @@
         const data = await res.json();
         const bytes = data.result?.result;
         if (!bytes) {
-          listEl.innerHTML = `<div style="color:#a1a1aa;padding:20px 0;text-align:center;">No businesses yet.<br>Go back and mint one.</div>`;
+          listEl.innerHTML = `<div class="loading">No businesses yet.<br>Go back and mint one.</div>`;
           return;
         }
 
         const tokens = JSON.parse(String.fromCharCode(...bytes));
         if (!tokens || tokens.length === 0) {
-          listEl.innerHTML = `<div style="color:#a1a1aa;padding:20px 0;text-align:center;">No businesses yet.<br>Go back and mint one.</div>`;
+          listEl.innerHTML = `<div class="loading">No businesses yet.<br>Go back and mint one.</div>`;
           return;
         }
 
         listEl.innerHTML = "";
-
         for (const token of tokens) {
-          const tokenId = String(token.token_id);
-          const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
-          const title = token.metadata?.title || "Untitled";
-          const description = token.metadata?.description || "No description";
+          const businessAccount = token.business_account || `business-\( {token.token_id}. \){CONTRACT_ID}`;
+          let balance = "—";
+          let isLive = false;
 
-          const balance = await getAccountBalance(businessAccount);
-          const isActive = balance !== null;
+          try {
+            const accRes = await fetch("https://rpc.testnet.near.org", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                jsonrpc: "2.0",
+                id: "2",
+                method: "query",
+                params: {
+                  request_type: "view_account",
+                  finality: "final",
+                  account_id: businessAccount
+                }
+              })
+            });
+            const accData = await accRes.json();
+            if (accData.result) {
+              balance = (parseFloat(accData.result.amount) / 1e24).toFixed(4);
+              isLive = true;
+            }
+          } catch (e) {}
 
           const card = document.createElement("div");
           card.className = "business-card";
           card.innerHTML = `
-            <h3>${title}</h3>
-            <p>${description}</p>
-            <div class="token-id">Token ID: ${tokenId}</div>
+            <h3>${token.metadata?.title || "Untitled Business"}</h3>
+            <div class="desc">${token.metadata?.description || "No description"}</div>
+            <div class="token-id">Token ID: ${token.token_id}</div>
             <div class="treasury">Treasury: ${businessAccount}</div>
             <div class="stats">
               <div class="stat">
                 <div class="label">Treasury Balance</div>
-                <div class="value">${isActive ? balance + " Ⓝ" : "—"}</div>
+                <div class="value">${balance} Ⓝ</div>
               </div>
               <div class="stat">
                 <div class="label">Status</div>
-                <div class="value">${isActive ? "Live" : "Pending"}</div>
+                <div class="value">${isLive ? "Live" : "Pending"}</div>
               </div>
             </div>
-            <div class="badge ${isActive ? "badge-live" : "badge-pending"}">
-              ${isActive ? "● Active" : "○ Pending Activation"}
+            <div class="status-badge ${isLive ? "live" : "pending"}">
+              ${isLive ? "● Active" : "○ Pending Activation"}
             </div>
-            <button class="btn btn-green activate-btn" ${isActive ? "disabled" : ""}>
-              ${isActive ? "Activated ✓" : "Activate Business"}
-            </button>
-            <div class="status-msg"></div>
-            <div class="key-box"></div>
+            <div class="actions" data-token="\( {token.token_id}" data-business=" \){businessAccount}"></div>
           `;
+
+          const actions = card.querySelector(".actions");
+
+          if (!isLive) {
+            const activateBtn = document.createElement("button");
+            activateBtn.className = "btn btn-green";
+            activateBtn.innerText = "Activate Business";
+            activateBtn.onclick = () => activateBusiness(token.token_id, businessAccount, activateBtn);
+            actions.appendChild(activateBtn);
+          } else {
+            const activated = document.createElement("button");
+            activated.className = "btn btn-green";
+            activated.innerText = "Activated ✓";
+            activated.disabled = true;
+            actions.appendChild(activated);
+
+            // Claim button
+            const claimBtn = document.createElement("button");
+            claimBtn.className = "btn btn-outline";
+            claimBtn.innerText = "Claim Revenue";
+            claimBtn.onclick = () => {
+              showToast("To claim: transfer funds from the business account to your main wallet using the agent key or near-cli.", "info");
+            };
+            actions.appendChild(claimBtn);
+
+            // Sell / Transfer button
+            const sellBtn = document.createElement("button");
+            sellBtn.className = "btn btn-outline";
+            sellBtn.innerText = "Sell / Transfer NFT";
+            sellBtn.onclick = () => {
+              showToast("To transfer ownership: use any NEP-171 marketplace or call nft_transfer on the contract. The new owner inherits the business.", "info");
+            };
+            actions.appendChild(sellBtn);
+          }
+
           listEl.appendChild(card);
         }
-
-        document.querySelectorAll(".activate-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const card = btn.closest(".business-card");
-            const tokenIdText = card.querySelector(".token-id")?.textContent || "";
-            const tokenId = tokenIdText.replace("Token ID:", "").trim();
-            activateBusiness(tokenId, btn);
-          });
-        });
-
       } catch (err) {
-        listEl.innerHTML = `<div style="color:#f87171;padding:20px 0;text-align:center;">Failed to load businesses</div>`;
-        showToast("Failed to load businesses", "error");
+        console.error(err);
+        listEl.innerHTML = `<div class="loading">Failed to load businesses</div>`;
       }
     }
 
-    async function activateBusiness(tokenId, btn) {
-      const card = btn.closest(".business-card");
-      const statusEl = card ? card.querySelector(".status-msg") : null;
-      const keyBox = card ? card.querySelector(".key-box") : null;
-      const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
+    async function activateBusiness(tokenId, businessAccount, btn) {
+      btn.disabled = true;
+      btn.innerText = "Generating key...";
 
       try {
-        btn.disabled = true;
+        const { publicKeyStr, privateKeyStr } = generateKeyPair();
+
+        // Show the private key immediately
+        const keyBox = document.createElement("div");
+        keyBox.className = "key-box";
+        keyBox.innerHTML = `
+          <strong>⚠️ SAVE THIS PRIVATE KEY NOW</strong><br><br>
+          ${privateKeyStr}<br><br>
+          <button onclick="navigator.clipboard.writeText('${privateKeyStr}'); this.innerText='Copied!';" style="margin-top:8px;padding:6px 12px;border-radius:8px;border:none;background:#22c55e;color:#000;font-weight:600;cursor:pointer;">
+            Copy Private Key
+          </button>
+        `;
+        btn.parentNode.appendChild(keyBox);
+
         btn.innerText = "Confirm in wallet...";
-        if (statusEl) {
-          statusEl.className = "status-msg info";
-          statusEl.innerText = "Creating treasury + Agent Function-Call key... Confirm in your wallet";
-        }
-
-        // Generate the agent key that will be added during creation
-        const { privateKeyStr, publicKeyStr } = generateKeyPair();
-
-        // Show it immediately so user can save it
-        if (keyBox) {
-          keyBox.className = "key-box show";
-          keyBox.innerHTML = `
-            <div style="color:#4ade80;margin-bottom:6px;font-weight:600;">🔑 Agent Function-Call Key (COPY THIS NOW)</div>
-            <div style="user-select:all;word-break:break-all;">${privateKeyStr}</div>
-            <div class="warning">
-              ⚠️ This is the agent key for this business.<br>
-              Copy and store it safely. This is the only time it will be shown.<br>
-              You will give this key to your AI agent later.
-            </div>
-          `;
-        }
+        showToast("Key generated – confirm the transaction in your wallet", "info");
 
         const wallet = await connector.wallet();
+
         await wallet.signAndSendTransaction({
           receiverId: businessAccount,
           actions: [
@@ -461,30 +363,29 @@
                   permission: {
                     receiverId: businessAccount,
                     methodNames: [],
-                    allowance: "250000000000000000000000"
+                    allowance: "250000000000000000000000" // 0.25 NEAR gas
                   }
                 }
               }
             },
-            { type: "Transfer", params: { deposit: "100000000000000000000000" } }
+            {
+              type: "Transfer",
+              params: { deposit: "100000000000000000000000" } // 0.1 NEAR
+            }
           ]
         });
 
-        if (statusEl) {
-          statusEl.className = "status-msg success";
-          statusEl.innerText = "✅ Business activated! Agent key has been added.";
-        }
         btn.innerText = "Activated ✓";
-        showToast("Agent key granted successfully! Copy the private key now.", "success");
-        // Give the user 12 seconds to copy the private key before refreshing
+        btn.disabled = true;
+        showToast("Business activated + agent key granted! Copy the private key above.", "success");
+
+        // Delay refresh so user can copy the key
         setTimeout(() => {
-        loadBusinesses();
+          loadBusinesses();
         }, 12000);
+
       } catch (err) {
-        if (statusEl) {
-          statusEl.className = "status-msg error";
-          statusEl.innerText = err.message || "Activation failed or cancelled";
-        }
+        console.error(err);
         showToast(err.message || "Activation failed", "error");
         btn.disabled = false;
         btn.innerText = "Activate Business";
