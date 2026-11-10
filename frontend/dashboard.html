@@ -791,18 +791,26 @@ Currently there is no built-in marketplace UI. Use:
       if (panel.classList.contains("show")) {
         panel.classList.remove("show");
         return;
-      }
+     }
       panel.classList.add("show");
-      panel.innerText = `To run a full autonomous agent:
+      panel.innerText = `Two ways to run a full autonomous agent:
 
-1. Copy the private key shown during activation
-2. Use the Node.js agent script we provided earlier
-3. Or later connect it to IronClaw / NEAR AI / any agent runtime
+1. CLASSIC METHOD (Function-Call key)
+   • Copy the ed25519 private key shown during activation
+   • Use it with the Node.js agent script
+   • Or connect it to IronClaw / NEAR AI / any agent runtime
 
-The Function-Call key allows the agent to spend from the business account and call allowed methods without needing your main wallet signature every time.
+2. OUTLAYER TEE METHOD (recommended)
+   • Copy the wk_... API key shown during activation
+   • Paste it in the "OutLayer API Key" field above
+   • The private key never leaves Intel TDX
+   • Safer for production – you can set spending limits and freeze the wallet from the OutLayer dashboard
+   • Skill file: https://skills.outlayer.ai/agent-custody/SKILL.md
 
-This is the current safe way to prove autonomy on testnet.`;
+Both methods work on testnet.
+The OutLayer method is the safer long-term path.`;
     };
+      
 
     init();
   </script>
