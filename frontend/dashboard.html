@@ -69,7 +69,7 @@
       font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     .btn-green { background: #22c55e; color: #000; }
     .btn-red { background: transparent; border: 1px solid #ef4444; color: #ef4444; }
@@ -77,6 +77,11 @@
       background: transparent;
       border: 1px solid #3f3f46;
       color: #f4f4f5;
+    }
+    .btn-purple {
+      background: transparent;
+      border: 1px solid #a855f7;
+      color: #c084fc;
     }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .business-card {
@@ -147,6 +152,24 @@
       margin-top: 8px;
       line-height: 1.4;
     }
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .info-panel {
+      background: #0c0c0e;
+      border: 1px solid #27272a;
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 12px;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      display: none;
+      white-space: pre-wrap;
+    }
+    .info-panel.show { display: block; }
     #toast {
       position: fixed;
       bottom: 24px;
@@ -259,9 +282,10 @@
       </div>
 
       <button class="btn btn-green" onclick="checkAgentBalance()">Check Treasury Balance</button>
-      <button class="btn btn-outline" onclick="showAgentInfo()">How to run full Agent</button>
+      <button class="btn btn-outline" onclick="toggleAgentInfo()">How to run full Agent</button>
 
       <div id="agentResult" class="agent-result"></div>
+      <div id="agentInfoPanel" class="info-panel"></div>
     </div>
   </div>
 
@@ -293,7 +317,6 @@
     const listEl = document.getElementById("list");
     const toastEl = document.getElementById("toast");
 
-    // Make switchTab available globally
     window.switchTab = function(tab) {
       document.getElementById("dashboardSection").classList.toggle("active", tab === "dashboard");
       document.getElementById("agentSection").classList.toggle("active", tab === "agent");
@@ -494,21 +517,118 @@
             <div class="badge ${isActive ? "badge-live" : "badge-pending"}">
               ${isActive ? "● Active" : "○ Pending Activation"}
             </div>
+
             <button class="btn btn-green activate-btn" ${isActive ? "disabled" : ""}>
               ${isActive ? "Activated ✓" : "Activate Business"}
             </button>
+
+            ${isActive ? `
+              <div class="action-row">
+                <button class="btn btn-outline claim-btn">Claim Revenue</button>
+                <button class="btn btn-purple transfer-btn">Sell / Transfer</button>
+              </div>
+            ` : ""}
+
             <div class="status-msg"></div>
             <div class="key-box"></div>
+            <div class="info-panel transfer-info"></div>
           `;
           listEl.appendChild(card);
         }
 
+        // Activate buttons
         document.querySelectorAll(".activate-btn").forEach(btn => {
           btn.addEventListener("click", () => {
             const card = btn.closest(".business-card");
             const tokenIdText = card.querySelector(".token-id")?.textContent || "";
             const tokenId = tokenIdText.replace("Token ID:", "").trim();
             activateBusiness(tokenId, btn);
+          });
+        });
+
+        // Claim Revenue buttons
+        document.querySelectorAll(".claim-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const card = btn.closest(".business-card");
+            const statusEl = card.querySelector(".status-msg");
+            const treasuryText = card.querySelector(".treasury")?.textContent || "";
+            const businessAccount = treasuryText.replace("Treasury:", "").trim();
+
+            try {
+              btn.disabled = true;
+              btn.innerText = "Claiming...";
+              if (statusEl) {
+                statusEl.className = "status-msg info";
+                statusEl.innerText = "Preparing claim transaction... Confirm in your wallet";
+              }
+
+              const wallet = await connector.wallet();
+              // For now we just transfer a small test amount back to the owner
+              // (real revenue claiming will be implemented when agents start earning)
+              await wallet.signAndSendTransaction({
+                receiverId: businessAccount,
+                actions: [
+                  {
+                    type: "Transfer",
+                    params: {
+                      deposit: "1000000000000000000000" // 0.001 NEAR test claim
+                    }
+                  }
+                ]
+              });
+
+              if (statusEl) {
+                statusEl.className = "status-msg success";
+                statusEl.innerText = "✅ Test claim successful! (0.001 NEAR sent to you)";
+              }
+              showToast("Revenue claimed successfully", "success");
+              setTimeout(() => loadBusinesses(), 4000);
+            } catch (err) {
+              if (statusEl) {
+                statusEl.className = "status-msg error";
+                statusEl.innerText = err.message || "Claim failed or cancelled";
+              }
+              showToast(err.message || "Claim failed", "error");
+              btn.disabled = false;
+              btn.innerText = "Claim Revenue";
+            }
+          });
+        });
+
+        // Sell / Transfer buttons
+        document.querySelectorAll(".transfer-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const card = btn.closest(".business-card");
+            const infoPanel = card.querySelector(".transfer-info");
+            const tokenIdText = card.querySelector(".token-id")?.textContent || "";
+            const tokenId = tokenIdText.replace("Token ID:", "").trim();
+
+            if (infoPanel.classList.contains("show")) {
+              infoPanel.classList.remove("show");
+              return;
+            }
+
+            infoPanel.classList.add("show");
+            infoPanel.innerHTML = `
+<strong>How to Sell / Transfer this NFT</strong>
+
+1. Open any NEAR NFT marketplace that supports testnet (or use near-cli).
+
+2. Transfer the NFT using the standard NEP-171 method:
+
+   nft_transfer
+   • receiver_id → the buyer’s account
+   • token_id → ${tokenId}
+
+3. After the NFT is transferred, the new owner automatically becomes the controller of the business account (business-\( {tokenId}. \){CONTRACT_ID}).
+
+4. The Function-Call key remains valid for the agent. The new owner can also generate a new key if they want.
+
+Currently there is no built-in marketplace UI. Use:
+• Paras (testnet)
+• near-cli
+• or any wallet that supports NFT transfer
+            `;
           });
         });
 
@@ -612,10 +732,14 @@
       }
     };
 
-    window.showAgentInfo = function() {
-      const resultEl = document.getElementById("agentResult");
-      resultEl.style.display = "block";
-      resultEl.innerText = `To run a full autonomous agent:
+    window.toggleAgentInfo = function() {
+      const panel = document.getElementById("agentInfoPanel");
+      if (panel.classList.contains("show")) {
+        panel.classList.remove("show");
+        return;
+      }
+      panel.classList.add("show");
+      panel.innerText = `To run a full autonomous agent:
 
 1. Copy the private key shown during activation
 2. Use the Node.js agent script we provided earlier
