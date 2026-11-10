@@ -23,24 +23,29 @@ class Contract {
     const token_id = this.next_token_id.toString();
     this.next_token_id += 1;
 
+    // Store owner
     near.storageWrite(`token_owner:${token_id}`, receiver_id);
 
+    // Store rich metadata
     const metadata = {
       title: title || "Autonomous Business NFT",
       description: description || "An NFT that runs its own business on NEAR",
       media: "https://near.org/wp-content/themes/near-19/assets/img/brand-icon.png",
-      copies: 1
+      copies: 1,
     };
     near.storageWrite(`token_meta:${token_id}`, JSON.stringify(metadata));
 
+    // Pre-calculate business account name
     const businessAccount = `business-\( {token_id}. \){near.currentAccountId()}`;
     near.storageWrite(`business_account:${token_id}`, businessAccount);
 
+    // Track tokens per owner
     const ownerKey = `owner_tokens:${receiver_id}`;
     let list = near.storageRead(ownerKey) || "";
     list = list === "" ? token_id : list + "," + token_id;
     near.storageWrite(ownerKey, list);
 
+    // NEP-171 event
     const event = {
       standard: "nep171",
       version: "1.2.0",
@@ -52,32 +57,21 @@ class Contract {
     return token_id;
   }
 
-  @view({})
-  nft_metadata() {
-    return {
-      spec: "nft-1.0.0",
-      name: "Autonomous Business NFT",
-      symbol: "ABNFT",
-      icon: "https://near.org/wp-content/themes/near-19/assets/img/brand-icon.png",
-      base_uri: null,
-      reference: null,
-      reference_hash: null,
-    };
-  }
+  // ========== VIEW METHODS ==========
 
   @view({})
   nft_token({ token_id }: { token_id: string }) {
     const owner = near.storageRead(`token_owner:${token_id}`);
     if (!owner) return null;
 
-    const metaRaw = near.storageRead(`token_meta:${token_id}`);
-    let metadata = {
+    let metadata: any = {
       title: "Untitled",
-      description: "No description",
+      description: "",
       media: "https://near.org/wp-content/themes/near-19/assets/img/brand-icon.png",
-      copies: 1
+      copies: 1,
     };
 
+    const metaRaw = near.storageRead(`token_meta:${token_id}`);
     if (metaRaw) {
       try {
         metadata = JSON.parse(metaRaw);
@@ -92,7 +86,7 @@ class Contract {
       token_id,
       owner_id: owner,
       metadata,
-      business_account: near.storageRead(`business_account:${token_id}`) || null
+      business_account: near.storageRead(`business_account:${token_id}`) || null,
     };
   }
 
@@ -137,5 +131,11 @@ class Contract {
   @view({})
   get_next_token_id(): number {
     return this.next_token_id;
+  }
+
+  // Simple claim helper (owner can later expand this)
+  @view({})
+  get_token_owner({ token_id }: { token_id: string }): string | null {
+    return near.storageRead(`token_owner:${token_id}`) || null;
   }
 }
