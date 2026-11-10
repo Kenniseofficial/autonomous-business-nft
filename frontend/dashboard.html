@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Owner Dashboard – Autonomous Business NFT</title>
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl-fast.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@hot-labs/near-connect@0.1.9/dist/index.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@hot-labs/near-connect@0.12.0/cdn/hot-connect.iife.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -107,13 +107,12 @@
       <div class="sub">Your Autonomous Businesses</div>
     </div>
 
-    <!-- Connect / Disconnect buttons -->
-    <button id="connectBtn" class="connect-btn">Connect Wallet</button>
+    <button id="connectBtn" class="connect-btn" style="display:none;">Connect Wallet</button>
     <button id="disconnectBtn" class="disconnect-btn" style="display:none;">Disconnect Wallet</button>
 
     <div id="connectedBox" class="connected-box" style="display:none;"></div>
 
-    <div id="list" class="loading">Connect your wallet to see your businesses</div>
+    <div id="list" class="loading">Checking wallet session...</div>
   </div>
 
   <script>
@@ -178,7 +177,8 @@
 
     async function init() {
       try {
-        connector = new nearConnect.NearConnector({ network: NETWORK });
+        // Correct global from the official IIFE build
+        connector = new HotConnect.NearConnector({ network: NETWORK });
 
         connector.on("wallet:signIn", async (payload) => {
           const id = payload.accounts?.[0]?.accountId;
@@ -189,22 +189,27 @@
           setDisconnectedUI();
         });
 
-        // Try to restore existing session
+        // Try to restore session from the Mint page (same domain)
         try {
           const wallet = await connector.wallet();
           const accounts = await wallet.getAccounts();
           if (accounts && accounts.length > 0) {
             setConnectedUI(accounts[0].accountId);
+            return;
           }
         } catch (e) {
-          // not connected yet
+          // no existing session
         }
+
+        // No session found → show Connect button
+        setDisconnectedUI();
+
       } catch (err) {
         console.error("Connector init error:", err);
+        document.getElementById("list").innerHTML = `<div class="loading">Wallet connector failed to load</div>`;
         showToast("Wallet connector failed to load", "error");
       }
 
-      // Connect button
       document.getElementById("connectBtn").onclick = async () => {
         try {
           await connector.connect();
@@ -214,7 +219,6 @@
         }
       };
 
-      // Disconnect button
       document.getElementById("disconnectBtn").onclick = async () => {
         try {
           await connector.disconnect();
@@ -366,7 +370,7 @@
       try {
         const { publicKeyStr, privateKeyStr } = generateKeyPair();
 
-        // Show private key immediately so user can copy
+        // Show private key immediately
         const keyBox = document.createElement("div");
         keyBox.className = "key-box";
         keyBox.innerHTML = `
