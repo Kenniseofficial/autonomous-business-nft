@@ -268,20 +268,26 @@
     <div id="agentSection" class="section">
       <div class="header">
         <h1>Agent Control</h1>
-        <div class="sub">Use the Function-Call key to control the business</div>
+        <div class="sub">Control with Function-Call key or OutLayer TEE key</div>
       </div>
 
       <div class="form-group">
-        <label>Business Account</label>
+        <label>Business Account (classic)</label>
         <input type="text" id="agentBusinessAccount" placeholder="business-10.buildingfromthetop.testnet" />
       </div>
 
       <div class="form-group">
-        <label>Private Key (ed25519:...)</label>
+        <label>Private Key (ed25519:...) – classic method</label>
         <textarea id="agentPrivateKey" placeholder="Paste the private key you copied during activation"></textarea>
       </div>
 
-      <button class="btn btn-green" onclick="checkAgentBalance()">Check Treasury Balance</button>
+      <div class="form-group">
+        <label>OutLayer API Key (wk_...) – TEE method</label>
+        <input type="text" id="outlayerApiKey" placeholder="wk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
+      </div>
+
+      <button class="btn btn-green" onclick="checkAgentBalance()">Check Classic Treasury Balance</button>
+      <button class="btn btn-outline" onclick="checkOutlayerBalance()">Check OutLayer Balance</button>
       <button class="btn btn-outline" onclick="toggleAgentInfo()">How to run full Agent</button>
 
       <div id="agentResult" class="agent-result"></div>
@@ -306,6 +312,7 @@
 
     const CONTRACT_ID = "buildingfromthetop.testnet";
     const NETWORK = "testnet";
+    const OUTLAYER_API = "https://testnet-api.outlayer.ai";
 
     let connector = null;
     let accountId = null;
@@ -385,6 +392,21 @@
         }
         return null;
       } catch (e) {
+        return null;
+      }
+    }
+
+    // ========== NEW: OutLayer register ==========
+    async function registerOutlayerWallet() {
+      try {
+        const res = await fetch(OUTLAYER_API + "/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" }
+        });
+        if (!res.ok) throw new Error("OutLayer register failed: " + res.status);
+        return await res.json();
+      } catch (err) {
+        console.error("OutLayer register error:", err);
         return null;
       }
     }
@@ -563,8 +585,6 @@
               }
 
               const wallet = await connector.wallet();
-              // For now we just transfer a small test amount back to the owner
-              // (real revenue claiming will be implemented when agents start earning)
               await wallet.signAndSendTransaction({
                 receiverId: businessAccount,
                 actions: [
@@ -654,15 +674,14 @@ Currently there is no built-in marketplace UI. Use:
 
         const { privateKeyStr, publicKeyStr } = generateKeyPair();
 
+        // Show classic key immediately so user can copy
         if (keyBox) {
           keyBox.className = "key-box show";
           keyBox.innerHTML = `
             <div style="color:#4ade80;margin-bottom:6px;font-weight:600;">🔑 Agent Function-Call Key (COPY THIS NOW)</div>
             <div style="user-select:all;word-break:break-all;">${privateKeyStr}</div>
             <div class="warning">
-              ⚠️ This is the agent key for this business.<br>
-              Copy and store it safely. This is the only time it will be shown.<br>
-              You will give this key to your AI agent later.
+              ⚠️ Classic Function-Call key. Copy and store it safely.
             </div>
           `;
         }
@@ -690,16 +709,47 @@ Currently there is no built-in marketplace UI. Use:
           ]
         });
 
+        // ===== NEW: Also create OutLayer TEE wallet =====
+        if (statusEl) {
+          statusEl.innerText = "Business created. Now creating OutLayer TEE wallet...";
+        }
+
+        const outlayer = await registerOutlayerWallet();
+
+        if (outlayer && outlayer.api_key) {
+          if (keyBox) {
+            keyBox.innerHTML += `
+              <div style="margin-top:16px;border-top:1px solid #3f3f46;padding-top:12px;">
+                <div style="color:#c084fc;margin-bottom:6px;font-weight:600;">🛡️ OutLayer TEE API Key (COPY THIS TOO)</div>
+                <div style="user-select:all;word-break:break-all;margin-bottom:8px;">${outlayer.api_key}</div>
+                <div style="font-size:0.75rem;color:#a1a1aa;margin-bottom:6px;">
+                  OutLayer Account: ${outlayer.near_account_id || "—"}
+                </div>
+                \( {outlayer.handoff_url ? `<a href=" \){outlayer.handoff_url}" target="_blank" style="color:#60a5fa;font-size:0.8rem;">Open OutLayer Dashboard →</a>` : ""}
+                <div class="warning" style="margin-top:8px;">
+                  This key is controlled inside Intel TDX. The agent never sees a private key.
+                  Save it. You will paste it in the Agent Control tab.
+                </div>
+              </div>
+            `;
+          }
+          showToast("OutLayer TEE wallet created!", "success");
+        } else {
+          showToast("OutLayer wallet creation failed (you can still use the classic key)", "error");
+        }
+
         if (statusEl) {
           statusEl.className = "status-msg success";
-          statusEl.innerText = "✅ Business activated! Agent key has been added.";
+          statusEl.innerText = "✅ Business activated! Both keys shown above — copy them now.";
         }
         btn.innerText = "Activated ✓";
-        showToast("Agent key granted successfully! Copy the private key now.", "success");
+        showToast("Activation successful! Copy both keys.", "success");
 
+        // Give user time to copy both keys
         setTimeout(() => {
           loadBusinesses();
-        }, 12000);
+        }, 15000);
+
       } catch (err) {
         if (statusEl) {
           statusEl.className = "status-msg error";
@@ -732,6 +782,37 @@ Currently there is no built-in marketplace UI. Use:
       }
     };
 
+    // ========== NEW: OutLayer balance check ==========
+    window.checkOutlayerBalance = async function() {
+      const apiKey = document.getElementById("outlayerApiKey").value.trim();
+      const resultEl = document.getElementById("agentResult");
+
+      if (!apiKey) {
+        showToast("Please paste an OutLayer API key (wk_...)", "error");
+        return;
+      }
+
+      resultEl.style.display = "block";
+      resultEl.innerText = "Checking OutLayer balance...";
+
+      try {
+        const res = await fetch(OUTLAYER_API + "/wallet/v1/balance?chain=near", {
+          headers: {
+            "Authorization": "Bearer " + apiKey
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error("OutLayer API error: " + res.status);
+        }
+
+        const data = await res.json();
+        resultEl.innerText = `OutLayer TEE Wallet Balance:\n\n${JSON.stringify(data, null, 2)}\n\n✅ Key is valid and the wallet is controlled inside Intel TDX.`;
+      } catch (err) {
+        resultEl.innerText = `Failed to check OutLayer balance:\n${err.message}\n\nMake sure the API key is correct and starts with wk_`;
+      }
+    };
+
     window.toggleAgentInfo = function() {
       const panel = document.getElementById("agentInfoPanel");
       if (panel.classList.contains("show")) {
@@ -739,15 +820,22 @@ Currently there is no built-in marketplace UI. Use:
         return;
       }
       panel.classList.add("show");
-      panel.innerText = `To run a full autonomous agent:
+      panel.innerText = `Two ways to control the agent:
 
-1. Copy the private key shown during activation
-2. Use the Node.js agent script we provided earlier
-3. Or later connect it to IronClaw / NEAR AI / any agent runtime
+1. CLASSIC (Function-Call key)
+   - Use the ed25519 private key shown during activation
+   - Works with the Node.js agent script
+   - Key lives on the device that runs the agent
 
-The Function-Call key allows the agent to spend from the business account and call allowed methods without needing your main wallet signature every time.
+2. OUTLAYER TEE (recommended for production)
+   - Use the wk_... API key
+   - Private key never leaves Intel TDX
+   - Agent only needs the API key
+   - You can set spending policies and freeze the wallet from OutLayer dashboard
+   - Skill file: https://skills.outlayer.ai/agent-custody/SKILL.md
 
-This is the current safe way to prove autonomy on testnet.`;
+For the hackathon either method is fine.
+The OutLayer method is the safer long-term path.`;
     };
 
     init();
