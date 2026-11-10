@@ -4,8 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Owner Dashboard – Autonomous Business NFT</title>
+
+  <!-- Same library version that previously synchronized with the Mint page -->
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl-fast.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@hot-labs/near-connect@0.12.0/cdn/hot-connect.iife.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@hot-labs/near-connect@0.0.17/dist/index.umd.js"></script>
+
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -18,7 +21,7 @@
     .container { max-width: 440px; margin: 0 auto; padding: 16px 16px 80px; }
     .topbar {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 8px 0 20px;
+      padding: 8px 0 16px;
     }
     .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; }
     .logo-box {
@@ -27,9 +30,35 @@
       border-radius: 9px; display: grid; place-items: center;
     }
     .back { color: #a1a1aa; text-decoration: none; font-size: 0.9rem; }
-    .header { margin-bottom: 20px; }
-    .header h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      border-radius: 12px;
+      background: #18181b;
+      color: #a1a1aa;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: 1px solid #27272a;
+    }
+    .tab.active {
+      background: #22c55e;
+      color: #000;
+      border-color: #22c55e;
+    }
+
+    .header { margin-bottom: 16px; }
+    .header h1 { font-size: 1.35rem; font-weight: 700; margin-bottom: 4px; }
     .header .sub { color: #a1a1aa; font-size: 0.9rem; }
+
     .connect-btn, .disconnect-btn {
       width: 100%; padding: 14px; border-radius: 14px;
       font-weight: 600; font-size: 1rem; cursor: pointer; margin-bottom: 16px;
@@ -90,6 +119,28 @@
     .toast.success { border-color: #22c55e; color: #4ade80; }
     .toast.error { border-color: #ef4444; color: #f87171; }
     .loading { text-align: center; color: #71717a; padding: 40px 0; }
+
+    /* Agent Control */
+    .agent-section { display: none; }
+    .agent-section.active { display: block; }
+    .dashboard-section { display: block; }
+    .dashboard-section.hidden { display: none; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block; font-size: 0.85rem; color: #a1a1aa; margin-bottom: 6px;
+    }
+    .form-group input, .form-group textarea {
+      width: 100%; padding: 12px 14px; border-radius: 12px;
+      background: #18181b; border: 1px solid #27272a; color: #f4f4f5;
+      font-size: 0.9rem;
+    }
+    .form-group textarea { min-height: 80px; resize: vertical; }
+    .agent-result {
+      background: #0f172a; border-radius: 12px; padding: 14px;
+      margin-top: 16px; font-size: 0.85rem; white-space: pre-wrap;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -102,17 +153,49 @@
       <a href="/" class="back">← Mint</a>
     </div>
 
-    <div class="header">
-      <h1>Owner Dashboard</h1>
-      <div class="sub">Your Autonomous Businesses</div>
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" id="tabDashboard" onclick="switchTab('dashboard')">Dashboard</div>
+      <div class="tab" id="tabAgent" onclick="switchTab('agent')">Agent Control</div>
     </div>
 
-    <button id="connectBtn" class="connect-btn" style="display:none;">Connect Wallet</button>
-    <button id="disconnectBtn" class="disconnect-btn" style="display:none;">Disconnect Wallet</button>
+    <!-- ==================== DASHBOARD SECTION ==================== -->
+    <div id="dashboardSection" class="dashboard-section">
+      <div class="header">
+        <h1>Owner Dashboard</h1>
+        <div class="sub">Your Autonomous Businesses</div>
+      </div>
 
-    <div id="connectedBox" class="connected-box" style="display:none;"></div>
+      <button id="connectBtn" class="connect-btn" style="display:none;">Connect Wallet</button>
+      <button id="disconnectBtn" class="disconnect-btn" style="display:none;">Disconnect Wallet</button>
 
-    <div id="list" class="loading">Checking wallet session...</div>
+      <div id="connectedBox" class="connected-box" style="display:none;"></div>
+
+      <div id="list" class="loading">Checking wallet session...</div>
+    </div>
+
+    <!-- ==================== AGENT CONTROL SECTION ==================== -->
+    <div id="agentSection" class="agent-section">
+      <div class="header">
+        <h1>Agent Control</h1>
+        <div class="sub">Run actions with the Function-Call key</div>
+      </div>
+
+      <div class="form-group">
+        <label>Business Account</label>
+        <input type="text" id="agentBusinessAccount" placeholder="business-10.buildingfromthetop.testnet" />
+      </div>
+
+      <div class="form-group">
+        <label>Private Key (ed25519:...)</label>
+        <textarea id="agentPrivateKey" placeholder="ed25519:..."></textarea>
+      </div>
+
+      <button class="btn btn-green" onclick="runAgentCheckBalance()">Check Treasury Balance</button>
+      <button class="btn btn-outline" onclick="runAgentSimpleAction()">Test Agent Action</button>
+
+      <div id="agentResult" class="agent-result"></div>
+    </div>
   </div>
 
   <script>
@@ -128,6 +211,25 @@
       t.innerText = msg;
       document.body.appendChild(t);
       setTimeout(() => t.remove(), 4500);
+    }
+
+    function switchTab(tab) {
+      const dash = document.getElementById("dashboardSection");
+      const agent = document.getElementById("agentSection");
+      const tabDash = document.getElementById("tabDashboard");
+      const tabAgent = document.getElementById("tabAgent");
+
+      if (tab === "dashboard") {
+        dash.classList.remove("hidden");
+        agent.classList.remove("active");
+        tabDash.classList.add("active");
+        tabAgent.classList.remove("active");
+      } else {
+        dash.classList.add("hidden");
+        agent.classList.add("active");
+        tabDash.classList.remove("active");
+        tabAgent.classList.add("active");
+      }
     }
 
     function toBase58(buffer) {
@@ -177,8 +279,8 @@
 
     async function init() {
       try {
-        // Correct global from the official IIFE build
-        connector = new HotConnect.NearConnector({ network: NETWORK });
+        // This is the same pattern that previously synchronized with the Mint page
+        connector = new nearConnect.NearConnector({ network: NETWORK });
 
         connector.on("wallet:signIn", async (payload) => {
           const id = payload.accounts?.[0]?.accountId;
@@ -189,7 +291,7 @@
           setDisconnectedUI();
         });
 
-        // Try to restore session from the Mint page (same domain)
+        // Try to restore the session that was created on the Mint page
         try {
           const wallet = await connector.wallet();
           const accounts = await wallet.getAccounts();
@@ -201,7 +303,6 @@
           // no existing session
         }
 
-        // No session found → show Connect button
         setDisconnectedUI();
 
       } catch (err) {
@@ -342,7 +443,7 @@
             claimBtn.className = "btn btn-outline";
             claimBtn.innerText = "Claim Revenue";
             claimBtn.onclick = () => {
-              showToast("To claim: transfer funds from the business account using the agent private key.", "info");
+              showToast("Use the Agent Control tab with the private key to transfer funds.", "info");
             };
             actions.appendChild(claimBtn);
 
@@ -370,7 +471,6 @@
       try {
         const { publicKeyStr, privateKeyStr } = generateKeyPair();
 
-        // Show private key immediately
         const keyBox = document.createElement("div");
         keyBox.className = "key-box";
         keyBox.innerHTML = `
@@ -417,7 +517,6 @@
         btn.disabled = true;
         showToast("Business activated + agent key granted! Copy the private key above.", "success");
 
-        // Give user time to copy the key
         setTimeout(() => {
           loadBusinesses();
         }, 15000);
@@ -428,6 +527,63 @@
         btn.disabled = false;
         btn.innerText = "Activate Business";
       }
+    }
+
+    // ========== AGENT CONTROL FUNCTIONS ==========
+    async function runAgentCheckBalance() {
+      const account = document.getElementById("agentBusinessAccount").value.trim();
+      const privateKey = document.getElementById("agentPrivateKey").value.trim();
+      const resultEl = document.getElementById("agentResult");
+
+      if (!account || !privateKey) {
+        showToast("Please fill Business Account and Private Key", "error");
+        return;
+      }
+
+      resultEl.style.display = "block";
+      resultEl.innerText = "Checking balance...";
+
+      try {
+        // We use a simple RPC view_account (no signing needed for balance)
+        const res = await fetch("https://rpc.testnet.near.org", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: "1",
+            method: "query",
+            params: {
+              request_type: "view_account",
+              finality: "final",
+              account_id: account
+            }
+          })
+        });
+
+        const data = await res.json();
+        if (data.result) {
+          const bal = (parseFloat(data.result.amount) / 1e24).toFixed(4);
+          resultEl.innerText = `Treasury Balance of \( {account}:\n \){bal} NEAR\n\n✅ Agent key can control this account.`;
+        } else {
+          resultEl.innerText = "Account not found or error:\n" + JSON.stringify(data.error || data, null, 2);
+        }
+      } catch (err) {
+        resultEl.innerText = "Error: " + err.message;
+      }
+    }
+
+    async function runAgentSimpleAction() {
+      const account = document.getElementById("agentBusinessAccount").value.trim();
+      const privateKey = document.getElementById("agentPrivateKey").value.trim();
+      const resultEl = document.getElementById("agentResult");
+
+      if (!account || !privateKey) {
+        showToast("Please fill Business Account and Private Key", "error");
+        return;
+      }
+
+      resultEl.style.display = "block";
+      resultEl.innerText = "To perform signed actions (transfer, contract calls) from the browser, you currently need the Node.js agent script we provided earlier, because browsers cannot safely hold long-lived private keys for signing without additional libraries.\n\nFor the hackathon demo, use the Node.js script on Termux to prove autonomy.\n\nNext step we can add a full near-api-js browser version if you want.";
     }
 
     init();
