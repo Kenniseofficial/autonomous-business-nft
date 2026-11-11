@@ -729,7 +729,7 @@ Currently there is no built-in marketplace UI. Use:
 
         setTimeout(() => {
           loadBusinesses();
-        }, 12000);
+        }, 60000);
       } catch (err) {
         if (statusEl) {
           statusEl.className = "status-msg error";
@@ -762,7 +762,7 @@ Currently there is no built-in marketplace UI. Use:
       }
     };
 
-    window.checkOutlayerBalance = async function() {
+   window.checkOutlayerBalance = async function() {
   const apiKey = document.getElementById("outlayerApiKey").value.trim();
   const resultEl = document.getElementById("agentResult");
 
@@ -780,7 +780,6 @@ Currently there is no built-in marketplace UI. Use:
   resultEl.innerText = "Checking OutLayer balance...";
 
   try {
-    // First try balance
     const res = await fetch("https://testnet-api.outlayer.ai/wallet/v1/balance?chain=near", {
       method: "GET",
       headers: {
@@ -798,15 +797,22 @@ Currently there is no built-in marketplace UI. Use:
     }
 
     if (!res.ok) {
-      resultEl.innerText = `OutLayer Error \( {res.status}\n\n \){typeof data === "string" ? data : JSON.stringify(data, null, 2)}\n\nPossible reasons:\n• Key is a trial key that needs claiming\n• Key was not fully registered\n• Testnet key expired or invalid`;
+      let message = "OutLayer Error " + res.status + "\n\n";
+      if (typeof data === "string") {
+        message += data;
+      } else {
+        message += JSON.stringify(data, null, 2);
+      }
+      message += "\n\nPossible reasons:\n• Key is a trial key that needs claiming\n• Key was not fully registered\n• Testnet key expired or invalid";
+      resultEl.innerText = message;
       return;
     }
 
-        resultEl.innerText = `✅ OutLayer Balance:\n\n${JSON.stringify(data, null, 2)}`;
-      } catch (err) {
-        resultEl.innerText = "Network / CORS error:\n" + err.message;
-      }
-    };
+    resultEl.innerText = "✅ OutLayer Balance:\n\n" + JSON.stringify(data, null, 2);
+  } catch (err) {
+    resultEl.innerText = "Network / CORS error:\n" + err.message;
+  }
+}; 
       
     window.toggleAgentInfo = function() {
       const panel = document.getElementById("agentInfoPanel");
