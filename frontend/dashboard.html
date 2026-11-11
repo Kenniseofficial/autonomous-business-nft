@@ -763,29 +763,51 @@ Currently there is no built-in marketplace UI. Use:
     };
 
     window.checkOutlayerBalance = async function() {
-      const apiKey = document.getElementById("outlayerApiKey").value.trim();
-      const resultEl = document.getElementById("agentResult");
+  const apiKey = document.getElementById("outlayerApiKey").value.trim();
+  const resultEl = document.getElementById("agentResult");
 
-      if (!apiKey) {
-        showToast("Please paste an OutLayer API key (wk_...)", "error");
-        return;
+  if (!apiKey) {
+    showToast("Please paste an OutLayer API key (wk_...)", "error");
+    return;
+  }
+
+  if (!apiKey.startsWith("wk_")) {
+    showToast("Key must start with wk_", "error");
+    return;
+  }
+
+  resultEl.style.display = "block";
+  resultEl.innerText = "Checking OutLayer balance...";
+
+  try {
+    // First try balance
+    const res = await fetch("https://testnet-api.outlayer.ai/wallet/v1/balance?chain=near", {
+      method: "GET",
+      headers: {
+        "Authorization": "Bearer " + apiKey,
+        "Accept": "application/json"
       }
+    });
 
-      resultEl.style.display = "block";
-      resultEl.innerText = "Checking OutLayer balance...";
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      data = text;
+    }
 
-      try {
-        const res = await fetch(OUTLAYER_API + "/wallet/v1/balance?chain=near", {
-          headers: { "Authorization": "Bearer " + apiKey }
-        });
-        if (!res.ok) throw new Error("OutLayer error " + res.status);
-        const data = await res.json();
-        resultEl.innerText = `OutLayer Balance:\n\n${JSON.stringify(data, null, 2)}`;
+    if (!res.ok) {
+      resultEl.innerText = `OutLayer Error \( {res.status}\n\n \){typeof data === "string" ? data : JSON.stringify(data, null, 2)}\n\nPossible reasons:\n• Key is a trial key that needs claiming\n• Key was not fully registered\n• Testnet key expired or invalid`;
+      return;
+    }
+
+        resultEl.innerText = `✅ OutLayer Balance:\n\n${JSON.stringify(data, null, 2)}`;
       } catch (err) {
-        resultEl.innerText = "Failed: " + err.message;
+        resultEl.innerText = "Network / CORS error:\n" + err.message;
       }
     };
-
+      
     window.toggleAgentInfo = function() {
       const panel = document.getElementById("agentInfoPanel");
       if (panel.classList.contains("show")) {
