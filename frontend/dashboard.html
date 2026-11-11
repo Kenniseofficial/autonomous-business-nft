@@ -535,10 +535,14 @@
               </div>
             </div>
             <div class="badge ${isActive ? "badge-live" : "badge-pending"}">
-              ${isActive ? "● Active" : "○ Pending Activation"}
-            </div>
+    ${isActive ? "● Active" : "○ Pending Activation"}
+  </div>
 
-            <button class="btn btn-green activate-btn" ${isActive ? "disabled" : ""}>
+  <div style="margin-top:10px; padding:8px 12px; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.25); border-radius:10px; font-size:0.85rem; color:#4ade80;">
+    ● Agent Status: Ready (under the hood)
+  </div>
+
+  <button class="btn btn-green activate-btn" ${isActive ? "disabled" : ""}>
               ${isActive ? "Activated ✓" : "Activate Business"}
             </button>
 
@@ -815,30 +819,38 @@ Currently there is no built-in marketplace UI. Use:
 }; 
       
     window.toggleAgentInfo = function() {
-      const panel = document.getElementById("agentInfoPanel");
-      if (panel.classList.contains("show")) {
-        panel.classList.remove("show");
-        return;
-     }
-      panel.classList.add("show");
-      panel.innerText = `Two ways to run a full autonomous agent:
+  const panel = document.getElementById("agentInfoPanel");
+  if (panel.classList.contains("show")) {
+    panel.classList.remove("show");
+    return;
+  }
+  panel.classList.add("show");
+  panel.innerText = `HOW THE AGENT WORKS (UNDER THE HOOD)
 
-1. CLASSIC METHOD (Function-Call key)
-   • Copy the ed25519 private key shown during activation
-   • Use it with the Node.js agent script
-   • Or connect it to IronClaw / NEAR AI / any agent runtime
+For normal users:
+• You only mint the NFT and activate the business once.
+• The agent runs in the background using the Function-Call key + OutLayer custody.
+• Revenue is deposited into the business treasury.
+• You only need to claim revenue or sell/transfer the NFT when you want.
 
-2. OUTLAYER TEE METHOD (recommended)
-   • Copy the wk_... API key shown during activation
-   • Paste it in the "OutLayer API Key" field above
-   • The private key never leaves Intel TDX
-   • Safer for production – you can set spending limits and freeze the wallet from the OutLayer dashboard
-   • Skill file: https://skills.outlayer.ai/agent-custody/SKILL.md
+Two ways the agent can run:
 
-Both methods work on testnet.
-The OutLayer method is the safer long-term path.`;
-    };
-      
+1. CLASSIC (Function-Call Key)
+   - Copy the private key shown during activation
+   - Use it with the Node.js agent script or any agent runtime
+   - The key can only call allowed methods and has limited allowance
+
+2. OUTLAYER TEE (Recommended)
+   - The wk_... key you received is a custodial key inside OutLayer’s TEE
+   - You can check balance here
+   - Later the agent can be controlled / scheduled through OutLayer API
+   - Safer because the private key never leaves the TEE
+
+Next step team will add:
+• Automatic status ("Agent Running" / "Idle")
+• Ability to start a simple background task from the dashboard
+• Claim Revenue button that actually withdraws from the business account`;
+};
 
     init();
   </script>
