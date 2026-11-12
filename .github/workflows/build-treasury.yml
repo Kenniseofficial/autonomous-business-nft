@@ -1,0 +1,33 @@
+name: Build treasury wasm
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install cargo-near
+        run: cargo install cargo-near --locked
+
+      - name: Build treasury
+        working-directory: contracts/treasury
+        run: cargo near build non-reproducible-wasm --no-abi
+
+      - name: Save the built wasm into the repo
+        run: |
+          cp contracts/treasury/target/near/treasury.wasm contracts/treasury/treasury.wasm
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -f contracts/treasury/treasury.wasm
+          git commit -m "Add built treasury wasm" || echo "No changes to commit"
+          git push
