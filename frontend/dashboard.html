@@ -318,6 +318,11 @@
     const OUTLAYER_API = "https://testnet-api.outlayer.ai";
     const CONFIG_STORAGE_KEY = "autonomous.agentConfig.v1";
     const STORAGE_RESERVE_NEAR = 0.005;
+    const CLAIM_METHOD = "claim";            // method that must exist on each business account's contract
+    const CLAIM_GAS = "50000000000000";      // 50 Tgas (cross-contract owner check + transfer)
+    const ACTIVATE_GAS = "150000000000000";  // 150 Tgas (create account + deploy treasury + add key)
+    const ACTIVATION_DEPOSIT_YOCTO = "2000000000000000000000000"; // 2 NEAR (contract minimum is 1.5)
+    const ROTATE_GAS = "60000000000000";     // 60 Tgas
 
     /* =====================================================================
        STATE
@@ -384,7 +389,7 @@
 
     const selected = () => state.businesses.find(b => b.tokenId === state.selectedId) || state.businesses[0] || null;
     const totalClaimable = () => state.businesses.filter(b => b.active && b.balance !== null)
-      .reduce((s, b) => s + Math.max(0, Number(b.balance) - STORAGE_RESERVE_NEAR), 0);
+      .reduce((s, b) => s + (b.claimable || 0), 0);
     const totalTreasury = () => state.businesses.filter(b => b.active && b.balance !== null)
       .reduce((s, b) => s + Number(b.balance), 0);
 
@@ -424,6 +429,30 @@
         const data = await res.json();
         if (data.result && data.result.amount) return (Number(data.result.amount) / 1e24).toFixed(4);
         return null;
+      } catch (e) { return null; }
+    }
+
+    // Total balance plus the part that can actually be claimed (total minus storage backing the treasury code, minus a small reserve)
+    async function getAccountInfo(accountId) {
+      try {
+        const res = await fetch(RPC_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jsonrpc: "2.0", id: "1", method: "query",
+            params: { request_type: "view_account", finality: "final", account_id: accountId }
+          })
+        });
+        const data = await res.json();
+        if (!data.result || !data.result.amount) return null;
+        const total = BigInt(data.result.amount);
+        const locked = BigInt(data.result.storage_usage || 0) * 10n ** 19n;
+        const free = total > locked ? total - locked : 0n;
+        const freeNear = Number(free) / 1e24;
+        return {
+          balance: (Number(total) / 1e24).toFixed(4),
+          claimable: Math.max(0, freeNear - STORAGE_RESERVE_NEAR)
+        };
       } catch (e) { return null; }
     }
 
@@ -502,9 +531,11 @@
         for (const token of tokens) {
           const tokenId = String(token.token_id);
           const account = businessAccountFor(tokenId);
-          const balance = await getAccountBalance(account);
+          const info = await getAccountInfo(account);
+          const balance = info ? info.balance : null;
           list.push({
             tokenId, account, balance,
+            claimable: info ? info.claimable : 0,
             active: balance !== null,
             title: token.metadata?.title || "Untitled",
             description: token.metadata?.description || "No description"
@@ -553,20 +584,20 @@
         state.keys[tokenId] = { privateKey: privateKeyStr, outlayerKey: null };
         refreshKeyBox(tokenId);
 
+        // The NFT contract creates the business account, funds it with the deposit,
+        // deploys the treasury contract and adds the agent key. Only the NFT owner may call this.
         const wallet = await connector.wallet();
         await wallet.signAndSendTransaction({
-          receiverId: businessAccount,
-          actions: [
-            { type: "CreateAccount" },
-            {
-              type: "AddKey",
-              params: {
-                publicKey: publicKeyStr,
-                accessKey: { nonce: 0, permission: { receiverId: businessAccount, methodNames: [], allowance: "250000000000000000000000" } }
-              }
-            },
-            { type: "Transfer", params: { deposit: "100000000000000000000000" } }
-          ]
+          receiverId: CONTRACT_ID,
+          actions: [{
+            type: "FunctionCall",
+            params: {
+              methodName: "activate_business",
+              args: { token_id: tokenId, agent_public_key: publicKeyStr },
+              gas: ACTIVATE_GAS,
+              deposit: ACTIVATION_DEPOSIT_YOCTO
+            }
+          }]
         });
 
         const outlayer = await registerOutlayerWallet();
@@ -596,17 +627,28 @@
         btn.disabled = true; btn.textContent = "Claiming...";
         setStatus(tokenId, "info", "Preparing claim... Confirm in your wallet");
 
-        const balance = await getAccountBalance(biz.account);
-        if (!balance || Number(balance) < 0.01) throw new Error("Treasury balance too low to claim (need at least 0.01 NEAR)");
+        // Claimable = balance minus the storage that backs the treasury contract, minus a small reserve
+        const info = await getAccountInfo(biz.account);
+        if (!info || info.claimable < 0.01) throw new Error("Treasury balance too low to claim (need at least 0.01 NEAR above the storage reserve)");
 
-        // Leave a tiny amount for storage and claim the rest (BigInt avoids float / scientific-notation bugs)
-        const claimNear = Number(balance) - STORAGE_RESERVE_NEAR;
+        // BigInt avoids float / scientific-notation bugs
+        const claimNear = info.claimable;
         const claimAmountYocto = (BigInt(Math.floor(claimNear * 1e4)) * 10n ** 20n).toString();
 
+        // Calls `claim` on the business account's contract. The contract checks that the caller
+        // owns the NFT, then transfers `amount` from the business account to the caller.
         const wallet = await connector.wallet();
         await wallet.signAndSendTransaction({
           receiverId: biz.account,
-          actions: [{ type: "Transfer", params: { deposit: claimAmountYocto } }]
+          actions: [{
+            type: "FunctionCall",
+            params: {
+              methodName: CLAIM_METHOD,
+              args: { amount: claimAmountYocto },
+              gas: CLAIM_GAS,
+              deposit: "0"
+            }
+          }]
         });
 
         setStatus(tokenId, "success", `✅ Claimed ~${claimNear.toFixed(4)} NEAR to your wallet`);
@@ -625,14 +667,17 @@
       try {
         btn.disabled = true;
         const { privateKeyStr, publicKeyStr } = generateKeyPair();
+        // The NFT contract swaps the key on the business account (adds the new one, removes the old one)
         const wallet = await connector.wallet();
         await wallet.signAndSendTransaction({
-          receiverId: biz.account,
+          receiverId: CONTRACT_ID,
           actions: [{
-            type: "AddKey",
+            type: "FunctionCall",
             params: {
-              publicKey: publicKeyStr,
-              accessKey: { nonce: 0, permission: { receiverId: biz.account, methodNames: [], allowance: "250000000000000000000000" } }
+              methodName: "rotate_agent_key",
+              args: { token_id: tokenId, agent_public_key: publicKeyStr },
+              gas: ROTATE_GAS,
+              deposit: "0"
             }
           }]
         });
@@ -765,7 +810,7 @@ Currently there is no built-in marketplace UI. Use:
     function viewOverview() {
       const gate = stateGate("Overview"); if (gate) return gate;
       const b = selected();
-      const claimable = b.active && b.balance !== null ? Math.max(0, Number(b.balance) - STORAGE_RESERVE_NEAR).toFixed(4) : "0.0000";
+      const claimable = b.active ? (b.claimable || 0).toFixed(4) : "0.0000";
       return `
         <div class="eyebrow">My businesses <span style="margin:0 6px">/</span> Agent #${esc(b.tokenId)}</div>
         <div class="page-head">
@@ -893,7 +938,7 @@ Currently there is no built-in marketplace UI. Use:
     function viewWallet() {
       const connected = !!state.accountId;
       const claimable = totalClaimable();
-      const claimBiz = state.businesses.find(b => b.active && Number(b.balance) - STORAGE_RESERVE_NEAR > 0) || null;
+      const claimBiz = state.businesses.find(b => b.active && b.claimable > 0) || null;
       const heroBtn = connected
         ? `<button class="btn btn-lime" data-action="claim" data-id="${esc(claimBiz?.tokenId || "")}" ${claimBiz ? "" : "disabled"}>Claim to wallet →</button>`
         : `<button class="btn btn-lime" data-action="connect">Connect to claim →</button>`;
@@ -924,7 +969,7 @@ Currently there is no built-in marketplace UI. Use:
               ${state.businesses.filter(b => b.active).map(b => `
                 <div style="margin-bottom:14px">
                   <div class="biz-row"><div><div style="font-weight:600">${esc(b.title)} #${esc(b.tokenId)}</div><div class="label-sm" style="font-size:.72rem">${esc(b.account)}</div></div>
-                  <div class="amt">${Math.max(0, Number(b.balance) - STORAGE_RESERVE_NEAR).toFixed(4)} Ⓝ</div></div>
+                  <div class="amt">${(b.claimable || 0).toFixed(4)} Ⓝ</div></div>
                 </div>`).join("") || `<div class="empty">${connected ? "No active businesses." : "Connect your wallet to see claimable profits."}</div>`}
             </div>
 
