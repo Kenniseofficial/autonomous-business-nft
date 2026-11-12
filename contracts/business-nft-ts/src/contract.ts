@@ -3,6 +3,18 @@ import { NearBindgen, near, call, view, initialize, assert } from "near-sdk-js";
 const TGAS = 1_000_000_000_000n;
 const MIN_ACTIVATION_DEPOSIT = 1_500_000_000_000_000_000_000_000n; // 1.5 NEAR: covers the treasury code storage
 
+// near-sdk-js "Raw" storage functions take the key as bytes, not text
+function keyBytes(s: string): Uint8Array {
+  const out = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
+  return out;
+}
+const CODE_KEY = keyBytes("treasury_code");
+
+// Some low-level near-sdk-js functions are typed differently between SDK versions,
+// so the calls below go through this untyped handle to avoid build-time type errors.
+const nearAny: any = near;
+
 // ---- base64 -> bytes (used only for uploading the treasury wasm in small chunks) ----
 const B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 const B64_TABLE = new Uint8Array(128);
@@ -138,23 +150,23 @@ class Contract {
   @call({})
   treasury_code_reset() {
     assert(near.predecessorAccountId() === this.owner_id, "Only the contract owner");
-    near.storageWriteRaw("treasury_code", new Uint8Array(0));
+    nearAny.storageWriteRaw(CODE_KEY, new Uint8Array(0));
   }
 
   @call({})
   treasury_code_append({ chunk_b64 }: { chunk_b64: string }) {
     assert(near.predecessorAccountId() === this.owner_id, "Only the contract owner");
-    const existing = near.storageReadRaw("treasury_code") || new Uint8Array(0);
+    const existing: Uint8Array = nearAny.storageReadRaw(CODE_KEY) || new Uint8Array(0);
     const chunk = b64ToBytes(chunk_b64);
     const merged = new Uint8Array(existing.length + chunk.length);
     merged.set(existing, 0);
     merged.set(chunk, existing.length);
-    near.storageWriteRaw("treasury_code", merged);
+    nearAny.storageWriteRaw(CODE_KEY, merged);
   }
 
   @view({})
   treasury_code_len(): number {
-    const code = near.storageReadRaw("treasury_code");
+    const code: Uint8Array | null = nearAny.storageReadRaw(CODE_KEY);
     return code ? code.length : 0;
   }
 
@@ -177,7 +189,7 @@ class Contract {
     const deposit = near.attachedDeposit();
     assert(deposit >= MIN_ACTIVATION_DEPOSIT, "Attach at least 1.5 NEAR to cover treasury storage");
 
-    const code = near.storageReadRaw("treasury_code");
+    const code: Uint8Array | null = nearAny.storageReadRaw(CODE_KEY);
     assert(code !== null && code !== undefined && code.length > 0, "Treasury code has not been uploaded");
 
     const business = near.storageRead(`business_account:${token_id}`);
@@ -189,15 +201,15 @@ class Contract {
     const p = near.promiseBatchCreate(business as string);
     near.promiseBatchActionCreateAccount(p);
     near.promiseBatchActionTransfer(p, deposit);
-    near.promiseBatchActionDeployContractRaw(p, code as Uint8Array);
-    near.promiseBatchActionFunctionCall(
+    nearAny.promiseBatchActionDeployContract(p, code as Uint8Array);
+    nearAny.promiseBatchActionFunctionCall(
       p,
       "add_agent_key",
       JSON.stringify({ public_key: agent_public_key }),
       0n,
       10n * TGAS
     );
-    const cb = near.promiseThen(
+    const cb = nearAny.promiseThen(
       p,
       near.currentAccountId(),
       "on_activated",
@@ -250,14 +262,14 @@ class Contract {
     const business = near.storageRead(`business_account:${token_id}`);
 
     const p = near.promiseBatchCreate(business as string);
-    near.promiseBatchActionFunctionCall(
+    nearAny.promiseBatchActionFunctionCall(
       p,
       "rotate_agent_key",
       JSON.stringify({ old_key: oldKey, new_key: agent_public_key }),
       0n,
       20n * TGAS
     );
-    const cb = near.promiseThen(
+    const cb = nearAny.promiseThen(
       p,
       near.currentAccountId(),
       "on_rotated",
