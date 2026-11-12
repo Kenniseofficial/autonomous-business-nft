@@ -1,92 +1,103 @@
 # Autonomous Business NFT
 
-**An NFT that owns and runs its own autonomous business on NEAR.**
+An NFT on NEAR that owns and runs its own business.
 
-## What it does
+When you mint one of these NFTs, it gets its own dedicated business account, a restricted Function-Call key, and optional OutLayer TEE custody. The idea is simple: the NFT is the owner of the business. Whoever holds the NFT controls the treasury and can claim revenue or transfer the whole business by transferring the NFT.
 
-This project turns an NFT into a living economic agent.
+## The Problem
 
-When you mint an Autonomous Business NFT:
-- A unique NFT is created and sent to your wallet
-- A dedicated business account is created on NEAR
-- A scoped Function-Call Key is granted to an AI agent
-- The agent can accept jobs, earn revenue, and manage a treasury
-- The NFT owner can claim profits and control key settings
+Most NFTs are just pictures. Most AI agents need constant babysitting and full access keys. There isn’t a clean way to give an AI agent its own on-chain business that a human can own, transfer, or sell — while still keeping the agent’s permissions limited and safe.
 
-Owning the NFT = owning the business.
+This project tries to solve that.
 
-## Problem it solves
+## What Works Right Now (Testnet)
 
-Most NFTs today are static. They sit in a wallet and do nothing.
+- Mint an NFT
+- Activate the business (creates a real sub-account under the contract)
+- Generates a Function-Call key for the agent
+- Registers an OutLayer TEE key (wk_...)
+- Owner Dashboard with wallet connection
+- View your businesses and treasury balance
+- Claim Revenue (basic version)
+- Agent Control tab
 
-At the same time, AI agents are becoming powerful but usually have no clear ownership model or sustainable economic structure.
+Contract: `buildingfromthetop.testnet`  
+Frontend is deployed on Vercel.
 
-This project combines both:
-- Clear on-chain ownership (the NFT)
-- Autonomous economic activity (the agent + business account)
-- Transparent revenue and profit distribution
+## How to Try It
 
-It creates a new primitive: **NFTs that actually work and earn**.
+### 1. Open the app
+Go to the live frontend (link your Vercel URL here).
 
-## Tracks Covered
-- NFTs That Do Something
-- Autonomous Business
-- Agent Economy
+### 2. Connect wallet
+Click **Connect Wallet** and connect a NEAR testnet wallet (Meteor, Intear, etc).
 
-## Current Status
-Building the MVP on **NEAR Testnet**.
+**Expected result:** Your account ID appears on the page.
 
-Deployer / Admin account: `buildingfromthetop.testnet`
+### 3. Mint a Business NFT
+Fill in a name and description, then click **Mint**.
 
-## How to test the prototype (for judges)
+**Expected result:** Transaction succeeds and you see a success message. The NFT should appear in your wallet collectibles after a short refresh.
 
-> Note: Full public minting and agent marketplace integration are still in progress.  
-> Below is the planned testing flow once the core contracts are deployed.
+### 4. Go to the Dashboard
+Click the link to the Owner Dashboard (or open `/dashboard.html`).
 
-1. **Connect your NEAR Testnet wallet**  
-   → Go to the mint page (link will be added here)  
-   → Expected result: Wallet connects successfully
+**Expected result:** You should see the NFT you just minted listed as a business (usually in “Pending Activation” state).
 
-2. **Mint an Autonomous Business NFT**  
-   → Click “Mint” and approve the transaction  
-   → Expected result: You receive NFT #XXXX and a new business account is created
+### 5. Activate the Business
+Click **Activate Business**.
 
-3. **Open the Owner Dashboard**  
-   → Click “View Dashboard”  
-   → Expected result: You see treasury balance, agent status, and claim button
+**Expected result:** 
+- A transaction is sent that creates the sub-account `business-{tokenId}.buildingfromthetop.testnet`
+- You receive a Function-Call private key
+- You also receive an OutLayer `wk_...` key
+- You get about 60 seconds to copy both keys before the page refreshes
 
-4. **Simulate a job payment** (admin/test function)  
-   → A test payment is sent to the business account  
-   → Expected result: Treasury balance increases and profit becomes claimable
+### 6. Check the treasury
+After activation, the business should show a small NEAR balance and status “Active”.
 
-5. **Claim profits**  
-   → Click “Claim Available Profits”  
-   → Expected result: Tokens are transferred to the NFT owner’s wallet
+### 7. Claim Revenue (current version)
+Click **Claim Revenue**.
 
-6. **Transfer the NFT**  
-   → Send the NFT to another testnet account  
-   → Expected result: The new owner gains full control of the business dashboard
+**Expected result:** A transfer is initiated from the business account to your wallet. This is still a basic version and will be improved.
 
-## Tech Stack
-- NEAR Protocol (Testnet → Mainnet)
-- NEP-171 NFT Standard
-- Named Accounts + Sub-accounts
-- Function-Call Keys
-- NEAR AI / Agent concepts (IronClaw style)
+## Architecture (Simple Version)
 
-## Roadmap
-- [x] Project setup
-- [ ] Core NFT + Business Factory contract
-- [ ] Function-Call Key management
-- [ ] Basic Owner Dashboard
-- [ ] Public NFT page
-- [ ] Agent job simulation
-- [ ] Full testnet demo
-- [ ] Mainnet launch preparation
+1. User mints NFT on the factory contract
+2. On activation, a dedicated business sub-account is created
+3. A limited Function-Call key is added to that account
+4. Optionally an OutLayer TEE key is also registered
+5. The NFT owner can claim funds or transfer the NFT (which transfers control of the business)
 
-## Team
-Built by @kenniseofficial
+The agent is meant to operate under the hood using the Function-Call key or OutLayer custody, so normal users don’t have to manage keys daily.
+
+## What’s Still Coming
+
+- Better Claim Revenue (full treasury withdrawal)
+- A real background agent that can actually perform actions automatically
+- Cleaner agent status and control
+- Possible mainnet deployment after more testing
+
+## Tech Used
+
+- near-sdk-js (contract)
+- @hot-labs/near-connect (wallet)
+- OutLayer (TEE custody)
+- Simple single-file frontend
+
+## Notes for Judges
+
+- Everything currently runs on **testnet**
+- The core loop (mint → activate → get keys → see treasury) works
+- The agent is not yet fully autonomous in the background (this is the main known limitation)
+- `BUSINESS-NFT.md` contains a more structured, AI-readable description of the project
+
+## Links
+
+- Contract: `buildingfromthetop.testnet`
+- Frontend: https://autonomous-business-nft-frontend.vercel.app/
+- BUSINESS-NFT.md: see root of this repo
 
 ---
 
-**This is a living business owned by an NFT.**
+Built for NEAR HACKATHON 2026.
