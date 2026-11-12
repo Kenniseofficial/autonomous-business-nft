@@ -2,744 +2,556 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Owner Dashboard – Autonomous Business NFT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Owner Dashboard – Autonomous</title>
   <style>
+    :root {
+      --sidebar: #163226;
+      --sidebar-active: #25513b;
+      --bg: #f4f6f3;
+      --card: #ffffff;
+      --border: #e2e8e1;
+      --ink: #15271f;
+      --muted: #66756c;
+      --green: #23744c;
+      --green-soft: #e8f3e6;
+      --hero: #173f2e;
+      --lime: #cdeeaa;
+      --danger: #c0392b;
+      --radius: 16px;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: #050508;
-      color: #f4f4f5;
-      min-height: 100vh;
-      line-height: 1.5;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg); color: var(--ink); line-height: 1.5; min-height: 100vh;
     }
-    .container { max-width: 440px; margin: 0 auto; padding: 16px 16px 80px; }
+    button { font-family: inherit; }
+    a { color: inherit; }
+
+    /* ---------- Layout ---------- */
+    .app { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 220px; flex-shrink: 0; background: var(--sidebar); color: #e6efe9;
+      position: fixed; inset: 0 auto 0 0; display: flex; flex-direction: column;
+      padding: 24px 20px; z-index: 50; transition: transform .25s ease;
+    }
+    .brand { font-size: 1.55rem; font-weight: 600; letter-spacing: -0.02em; color: #fff; }
+    .brand-sub { font-size: .62rem; letter-spacing: .06em; text-transform: uppercase; color: #a9c1b3; margin-top: 4px; }
+    .nav { margin-top: 48px; display: flex; flex-direction: column; gap: 6px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 10px;
+      color: #cfe0d5; font-size: .92rem; cursor: pointer; border: none; background: none; text-align: left; width: 100%;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.06); }
+    .nav-item.active { background: var(--sidebar-active); color: #fff; font-weight: 600; }
+    .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .sidebar-foot { margin-top: auto; }
+    .sys-box { background: rgba(255,255,255,.06); border-radius: 10px; padding: 12px; font-size: .7rem; color: #a9c1b3; }
+    .sys-box .ok { color: #e6efe9; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-weight: 500; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lime); display: inline-block; }
+    .foot-note { margin-top: 14px; font-size: .68rem; color: #86a393; }
+
+    .main { margin-left: 220px; flex: 1; min-width: 0; }
     .topbar {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 8px 0 16px;
+      background: #fff; height: 80px; padding: 0 36px; display: flex; align-items: center;
+      justify-content: space-between; border-bottom: 1px solid var(--border);
     }
-    .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; }
-    .logo-box {
-      width: 32px; height: 32px;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      border-radius: 9px; display: grid; place-items: center;
+    .crumbs { font-size: .82rem; color: var(--muted); }
+    .crumbs b { color: var(--ink); font-weight: 500; }
+    .crumbs span.sep { margin: 0 10px; opacity: .6; }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .pill {
+      background: var(--bg); border-radius: 10px; padding: 8px 14px; font-size: .8rem;
+      display: flex; align-items: center; gap: 8px; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .back { color: #a1a1aa; text-decoration: none; font-size: 0.9rem; }
+    .pill .dot { background: var(--sidebar); }
+    .menu-btn { display: none; background: none; border: none; cursor: pointer; padding: 4px; color: var(--ink); }
+    .menu-btn svg { width: 24px; height: 24px; }
+    .mobile-brand { display: none; font-size: 1.4rem; font-weight: 600; letter-spacing: -0.02em; }
 
-    /* Tabs */
-    .tabs {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 18px;
-    }
-    .tab {
-      flex: 1;
-      text-align: center;
-      padding: 10px;
-      border-radius: 12px;
-      background: #18181b;
-      border: 1px solid #27272a;
-      color: #a1a1aa;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-    .tab.active {
-      background: #22c55e;
-      color: #000;
-      border-color: #22c55e;
-    }
+    .content { padding: 36px; max-width: 1200px; }
+    .eyebrow { font-size: .7rem; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+    .page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
+    h1 { font-size: 2rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15; }
+    .page-sub { color: var(--muted); font-size: .92rem; margin-top: 10px; }
+    .title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .meta-line { font-size: .78rem; color: var(--muted); margin-top: 10px; display: flex; gap: 14px; flex-wrap: wrap; }
+    .meta-line a { color: var(--green); text-decoration: none; }
 
-    .header { margin-bottom: 20px; }
-    .header h1 { font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
-    .header .sub { color: #a1a1aa; font-size: 0.9rem; }
-    .account-box {
-      background: #111114;
-      border: 1px solid #27272a;
-      border-radius: 14px;
-      padding: 14px 16px;
-      margin-bottom: 20px;
-      font-size: 0.9rem;
-    }
+    /* ---------- Components ---------- */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
+    .card h3 { font-size: 1.02rem; font-weight: 600; }
+    .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; }
+    .card-head .num { font-size: .72rem; color: var(--muted); }
+    .card-sub { color: var(--muted); font-size: .82rem; margin-bottom: 14px; }
+    .hint { color: var(--muted); font-size: .74rem; margin-top: 8px; }
+    .label-sm { font-size: .8rem; color: var(--muted); }
+    .big { font-size: 2rem; font-weight: 600; letter-spacing: -0.02em; margin: 6px 0 4px; }
+    .big.green { color: var(--green); }
+    .stack { display: flex; flex-direction: column; gap: 16px; }
+
     .btn {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin-bottom: 10px;
+      border: 1px solid transparent; border-radius: 10px; padding: 11px 18px; font-size: .88rem; font-weight: 600;
+      cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; white-space: nowrap;
     }
-    .btn-green { background: #22c55e; color: #000; }
-    .btn-red { background: transparent; border: 1px solid #ef4444; color: #ef4444; }
-    .btn-outline {
-      background: transparent;
-      border: 1px solid #3f3f46;
-      color: #f4f4f5;
-    }
-    .btn-purple {
-      background: transparent;
-      border: 1px solid #a855f7;
-      color: #c084fc;
-    }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .business-card {
-      background: #111114;
-      border: 1px solid #27272a;
-      border-radius: 16px;
-      padding: 18px;
-      margin-bottom: 16px;
-    }
-    .business-card h3 { font-size: 1.15rem; margin-bottom: 6px; }
-    .business-card p { color: #a1a1aa; font-size: 0.9rem; margin-bottom: 10px; }
-    .token-id { font-size: 0.8rem; color: #71717a; margin-bottom: 8px; }
-    .treasury { color: #4ade80; font-size: 0.85rem; word-break: break-all; margin-bottom: 12px; }
-    .stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-    .stat {
-      background: #18181b;
-      border-radius: 10px;
-      padding: 10px;
-      text-align: center;
-    }
-    .stat .label { font-size: 0.75rem; color: #71717a; }
-    .stat .value { font-size: 1.05rem; font-weight: 600; margin-top: 2px; }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-primary { background: var(--green); color: #fff; }
+    .btn-lime { background: var(--lime); color: var(--hero); }
+    .btn-ghost { background: #fff; border-color: var(--border); color: var(--ink); }
+    .btn-danger { background: #fff; border-color: #e8b4ad; color: var(--danger); }
+    .btn-block { width: 100%; }
+
     .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 20px;
-      margin-bottom: 12px;
+      display: inline-flex; align-items: center; gap: 7px; background: var(--green-soft); color: var(--green);
+      font-size: .74rem; font-weight: 600; padding: 5px 11px; border-radius: 8px;
     }
-    .badge-live { background: rgba(34,197,94,0.15); color: #4ade80; }
-    .badge-pending { background: rgba(234,179,8,0.15); color: #eab308; }
-    .status-msg {
-      font-size: 0.85rem;
-      padding: 10px 12px;
-      border-radius: 10px;
-      margin-top: 10px;
-      display: none;
+    .badge.pending { background: #fbf1d6; color: #9a7208; }
+    .badge .dot { background: currentColor; width: 6px; height: 6px; }
+    .tag { font-size: .66rem; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+
+    .stat-grid { display: grid; gap: 16px; margin-bottom: 20px; }
+    .stat-grid.c4 { grid-template-columns: repeat(4, 1fr); }
+    .stat-grid.c3 { grid-template-columns: repeat(3, 1fr); }
+    .stat .big { font-size: 1.9rem; }
+
+    .hero {
+      background: var(--hero); color: #fff; border-radius: var(--radius); padding: 26px;
+      display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 20px;
     }
-    .status-msg.error { background: rgba(239,68,68,0.15); color: #f87171; display: block; }
-    .status-msg.success { background: rgba(34,197,94,0.15); color: #4ade80; display: block; }
-    .status-msg.info { background: rgba(59,130,246,0.15); color: #60a5fa; display: block; }
-    .key-box {
-      background: #0c0c0e;
-      border: 1px solid #3f3f46;
-      border-radius: 10px;
-      padding: 12px;
-      margin-top: 12px;
-      font-family: monospace;
-      font-size: 0.72rem;
-      word-break: break-all;
-      display: none;
+    .hero .tag { color: #a9c9b5; }
+    .hero .amount { font-size: 2.6rem; font-weight: 600; color: var(--lime); letter-spacing: -0.02em; line-height: 1.1; margin-top: 8px; }
+    .hero .amount small { font-size: .85rem; color: #cfe3d6; font-weight: 400; margin-left: 8px; }
+    .hero .from { margin: 14px 0; font-size: .85rem; color: #dcebe1; }
+
+    .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .status-grid .v { font-size: 1.15rem; font-weight: 500; margin-top: 4px; }
+    .status-grid .v.green { color: var(--green); }
+
+    .table-head, .row {
+      display: grid; grid-template-columns: 1fr 120px 110px; gap: 12px; align-items: center;
     }
-    .key-box.show { display: block; }
-    .warning {
-      background: rgba(234,179,8,0.12);
-      color: #eab308;
-      font-size: 0.78rem;
-      padding: 10px;
-      border-radius: 8px;
-      margin-top: 8px;
-      line-height: 1.4;
+    .table-head { font-size: .66rem; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding-bottom: 10px; }
+    .row { padding: 14px 0; border-top: 1px solid var(--border); }
+    .row .t { font-weight: 500; font-size: .9rem; }
+    .row .s { font-size: .78rem; color: var(--muted); }
+    .empty { text-align: center; color: var(--muted); font-size: .88rem; padding: 26px 0; }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+    .tab { background: transparent; border: none; border-radius: 8px; padding: 6px 12px; font-size: .8rem; color: var(--muted); cursor: pointer; }
+    .tab.active { background: var(--green-soft); color: var(--green); }
+
+    .biz-card { margin-bottom: 20px; }
+    .biz-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
+    .biz-card h2 { font-size: 1.6rem; font-weight: 600; margin: 10px 0 8px; letter-spacing: -0.01em; }
+    .biz-card p.desc { color: var(--muted); font-size: .88rem; margin-bottom: 16px; }
+    .mini-stats { background: var(--bg); border-radius: 12px; padding: 16px 18px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .mini-stats .v { font-size: 1.2rem; font-weight: 600; margin-top: 2px; }
+    .mini-stats .v.green { color: var(--green); }
+    .biz-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; font-size: .78rem; flex-wrap: wrap; gap: 8px; }
+    .biz-foot a { color: var(--green); text-decoration: none; word-break: break-all; }
+    .biz-foot .healthy { color: var(--green); display: flex; align-items: center; gap: 7px; }
+    .cta-band {
+      background: #ebf3e8; border-radius: var(--radius); padding: 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px;
     }
-    .action-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 4px;
+    .cta-band h3 { font-size: 1.1rem; font-weight: 600; }
+    .cta-band p { color: var(--muted); font-size: .85rem; margin-top: 6px; }
+
+    .two-col { display: grid; grid-template-columns: minmax(0, 1fr) 350px; gap: 18px; align-items: start; }
+    .biz-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0 0; }
+    .biz-row .amt { color: var(--green); font-size: 1.1rem; font-weight: 600; }
+    .steps { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+    .steps li { display: grid; grid-template-columns: 26px 1fr; gap: 6px; font-size: .86rem; }
+    .steps li .n { color: var(--green); font-size: .74rem; font-weight: 600; padding-top: 2px; }
+    .steps li .d { color: var(--muted); font-size: .78rem; }
+    .kv { display: flex; justify-content: space-between; font-size: .8rem; color: var(--muted); margin-top: 14px; }
+    .kv b { color: var(--ink); font-weight: 500; }
+
+    .banner { background: var(--green-soft); color: var(--green); border-radius: 10px; padding: 14px 18px; font-size: .85rem; margin-bottom: 20px; display: flex; gap: 12px; align-items: center; }
+    .banner .dot { background: var(--green); }
+    .banner.warn { background: #fbf1d6; color: #9a7208; }
+    .banner.warn .dot { background: #9a7208; }
+    .cfg-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; align-items: start; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: .8rem; font-weight: 500; margin-bottom: 6px; }
+    .input, textarea.input {
+      width: 100%; background: #fafbf9; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
+      font-size: .88rem; color: var(--ink); font-family: inherit;
     }
-    .info-panel {
-      background: #0c0c0e;
-      border: 1px solid #27272a;
-      border-radius: 12px;
-      padding: 14px;
-      margin-top: 12px;
-      font-size: 0.85rem;
-      line-height: 1.5;
-      display: none;
-      white-space: pre-wrap;
-    }
+    textarea.input { min-height: 84px; resize: vertical; }
+    textarea.mono { font-family: ui-monospace, Menlo, monospace; font-size: .76rem; }
+    .input:focus { outline: 2px solid rgba(35,116,76,.25); border-color: var(--green); }
+    .two-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .alloc-bar { display: flex; gap: 4px; margin-bottom: 18px; }
+    .alloc-bar i { height: 10px; border-radius: 4px; display: block; }
+    .alloc-bar i:first-child { background: var(--green); }
+    .alloc-bar i:last-child { background: #b9e08d; }
+    .alloc-total { display: flex; justify-content: space-between; align-items: center; font-size: .8rem; color: var(--muted); }
+    .foot-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; gap: 12px; flex-wrap: wrap; }
+    .foot-actions .btns { display: flex; gap: 10px; }
+
+    .status-msg { font-size: .82rem; padding: 10px 12px; border-radius: 10px; margin-top: 12px; }
+    .status-msg.error { background: #fbe4e1; color: var(--danger); }
+    .status-msg.success { background: var(--green-soft); color: var(--green); }
+    .status-msg.info { background: #e3edf9; color: #2b5fa3; }
+    .key-box { background: #0f1f18; color: #d9efe0; border-radius: 12px; padding: 14px; margin-top: 14px; font-family: ui-monospace, Menlo, monospace; font-size: .72rem; word-break: break-all; }
+    .key-box .k-title { font-family: inherit; font-weight: 600; margin-bottom: 6px; color: var(--lime); font-size: .78rem; }
+    .key-box .k-val { user-select: all; }
+    .key-box .k-warn { font-family: inherit; background: rgba(234,179,8,.14); color: #f2cf5a; padding: 10px; border-radius: 8px; margin-top: 8px; font-size: .74rem; line-height: 1.45; }
+    .key-box hr { border: none; border-top: 1px solid rgba(255,255,255,.12); margin: 14px 0; }
+    .info-panel { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 14px; font-size: .82rem; white-space: pre-wrap; display: none; }
     .info-panel.show { display: block; }
+    .result-panel { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 14px; font-size: .82rem; white-space: pre-wrap; display: none; word-break: break-word; }
+    .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+
     #toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #18181b;
-      border: 1px solid #3f3f46;
-      color: #f4f4f5;
-      padding: 12px 18px;
-      border-radius: 12px;
-      font-size: 0.9rem;
-      max-width: 90%;
-      z-index: 9999;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid var(--border);
+      color: var(--ink); padding: 12px 18px; border-radius: 12px; font-size: .88rem; max-width: 90%; z-index: 9999;
+      opacity: 0; pointer-events: none; transition: opacity .3s; box-shadow: 0 8px 24px rgba(0,0,0,.12);
     }
     #toast.show { opacity: 1; }
-    #toast.error { border-color: #ef4444; color: #f87171; }
-    #toast.success { border-color: #22c55e; color: #4ade80; }
+    #toast.error { border-color: var(--danger); color: var(--danger); }
+    #toast.success { border-color: var(--green); color: var(--green); }
 
-    /* Agent Control */
-    .section { display: none; }
-    .section.active { display: block; }
-    .form-group { margin-bottom: 14px; }
-    .form-group label {
-      display: block;
-      font-size: 0.85rem;
-      color: #a1a1aa;
-      margin-bottom: 6px;
+    .bottom-nav { display: none; }
+    .scrim { display: none; }
+
+    /* ---------- Tablet ---------- */
+    @media (max-width: 1100px) {
+      .stat-grid.c4 { grid-template-columns: repeat(2, 1fr); }
+      .two-col, .cfg-grid { grid-template-columns: 1fr; }
     }
-    .form-group input,
-    .form-group textarea {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 12px;
-      background: #111114;
-      border: 1px solid #27272a;
-      color: #f4f4f5;
-      font-size: 0.9rem;
-    }
-    .form-group textarea {
-      min-height: 90px;
-      resize: vertical;
-      font-family: monospace;
-      font-size: 0.8rem;
-    }
-    .agent-result {
-      background: #0c0c0e;
-      border: 1px solid #27272a;
-      border-radius: 12px;
-      padding: 14px;
-      margin-top: 16px;
-      font-size: 0.85rem;
-      white-space: pre-wrap;
-      display: none;
+
+    /* ---------- Mobile ---------- */
+    @media (max-width: 860px) {
+      .sidebar { transform: translateX(-100%); box-shadow: 8px 0 30px rgba(0,0,0,.25); }
+      body.menu-open .sidebar { transform: translateX(0); }
+      body.menu-open .scrim { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 40; }
+      .main { margin-left: 0; }
+      .topbar { height: 64px; padding: 0 20px; }
+      .crumbs, .top-actions .pill { display: none; }
+      .mobile-brand { display: block; }
+      .menu-btn { display: block; }
+      .content { padding: 22px 18px 110px; }
+      h1 { font-size: 1.8rem; }
+      .page-head { flex-direction: column; }
+      .page-head .btn { display: none; }
+      .page-head .btn.keep { display: inline-flex; }
+      .stat-grid.c4 { grid-template-columns: 1fr 1fr; }
+      .stat-grid.c3 { grid-template-columns: 1fr; }
+      .hero { flex-direction: column; align-items: stretch; }
+      .hero .btn { width: 100%; }
+      .status-grid { grid-template-columns: 1fr; gap: 12px; }
+      .status-grid > div { display: flex; justify-content: space-between; align-items: center; }
+      .status-grid .v { margin: 0; font-size: 1rem; }
+      .table-head { display: none; }
+      .row { grid-template-columns: 1fr auto; }
+      .row .time { grid-column: 1; }
+      .mini-stats { grid-template-columns: 1fr; }
+      .mini-stats > div { display: flex; justify-content: space-between; align-items: center; }
+      .biz-top .btn { display: none; }
+      .cta-band { flex-direction: column; align-items: stretch; }
+      .cta-band .btn { width: 100%; }
+      .two-inputs { grid-template-columns: 1fr; }
+      .foot-actions { flex-direction: column-reverse; align-items: stretch; }
+      .foot-actions .btns { flex-direction: column-reverse; }
+      .foot-actions .btn { width: 100%; }
+      .bottom-nav {
+        display: flex; position: fixed; left: 16px; right: 16px; bottom: 14px; background: #fff; border: 1px solid var(--border);
+        border-radius: 16px; padding: 6px; z-index: 30; box-shadow: 0 6px 20px rgba(0,0,0,.08);
+      }
+      .bottom-nav button { flex: 1; background: none; border: none; padding: 12px 4px; font-size: .86rem; color: var(--muted); cursor: pointer; border-radius: 12px; }
+      .bottom-nav button.active { color: var(--green); font-weight: 600; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="topbar">
-      <div class="logo">
-        <div class="logo-box">◆</div>
-        <span>Business NFT</span>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div>
+        <div class="brand">autonomous</div>
+        <div class="brand-sub">Businesses on NEAR</div>
       </div>
-      <a href="/" class="back">← Mint</a>
-    </div>
-
-    <!-- Tabs -->
-    <div class="tabs">
-      <div class="tab active" id="tabDashboard" onclick="switchTab('dashboard')">Dashboard</div>
-      <div class="tab" id="tabAgent" onclick="switchTab('agent')">Agent Control</div>
-    </div>
-
-    <!-- ===================== DASHBOARD SECTION ===================== -->
-    <div id="dashboardSection" class="section active">
-      <div class="header">
-        <h1>Owner Dashboard</h1>
-        <div class="sub">Your Autonomous Businesses</div>
+      <nav class="nav" id="nav"></nav>
+      <div class="sidebar-foot">
+        <div class="sys-box">
+          <div class="ok"><span class="dot"></span> All systems operational</div>
+          <div>NEAR Protocol · Testnet</div>
+        </div>
+        <div class="foot-note">Autonomous by design.</div>
       </div>
+    </aside>
+    <div class="scrim" data-action="close-menu"></div>
 
-      <button id="connectBtn" class="btn btn-green">Connect Wallet</button>
-      <button id="disconnectBtn" class="btn btn-red" style="display:none;">Disconnect Wallet</button>
-
-      <div id="accountBox" class="account-box" style="display:none;">
-        Connected as<br>
-        <strong id="accountIdDisplay"></strong>
-      </div>
-
-      <div id="list"></div>
-    </div>
-
-    <!-- ===================== AGENT CONTROL SECTION ===================== -->
-    <div id="agentSection" class="section">
-      <div class="header">
-        <h1>Agent Control</h1>
-        <div class="sub">Use the Function-Call key to control the business</div>
-      </div>
-
-      <div class="form-group">
-        <label>Business Account</label>
-        <input type="text" id="agentBusinessAccount" placeholder="business-10.buildingfromthetop.testnet" />
-      </div>
-
-      <div class="form-group">
-        <label>Private Key (ed25519:...)</label>
-        <textarea id="agentPrivateKey" placeholder="Paste the private key you copied during activation"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>OutLayer API Key (wk_...)</label>
-        <input type="text" id="outlayerApiKey" placeholder="wk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
-      </div>
-
-      <button class="btn btn-green" onclick="checkAgentBalance()">Check Treasury Balance</button>
-      <button class="btn btn-outline" onclick="checkOutlayerBalance()">Check OutLayer Balance</button>
-      <button class="btn btn-outline" onclick="toggleAgentInfo()">How to run full Agent</button>
-
-      <div id="agentResult" class="agent-result"></div>
-      <div id="agentInfoPanel" class="info-panel"></div>
+    <div class="main">
+      <header class="topbar">
+        <div class="mobile-brand">autonomous</div>
+        <div class="crumbs" id="crumbs"></div>
+        <div class="top-actions">
+          <div class="pill"><span class="dot"></span> NEAR Protocol</div>
+          <div class="pill" id="ownerPill">Not connected</div>
+          <button class="menu-btn" data-action="toggle-menu" aria-label="Menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          </button>
+        </div>
+      </header>
+      <main class="content" id="view"></main>
     </div>
   </div>
 
+  <nav class="bottom-nav" id="bottomNav"></nav>
   <div id="toast"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl.min.js"></script>
-
   <script type="importmap">
-  {
-    "imports": {
-      "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@0.12.0"
-    }
-  }
+  { "imports": { "@hot-labs/near-connect": "https://esm.sh/@hot-labs/near-connect@0.12.0" } }
   </script>
 
   <script type="module">
     import { NearConnector } from "@hot-labs/near-connect";
 
+    /* =====================================================================
+       CONFIG
+       ===================================================================== */
     const CONTRACT_ID = "buildingfromthetop.testnet";
     const NETWORK = "testnet";
+    const RPC_URL = "https://rpc.testnet.near.org";
     const OUTLAYER_API = "https://testnet-api.outlayer.ai";
+    const CONFIG_STORAGE_KEY = "autonomous.agentConfig.v1";
+    const STORAGE_RESERVE_NEAR = 0.005;
 
+    /* =====================================================================
+       STATE
+       ===================================================================== */
     let connector = null;
-    let accountId = null;
-
-    const connectBtn = document.getElementById("connectBtn");
-    const disconnectBtn = document.getElementById("disconnectBtn");
-    const accountBox = document.getElementById("accountBox");
-    const accountIdDisplay = document.getElementById("accountIdDisplay");
-    const listEl = document.getElementById("list");
-    const toastEl = document.getElementById("toast");
-
-    window.switchTab = function(tab) {
-      document.getElementById("dashboardSection").classList.toggle("active", tab === "dashboard");
-      document.getElementById("agentSection").classList.toggle("active", tab === "agent");
-      document.getElementById("tabDashboard").classList.toggle("active", tab === "dashboard");
-      document.getElementById("tabAgent").classList.toggle("active", tab === "agent");
+    const state = {
+      accountId: null,
+      walletBalance: null,
+      businesses: [],          // { tokenId, title, description, account, balance, active }
+      selectedId: null,
+      loading: false,
+      loaded: false,
+      loadError: false,
+      view: "overview",
+      filter: "all",
+      search: "",
+      keys: {},                // tokenId -> { privateKey, outlayerKey }
+      status: {},              // tokenId -> { cls, msg }
+      transferOpen: {},        // tokenId -> bool
+      config: loadConfig()
     };
 
+    /* =====================================================================
+       HELPERS
+       ===================================================================== */
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const shortAcct = (a) => (a && a.length > 22 ? a.slice(0, 10) + "…" + a.slice(-8) : a);
+    const fmtNear = (v) => (v === null || v === undefined ? "—" : v + " Ⓝ");
+    const businessAccountFor = (tokenId) => "business-" + tokenId + "." + CONTRACT_ID;
+
     function showToast(message, type = "info") {
-      toastEl.textContent = message;
-      toastEl.className = "show " + type;
-      clearTimeout(toastEl._timer);
-      toastEl._timer = setTimeout(() => {
-        toastEl.className = "";
-      }, 4000);
+      const el = $("toast");
+      el.textContent = message;
+      el.className = "show " + type;
+      clearTimeout(el._timer);
+      el._timer = setTimeout(() => { el.className = ""; }, 4000);
     }
 
+    function loadConfig() {
+      const defaults = {
+        description: "Autonomous AI agent that conducts geo-economic research, monitors global markets, and delivers structured intelligence reports.",
+        price: "15.00", min: "0.00", max: "5.00", reinvest: 40, owner: 60
+      };
+      try {
+        const saved = JSON.parse(localStorage.getItem(CONFIG_STORAGE_KEY) || "null");
+        return saved ? { ...defaults, ...saved } : defaults;
+      } catch (e) { return defaults; }
+    }
+
+    const ICONS = {
+      overview: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+      businesses: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
+      wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M16 15h2"/></svg>',
+      config: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>'
+    };
+
+    const NAV = [
+      { id: "overview", label: "Overview", mobile: "Overview", icon: ICONS.overview },
+      { id: "businesses", label: "My businesses", mobile: "Businesses", icon: ICONS.businesses },
+      { id: "wallet", label: "Wallet", mobile: "Wallet", icon: ICONS.wallet },
+      { id: "config", label: "Configuration", mobile: "Settings", icon: ICONS.config }
+    ];
+
+    const selected = () => state.businesses.find(b => b.tokenId === state.selectedId) || state.businesses[0] || null;
+    const totalClaimable = () => state.businesses.filter(b => b.active && b.balance !== null)
+      .reduce((s, b) => s + Math.max(0, Number(b.balance) - STORAGE_RESERVE_NEAR), 0);
+    const totalTreasury = () => state.businesses.filter(b => b.active && b.balance !== null)
+      .reduce((s, b) => s + Number(b.balance), 0);
+
+    /* =====================================================================
+       NEAR / CRYPTO UTILITIES  (unchanged logic)
+       ===================================================================== */
     function toBase58(bytes) {
       const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
       let num = BigInt(0);
-      for (let i = 0; i < bytes.length; i++) {
-        num = (num << 8n) + BigInt(bytes[i]);
-      }
+      for (let i = 0; i < bytes.length; i++) num = (num << 8n) + BigInt(bytes[i]);
       let str = "";
-      while (num > 0n) {
-        str = ALPHABET[Number(num % 58n)] + str;
-        num = num / 58n;
-      }
-      for (let i = 0; i < bytes.length && bytes[i] === 0; i++) {
-        str = "1" + str;
-      }
+      while (num > 0n) { str = ALPHABET[Number(num % 58n)] + str; num = num / 58n; }
+      for (let i = 0; i < bytes.length && bytes[i] === 0; i++) str = "1" + str;
       return str;
     }
 
     function generateKeyPair() {
-      if (typeof nacl === "undefined") {
-        throw new Error("Crypto library not loaded. Please refresh.");
-      }
+      if (typeof nacl === "undefined") throw new Error("Crypto library not loaded. Please refresh.");
       const kp = nacl.sign.keyPair();
       const seed = kp.secretKey.slice(0, 32);
-      const publicKey = kp.publicKey;
       return {
         privateKeyStr: "ed25519:" + toBase58(seed),
-        publicKeyStr: "ed25519:" + toBase58(publicKey)
+        publicKeyStr: "ed25519:" + toBase58(kp.publicKey)
       };
     }
 
     async function getAccountBalance(accountId) {
       try {
-        const res = await fetch("https://rpc.testnet.near.org", {
+        const res = await fetch(RPC_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            jsonrpc: "2.0",
-            id: "1",
-            method: "query",
-            params: {
-              request_type: "view_account",
-              finality: "final",
-              account_id: accountId
-            }
+            jsonrpc: "2.0", id: "1", method: "query",
+            params: { request_type: "view_account", finality: "final", account_id: accountId }
           })
         });
         const data = await res.json();
-        if (data.result && data.result.amount) {
-          return (Number(data.result.amount) / 1e24).toFixed(4);
-        }
+        if (data.result && data.result.amount) return (Number(data.result.amount) / 1e24).toFixed(4);
         return null;
-      } catch (e) {
-        return null;
-      }
+      } catch (e) { return null; }
     }
 
     async function registerOutlayerWallet() {
       try {
-        const res = await fetch(OUTLAYER_API + "/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" }
-        });
+        const res = await fetch(OUTLAYER_API + "/register", { method: "POST", headers: { "Content-Type": "application/json" } });
         if (!res.ok) return null;
         return await res.json();
-      } catch (e) {
-        return null;
-      }
+      } catch (e) { return null; }
     }
 
-    function updateUI() {
-      if (accountId) {
-        connectBtn.style.display = "none";
-        disconnectBtn.style.display = "block";
-        accountBox.style.display = "block";
-        accountIdDisplay.textContent = accountId;
-      } else {
-        connectBtn.style.display = "block";
-        disconnectBtn.style.display = "none";
-        accountBox.style.display = "none";
-        listEl.innerHTML = "";
+    /* =====================================================================
+       WALLET CONNECTION  (unchanged logic)
+       ===================================================================== */
+    async function syncConnectedWallet() {
+      const connected = await connector.getConnectedWallet();
+      if (connected?.accounts?.length) {
+        state.accountId = connected.accounts[0].accountId;
+        state.walletBalance = null;
+        render();
+        getAccountBalance(state.accountId).then(b => { state.walletBalance = b; if (state.view === "wallet") render(); });
+        loadBusinesses();
       }
     }
 
     async function init() {
-      connector = new NearConnector({
-        network: NETWORK,
-        features: { signAndSendTransaction: true },
-        autoConnect: true
-      });
+      render();
+      connector = new NearConnector({ network: NETWORK, features: { signAndSendTransaction: true }, autoConnect: true });
 
-      connector.on("wallet:signIn", async () => {
-        const connected = await connector.getConnectedWallet();
-        if (connected?.accounts?.length) {
-          accountId = connected.accounts[0].accountId;
-          updateUI();
-          loadBusinesses();
-        }
-      });
-
+      connector.on("wallet:signIn", () => { syncConnectedWallet(); });
       connector.on("wallet:signOut", () => {
-        accountId = null;
-        updateUI();
+        state.accountId = null; state.businesses = []; state.selectedId = null; state.loaded = false;
+        render();
       });
 
       await new Promise(r => setTimeout(r, 500));
-      try {
-        const connected = await connector.getConnectedWallet();
-        if (connected?.accounts?.length) {
-          accountId = connected.accounts[0].accountId;
-          updateUI();
-          loadBusinesses();
-        }
-      } catch (e) {}
+      try { await syncConnectedWallet(); } catch (e) {}
     }
 
-    connectBtn.addEventListener("click", async () => {
-      try {
-        await connector.connect();
-      } catch (err) {
-        showToast(err.message || "Connect failed", "error");
-      }
-    });
-
-    disconnectBtn.addEventListener("click", async () => {
+    async function connectWallet() {
+      try { await connector.connect(); } catch (err) { showToast(err.message || "Connect failed", "error"); }
+    }
+    async function disconnectWallet() {
       try {
         await connector.disconnect();
-        accountId = null;
-        updateUI();
+        state.accountId = null; state.businesses = []; state.selectedId = null; state.loaded = false;
+        render();
       } catch (err) {}
-    });
+    }
 
+    /* =====================================================================
+       DATA LOADING  (nft_tokens_for_owner)
+       ===================================================================== */
     async function loadBusinesses() {
-      if (!accountId) return;
-      listEl.innerHTML = `<div style="color:#a1a1aa;padding:20px 0;text-align:center;">Loading your businesses...</div>`;
-
+      if (!state.accountId) return;
+      state.loading = true; state.loadError = false; render();
       try {
-        const res = await fetch("https://rpc.testnet.near.org", {
+        const res = await fetch(RPC_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            jsonrpc: "2.0",
-            id: "1",
-            method: "query",
+            jsonrpc: "2.0", id: "1", method: "query",
             params: {
-              request_type: "call_function",
-              finality: "final",
-              account_id: CONTRACT_ID,
+              request_type: "call_function", finality: "final", account_id: CONTRACT_ID,
               method_name: "nft_tokens_for_owner",
-              args_base64: btoa(JSON.stringify({ account_id: accountId }))
+              args_base64: btoa(JSON.stringify({ account_id: state.accountId }))
             }
           })
         });
-
         const data = await res.json();
         const bytes = data.result?.result;
-        if (!bytes) {
-          listEl.innerHTML = `<div style="color:#a1a1aa;padding:20px 0;text-align:center;">No businesses yet.<br>Go back and mint one.</div>`;
-          return;
-        }
+        let tokens = [];
+        if (bytes) tokens = JSON.parse(new TextDecoder().decode(new Uint8Array(bytes))) || [];
 
-        const tokens = JSON.parse(String.fromCharCode(...bytes));
-        if (!tokens || tokens.length === 0) {
-          listEl.innerHTML = `<div style="color:#a1a1aa;padding:20px 0;text-align:center;">No businesses yet.<br>Go back and mint one.</div>`;
-          return;
-        }
-
-        listEl.innerHTML = "";
-
+        const list = [];
         for (const token of tokens) {
           const tokenId = String(token.token_id);
-          const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
-          const title = token.metadata?.title || "Untitled";
-          const description = token.metadata?.description || "No description";
-
-          const balance = await getAccountBalance(businessAccount);
-          const isActive = balance !== null;
-
-          const card = document.createElement("div");
-          card.className = "business-card";
-          card.innerHTML = `
-            <h3>${title}</h3>
-            <p>${description}</p>
-            <div class="token-id">Token ID: ${tokenId}</div>
-            <div class="treasury">Treasury: ${businessAccount}</div>
-            <div class="stats">
-              <div class="stat">
-                <div class="label">Treasury Balance</div>
-                <div class="value">${isActive ? balance + " Ⓝ" : "—"}</div>
-              </div>
-              <div class="stat">
-                <div class="label">Status</div>
-                <div class="value">${isActive ? "Live" : "Pending"}</div>
-              </div>
-            </div>
-            <div class="badge ${isActive ? "badge-live" : "badge-pending"}">
-    ${isActive ? "● Active" : "○ Pending Activation"}
-  </div>
-
-  <div style="margin-top:10px; padding:8px 12px; background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.25); border-radius:10px; font-size:0.85rem; color:#4ade80;">
-    ● Agent Status: Ready (under the hood)
-  </div>
-
-  <button class="btn btn-green activate-btn" ${isActive ? "disabled" : ""}>
-              ${isActive ? "Activated ✓" : "Activate Business"}
-            </button>
-
-            ${isActive ? `
-              <div class="action-row">
-                <button class="btn btn-outline claim-btn">Claim Revenue</button>
-                <button class="btn btn-purple transfer-btn">Sell / Transfer</button>
-              </div>
-            ` : ""}
-
-            <div class="status-msg"></div>
-            <div class="key-box"></div>
-            <div class="info-panel transfer-info"></div>
-          `;
-          listEl.appendChild(card);
+          const account = businessAccountFor(tokenId);
+          const balance = await getAccountBalance(account);
+          list.push({
+            tokenId, account, balance,
+            active: balance !== null,
+            title: token.metadata?.title || "Untitled",
+            description: token.metadata?.description || "No description"
+          });
         }
-
-        // Activate buttons
-        // Claim Revenue buttons - REAL withdrawal
-document.querySelectorAll(".claim-btn").forEach(btn => {
-  btn.addEventListener("click", async () => {
-    const card = btn.closest(".business-card");
-    const statusEl = card.querySelector(".status-msg");
-    const treasuryText = card.querySelector(".treasury")?.textContent || "";
-    const businessAccount = treasuryText.replace("Treasury:", "").trim();
-
-    if (!businessAccount) {
-      showToast("Business account not found", "error");
-      return;
-    }
-
-    try {
-      btn.disabled = true;
-      btn.innerText = "Claiming...";
-      if (statusEl) {
-        statusEl.className = "status-msg info";
-        statusEl.innerText = "Preparing real claim... Confirm in your wallet";
-      }
-
-      // Get current balance first
-      const balance = await getAccountBalance(businessAccount);
-      if (!balance || Number(balance) < 0.01) {
-        throw new Error("Treasury balance too low to claim (need at least 0.01 NEAR)");
-      }
-
-      // Leave a tiny amount for storage (0.005 NEAR) and claim the rest
-      const claimAmountYocto = Math.floor((Number(balance) - 0.005) * 1e24).toString();
-
-      const wallet = await connector.wallet();
-      await wallet.signAndSendTransaction({
-        receiverId: businessAccount,
-        actions: [
-          {
-            type: "Transfer",
-            params: {
-              deposit: claimAmountYocto
-            }
-          }
-        ]
-      });
-
-      if (statusEl) {
-        statusEl.className = "status-msg success";
-        statusEl.innerText = `✅ Claimed \~${(Number(balance) - 0.005).toFixed(4)} NEAR to your wallet`;
-      }
-      showToast("Revenue claimed successfully", "success");
-      setTimeout(() => loadBusinesses(), 5000);
-    } catch (err) {
-      if (statusEl) {
-        statusEl.className = "status-msg error";
-        statusEl.innerText = err.message || "Claim failed or cancelled";
-      }
-      showToast(err.message || "Claim failed", "error");
-      btn.disabled = false;
-      btn.innerText = "Claim Revenue";
-    }
-  });
-});
-
-        // Claim Revenue buttons
-        document.querySelectorAll(".claim-btn").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const card = btn.closest(".business-card");
-            const statusEl = card.querySelector(".status-msg");
-            const treasuryText = card.querySelector(".treasury")?.textContent || "";
-            const businessAccount = treasuryText.replace("Treasury:", "").trim();
-
-            try {
-              btn.disabled = true;
-              btn.innerText = "Claiming...";
-              if (statusEl) {
-                statusEl.className = "status-msg info";
-                statusEl.innerText = "Preparing claim transaction... Confirm in your wallet";
-              }
-
-              const wallet = await connector.wallet();
-              await wallet.signAndSendTransaction({
-                receiverId: businessAccount,
-                actions: [
-                  {
-                    type: "Transfer",
-                    params: {
-                      deposit: "1000000000000000000000"
-                    }
-                  }
-                ]
-              });
-
-              if (statusEl) {
-                statusEl.className = "status-msg success";
-                statusEl.innerText = "✅ Test claim successful! (0.001 NEAR sent to you)";
-              }
-              showToast("Revenue claimed successfully", "success");
-              setTimeout(() => loadBusinesses(), 4000);
-            } catch (err) {
-              if (statusEl) {
-                statusEl.className = "status-msg error";
-                statusEl.innerText = err.message || "Claim failed or cancelled";
-              }
-              showToast(err.message || "Claim failed", "error");
-              btn.disabled = false;
-              btn.innerText = "Claim Revenue";
-            }
-          });
-        });
-
-        // Sell / Transfer buttons
-        document.querySelectorAll(".transfer-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const card = btn.closest(".business-card");
-            const infoPanel = card.querySelector(".transfer-info");
-            const tokenIdText = card.querySelector(".token-id")?.textContent || "";
-            const tokenId = tokenIdText.replace("Token ID:", "").trim();
-
-            if (infoPanel.classList.contains("show")) {
-              infoPanel.classList.remove("show");
-              return;
-            }
-
-            infoPanel.classList.add("show");
-            infoPanel.innerHTML = `
-<strong>How to Sell / Transfer this NFT</strong>
-
-1. Open any NEAR NFT marketplace that supports testnet (or use near-cli).
-
-2. Transfer the NFT using the standard NEP-171 method:
-
-   nft_transfer
-   • receiver_id → the buyer’s account
-   • token_id → ${tokenId}
-
-3. After the NFT is transferred, the new owner automatically becomes the controller of the business account (business-\( {tokenId}. \){CONTRACT_ID}).
-
-4. The Function-Call key remains valid for the agent. The new owner can also generate a new key if they want.
-
-Currently there is no built-in marketplace UI. Use:
-• Paras (testnet)
-• near-cli
-• or any wallet that supports NFT transfer
-            `;
-          });
-        });
-
+        state.businesses = list;
+        if (!list.find(b => b.tokenId === state.selectedId)) state.selectedId = list[0]?.tokenId || null;
+        state.loaded = true;
       } catch (err) {
-        listEl.innerHTML = `<div style="color:#f87171;padding:20px 0;text-align:center;">Failed to load businesses</div>`;
+        state.loadError = true;
         showToast("Failed to load businesses", "error");
       }
+      state.loading = false;
+      render();
+    }
+
+    /* =====================================================================
+       BUSINESS ACTIONS
+       ===================================================================== */
+    function setStatus(tokenId, cls, msg) {
+      state.status[tokenId] = cls ? { cls, msg } : null;
+      const el = document.getElementById("status-" + tokenId);
+      if (el) { el.className = "status-msg " + cls; el.textContent = msg; el.style.display = "block"; }
+    }
+
+    function renderKeyBox(tokenId) {
+      const k = state.keys[tokenId];
+      if (!k) return "";
+      return `<div class="key-box" id="keys-${esc(tokenId)}">
+        <div class="k-title">🔑 Agent Function-Call Key (COPY THIS NOW)</div>
+        <div class="k-val">${esc(k.privateKey)}</div>
+        <div class="k-warn">⚠️ This is the agent key for this business. Copy and store it safely. This is the only time it will be shown. You will give this key to your AI agent later.</div>
+        ${k.outlayerKey ? `<hr><div class="k-title" style="color:#c9a6ff">🛡️ OutLayer TEE API Key</div>
+        <div class="k-val">${esc(k.outlayerKey)}</div>
+        <div class="k-warn">Copy this key too. Paste it in the Agent control card (Configuration) later.</div>` : ""}
+      </div>`;
     }
 
     async function activateBusiness(tokenId, btn) {
-      const card = btn.closest(".business-card");
-      const statusEl = card ? card.querySelector(".status-msg") : null;
-      const keyBox = card ? card.querySelector(".key-box") : null;
-      const businessAccount = "business-" + tokenId + "." + CONTRACT_ID;
-
+      const businessAccount = businessAccountFor(tokenId);
       try {
-        btn.disabled = true;
-        btn.innerText = "Confirm in wallet...";
-        if (statusEl) {
-          statusEl.className = "status-msg info";
-          statusEl.innerText = "Creating treasury + Agent Function-Call key... Confirm in your wallet";
-        }
+        btn.disabled = true; btn.textContent = "Confirm in wallet...";
+        setStatus(tokenId, "info", "Creating treasury + Agent Function-Call key... Confirm in your wallet");
 
         const { privateKeyStr, publicKeyStr } = generateKeyPair();
-
-        if (keyBox) {
-          keyBox.className = "key-box show";
-          keyBox.innerHTML = `
-            <div style="color:#4ade80;margin-bottom:6px;font-weight:600;">🔑 Agent Function-Call Key (COPY THIS NOW)</div>
-            <div style="user-select:all;word-break:break-all;">${privateKeyStr}</div>
-            <div class="warning">
-              ⚠️ This is the agent key for this business.<br>
-              Copy and store it safely. This is the only time it will be shown.<br>
-              You will give this key to your AI agent later.
-            </div>
-          `;
-        }
+        state.keys[tokenId] = { privateKey: privateKeyStr, outlayerKey: null };
+        refreshKeyBox(tokenId);
 
         const wallet = await connector.wallet();
         await wallet.signAndSendTransaction({
@@ -750,134 +562,130 @@ Currently there is no built-in marketplace UI. Use:
               type: "AddKey",
               params: {
                 publicKey: publicKeyStr,
-                accessKey: {
-                  nonce: 0,
-                  permission: {
-                    receiverId: businessAccount,
-                    methodNames: [],
-                    allowance: "250000000000000000000000"
-                  }
-                }
+                accessKey: { nonce: 0, permission: { receiverId: businessAccount, methodNames: [], allowance: "250000000000000000000000" } }
               }
             },
             { type: "Transfer", params: { deposit: "100000000000000000000000" } }
           ]
         });
 
-        // OutLayer addition (only after success)
         const outlayer = await registerOutlayerWallet();
-        if (outlayer && outlayer.api_key && keyBox) {
-          keyBox.innerHTML += `
-            <div style="margin-top:14px;border-top:1px solid #3f3f46;padding-top:12px;">
-              <div style="color:#c084fc;margin-bottom:6px;font-weight:600;">🛡️ OutLayer TEE API Key</div>
-              <div style="user-select:all;word-break:break-all;">${outlayer.api_key}</div>
-              <div class="warning" style="margin-top:8px;">Copy this key too. Paste it in Agent Control tab later.</div>
-            </div>
-          `;
-        }
+        if (outlayer && outlayer.api_key) { state.keys[tokenId].outlayerKey = outlayer.api_key; refreshKeyBox(tokenId); }
 
-        if (statusEl) {
-          statusEl.className = "status-msg success";
-          statusEl.innerText = "✅ Business activated! Agent key has been added.";
-        }
-        btn.innerText = "Activated ✓";
+        setStatus(tokenId, "success", "✅ Business activated! Agent key has been added.");
+        btn.textContent = "Activated ✓";
         showToast("Agent key granted successfully! Copy the private key now.", "success");
-
-        setTimeout(() => {
-          loadBusinesses();
-        }, 60000);
+        setTimeout(() => loadBusinesses(), 60000);
       } catch (err) {
-        if (statusEl) {
-          statusEl.className = "status-msg error";
-          statusEl.innerText = err.message || "Activation failed or cancelled";
-        }
+        setStatus(tokenId, "error", err.message || "Activation failed or cancelled");
         showToast(err.message || "Activation failed", "error");
-        btn.disabled = false;
-        btn.innerText = "Activate Business";
+        btn.disabled = false; btn.textContent = "Activate business";
       }
     }
 
-    // ========== AGENT CONTROL FUNCTIONS ==========
-    window.checkAgentBalance = async function() {
-      const account = document.getElementById("agentBusinessAccount").value.trim();
-      const resultEl = document.getElementById("agentResult");
+    function refreshKeyBox(tokenId) {
+      const holder = document.getElementById("keyholder-" + tokenId);
+      if (holder) holder.innerHTML = renderKeyBox(tokenId);
+    }
 
-      if (!account) {
-        showToast("Please enter the Business Account", "error");
-        return;
+    async function claimRevenue(tokenId, btn) {
+      const biz = state.businesses.find(b => b.tokenId === tokenId);
+      if (!biz) return showToast("Business account not found", "error");
+      const original = btn.textContent;
+      try {
+        btn.disabled = true; btn.textContent = "Claiming...";
+        setStatus(tokenId, "info", "Preparing claim... Confirm in your wallet");
+
+        const balance = await getAccountBalance(biz.account);
+        if (!balance || Number(balance) < 0.01) throw new Error("Treasury balance too low to claim (need at least 0.01 NEAR)");
+
+        // Leave a tiny amount for storage and claim the rest (BigInt avoids float / scientific-notation bugs)
+        const claimNear = Number(balance) - STORAGE_RESERVE_NEAR;
+        const claimAmountYocto = (BigInt(Math.floor(claimNear * 1e4)) * 10n ** 20n).toString();
+
+        const wallet = await connector.wallet();
+        await wallet.signAndSendTransaction({
+          receiverId: biz.account,
+          actions: [{ type: "Transfer", params: { deposit: claimAmountYocto } }]
+        });
+
+        setStatus(tokenId, "success", `✅ Claimed ~${claimNear.toFixed(4)} NEAR to your wallet`);
+        showToast("Revenue claimed successfully", "success");
+        setTimeout(() => loadBusinesses(), 5000);
+      } catch (err) {
+        setStatus(tokenId, "error", err.message || "Claim failed or cancelled");
+        showToast(err.message || "Claim failed", "error");
+        btn.disabled = false; btn.textContent = original;
       }
+    }
 
-      resultEl.style.display = "block";
-      resultEl.innerText = "Checking balance...";
+    async function rotateAgentKey(tokenId, btn) {
+      const biz = state.businesses.find(b => b.tokenId === tokenId);
+      if (!biz || !biz.active) return showToast("Activate the business first", "error");
+      try {
+        btn.disabled = true;
+        const { privateKeyStr, publicKeyStr } = generateKeyPair();
+        const wallet = await connector.wallet();
+        await wallet.signAndSendTransaction({
+          receiverId: biz.account,
+          actions: [{
+            type: "AddKey",
+            params: {
+              publicKey: publicKeyStr,
+              accessKey: { nonce: 0, permission: { receiverId: biz.account, methodNames: [], allowance: "250000000000000000000000" } }
+            }
+          }]
+        });
+        state.keys[tokenId] = { ...(state.keys[tokenId] || {}), privateKey: privateKeyStr };
+        refreshKeyBox(tokenId);
+        showToast("New agent key created. Copy it now.", "success");
+      } catch (err) {
+        showToast(err.message || "Key rotation failed", "error");
+      }
+      btn.disabled = false;
+    }
 
+    /* =====================================================================
+       AGENT CONTROL  (unchanged logic)
+       ===================================================================== */
+    function setPanel(id, text) {
+      const el = $(id); if (!el) return;
+      el.style.display = "block"; el.textContent = text;
+    }
+
+    async function checkAgentBalance() {
+      const account = ($("agentBusinessAccount")?.value || "").trim();
+      if (!account) return showToast("Please enter the Business Account", "error");
+      setPanel("agentResult", "Checking balance...");
       const balance = await getAccountBalance(account);
-      if (balance !== null) {
-        resultEl.innerText = `Treasury Balance of \( {account}:\n\n \){balance} NEAR\n\n✅ Account exists and is controlled by the Function-Call key.`;
-      } else {
-        resultEl.innerText = `Could not find account or failed to fetch balance.\nMake sure the account name is correct.`;
-      }
-    };
-
-   window.checkOutlayerBalance = async function() {
-  const apiKey = document.getElementById("outlayerApiKey").value.trim();
-  const resultEl = document.getElementById("agentResult");
-
-  if (!apiKey) {
-    showToast("Please paste an OutLayer API key (wk_...)", "error");
-    return;
-  }
-
-  if (!apiKey.startsWith("wk_")) {
-    showToast("Key must start with wk_", "error");
-    return;
-  }
-
-  resultEl.style.display = "block";
-  resultEl.innerText = "Checking OutLayer balance...";
-
-  try {
-    const res = await fetch("https://testnet-api.outlayer.ai/wallet/v1/balance?chain=near", {
-      method: "GET",
-      headers: {
-        "Authorization": "Bearer " + apiKey,
-        "Accept": "application/json"
-      }
-    });
-
-    const text = await res.text();
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      data = text;
+      setPanel("agentResult", balance !== null
+        ? `Treasury Balance of ${account}:\n\n${balance} NEAR\n\n✅ Account exists and is controlled by the Function-Call key.`
+        : `Could not find account or failed to fetch balance.\nMake sure the account name is correct.`);
     }
 
-    if (!res.ok) {
-      let message = "OutLayer Error " + res.status + "\n\n";
-      if (typeof data === "string") {
-        message += data;
-      } else {
-        message += JSON.stringify(data, null, 2);
+    async function checkOutlayerBalance() {
+      const apiKey = ($("outlayerApiKey")?.value || "").trim();
+      if (!apiKey) return showToast("Please paste an OutLayer API key (wk_...)", "error");
+      if (!apiKey.startsWith("wk_")) return showToast("Key must start with wk_", "error");
+      setPanel("agentResult", "Checking OutLayer balance...");
+      try {
+        const res = await fetch(OUTLAYER_API + "/wallet/v1/balance?chain=near", {
+          method: "GET", headers: { "Authorization": "Bearer " + apiKey, "Accept": "application/json" }
+        });
+        const text = await res.text();
+        let data; try { data = JSON.parse(text); } catch (e) { data = text; }
+        if (!res.ok) {
+          let message = "OutLayer Error " + res.status + "\n\n" + (typeof data === "string" ? data : JSON.stringify(data, null, 2));
+          message += "\n\nPossible reasons:\n• Key is a trial key that needs claiming\n• Key was not fully registered\n• Testnet key expired or invalid";
+          return setPanel("agentResult", message);
+        }
+        setPanel("agentResult", "✅ OutLayer Balance:\n\n" + JSON.stringify(data, null, 2));
+      } catch (err) {
+        setPanel("agentResult", "Network / CORS error:\n" + err.message);
       }
-      message += "\n\nPossible reasons:\n• Key is a trial key that needs claiming\n• Key was not fully registered\n• Testnet key expired or invalid";
-      resultEl.innerText = message;
-      return;
     }
 
-    resultEl.innerText = "✅ OutLayer Balance:\n\n" + JSON.stringify(data, null, 2);
-  } catch (err) {
-    resultEl.innerText = "Network / CORS error:\n" + err.message;
-  }
-}; 
-      
-    window.toggleAgentInfo = function() {
-  const panel = document.getElementById("agentInfoPanel");
-  if (panel.classList.contains("show")) {
-    panel.classList.remove("show");
-    return;
-  }
-  panel.classList.add("show");
-  panel.innerText = `HOW THE AGENT WORKS (UNDER THE HOOD)
+    const AGENT_INFO = `HOW THE AGENT WORKS (UNDER THE HOOD)
 
 For normal users:
 • You only mint the NFT and activate the business once.
@@ -893,18 +701,452 @@ Two ways the agent can run:
    - The key can only call allowed methods and has limited allowance
 
 2. OUTLAYER TEE (Recommended)
-   - The wk_... key you received is a custodial key inside OutLayer’s TEE
+   - The wk_... key you received is a custodial key inside OutLayer's TEE
    - You can check balance here
    - Later the agent can be controlled / scheduled through OutLayer API
-   - Safer because the private key never leaves the TEE
+   - Safer because the private key never leaves the TEE`;
 
-Next step team will add:
-• Automatic status ("Agent Running" / "Idle")
-• Ability to start a simple background task from the dashboard
-• Claim Revenue button that actually withdraws from the business account`;
-};
+    function toggleAgentInfo() {
+      const panel = $("agentInfoPanel"); if (!panel) return;
+      panel.textContent = AGENT_INFO;
+      panel.classList.toggle("show");
+    }
+
+    /* =====================================================================
+       VIEW: shared pieces
+       ===================================================================== */
+    function businessActions(b) {
+      return `
+        ${b.active ? "" : `<button class="btn btn-primary btn-block" data-action="activate" data-id="${esc(b.tokenId)}">Activate business</button>`}
+        <div class="status-msg ${esc(state.status[b.tokenId]?.cls || "")}" id="status-${esc(b.tokenId)}" style="display:${state.status[b.tokenId] ? "block" : "none"}">${esc(state.status[b.tokenId]?.msg || "")}</div>
+        <div id="keyholder-${esc(b.tokenId)}">${renderKeyBox(b.tokenId)}</div>`;
+    }
+
+    function transferPanel(b) {
+      return `<div class="info-panel ${state.transferOpen[b.tokenId] ? "show" : ""}" id="transfer-${esc(b.tokenId)}">How to Sell / Transfer this NFT
+
+1. Open any NEAR NFT marketplace that supports testnet (or use near-cli).
+
+2. Transfer the NFT using the standard NEP-171 method:
+
+   nft_transfer
+   • receiver_id → the buyer's account
+   • token_id → ${esc(b.tokenId)}
+
+3. After the NFT is transferred, the new owner automatically becomes the controller of the business account (${esc(b.account)}).
+
+4. The Function-Call key remains valid for the agent. The new owner can also generate a new key if they want.
+
+Currently there is no built-in marketplace UI. Use:
+• Paras (testnet)
+• near-cli
+• or any wallet that supports NFT transfer</div>`;
+    }
+
+    function connectPrompt(title) {
+      return `<div class="card empty">
+        <h3 style="color:var(--ink);margin-bottom:8px">${esc(title)}</h3>
+        <p style="margin-bottom:16px">Connect your NEAR wallet to see your autonomous businesses.</p>
+        <button class="btn btn-primary" data-action="connect">Connect wallet</button>
+      </div>`;
+    }
+
+    function stateGate(title) {
+      if (!state.accountId) return connectPrompt(title);
+      if (state.loading && !state.loaded) return `<div class="card empty">Loading your businesses...</div>`;
+      if (state.loadError) return `<div class="card empty" style="color:var(--danger)">Failed to load businesses.<br><br><button class="btn btn-ghost" data-action="reload">Try again</button></div>`;
+      if (!state.businesses.length) return `<div class="card empty">No businesses yet.<br>Go back and mint one.<br><br><a class="btn btn-primary" href="/">Mint a business</a></div>`;
+      return null;
+    }
+
+    /* =====================================================================
+       VIEW: Overview
+       ===================================================================== */
+    function viewOverview() {
+      const gate = stateGate("Overview"); if (gate) return gate;
+      const b = selected();
+      const claimable = b.active && b.balance !== null ? Math.max(0, Number(b.balance) - STORAGE_RESERVE_NEAR).toFixed(4) : "0.0000";
+      return `
+        <div class="eyebrow">My businesses <span style="margin:0 6px">/</span> Agent #${esc(b.tokenId)}</div>
+        <div class="page-head">
+          <div>
+            <div class="title-row">
+              <h1>${esc(b.title)}</h1>
+              <span class="badge ${b.active ? "" : "pending"}"><span class="dot"></span>${b.active ? "Active" : "Pending activation"}</span>
+            </div>
+            <div class="meta-line"><span>NFT ID: #${esc(b.tokenId)}</span><a href="https://explorer.testnet.near.org/accounts/${esc(b.account)}" target="_blank" rel="noopener">${esc(b.account)} ↗</a></div>
+            <div class="page-sub">${esc(b.description)}</div>
+          </div>
+          ${b.active ? `<button class="btn btn-ghost" data-action="toggle-transfer" data-id="${esc(b.tokenId)}">Sell / Transfer ↗</button>` : ""}
+        </div>
+
+        <div class="stat-grid c4">
+          <div class="card stat"><div class="label-sm">Treasury</div><div class="big">${esc(fmtNear(b.balance))}</div><div class="label-sm">NEAR balance</div></div>
+          <div class="card stat"><div class="label-sm">This month</div><div class="big green">—</div><div class="label-sm">Net earnings</div></div>
+          <div class="card stat"><div class="label-sm">Jobs done</div><div class="big">—</div><div class="label-sm">All time</div></div>
+          <div class="card stat"><div class="label-sm">Success rate</div><div class="big">—</div><div class="label-sm">All time</div></div>
+        </div>
+
+        <div class="hero">
+          <div>
+            <div class="tag">Available profits</div>
+            <div class="amount">${claimable}<small>NEAR</small></div>
+          </div>
+          <button class="btn btn-lime" data-action="claim" data-id="${esc(b.tokenId)}" ${b.active ? "" : "disabled"}>Claim to wallet →</button>
+        </div>
+
+        ${transferPanel(b)}
+        ${businessActions(b)}
+
+        <div class="card" style="margin:20px 0">
+          <div class="card-head"><h3>Agent status</h3>
+            <span class="badge ${b.active ? "" : "pending"}"><span class="dot"></span>${b.active ? "Ready" : "Pending"}</span></div>
+          <div class="status-grid">
+            <div><div class="label-sm">Running on</div><div class="v green">OutLayer TEE</div></div>
+            <div><div class="label-sm">Last activity</div><div class="v">—</div></div>
+            <div><div class="label-sm">Uptime (30d)</div><div class="v">—</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h3>Recent activity</h3></div>
+          <div class="table-head"><span>Event</span><span>Time</span><span style="text-align:right">Amount</span></div>
+          <div class="empty">No activity yet. Completed jobs and profit distributions will appear here.</div>
+        </div>`;
+    }
+
+    /* =====================================================================
+       VIEW: My businesses
+       ===================================================================== */
+    function viewBusinesses() {
+      const gate = stateGate("My businesses"); if (gate) return gate;
+      const active = state.businesses.filter(b => b.active);
+      let list = state.filter === "active" ? active : state.businesses;
+      const q = state.search.trim().toLowerCase();
+      if (q) list = list.filter(b => (b.title + " " + b.account + " " + b.description).toLowerCase().includes(q));
+
+      return `
+        <div class="eyebrow">Your workspace</div>
+        <div class="page-head">
+          <div><h1>My businesses</h1><div class="page-sub">Your autonomous businesses, all in one place.</div></div>
+          <a class="btn btn-ghost keep" href="/">Explore marketplace ↗</a>
+        </div>
+
+        <div class="stat-grid c3">
+          <div class="card stat"><div class="label-sm">Active businesses</div><div class="big">${active.length}</div><div class="label-sm">Running on NEAR</div></div>
+          <div class="card stat"><div class="label-sm">Total treasury</div><div class="big">${totalTreasury().toFixed(4)} Ⓝ</div><div class="label-sm">NEAR held by your agents</div></div>
+          <div class="card stat"><div class="label-sm">Available profits</div><div class="big green">${totalClaimable().toFixed(4)} Ⓝ</div><div class="label-sm">Ready to claim</div></div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px">
+          <div class="tabs" style="margin:0">
+            <button class="tab ${state.filter === "all" ? "active" : ""}" data-action="filter" data-id="all">All businesses · ${state.businesses.length}</button>
+            <button class="tab ${state.filter === "active" ? "active" : ""}" data-action="filter" data-id="active">Active · ${active.length}</button>
+          </div>
+          <input class="input" id="searchInput" style="max-width:280px" placeholder="Search businesses..." value="${esc(state.search)}" />
+        </div>
+
+        <div id="bizList">${list.length ? list.map(bizCard).join("") : `<div class="card empty">No businesses match.</div>`}</div>
+
+        <div class="cta-band">
+          <div><h3>Build your autonomous portfolio</h3><p>Discover more agents and find your next business in the marketplace.</p></div>
+          <a class="btn btn-ghost" href="/">Explore marketplace ↗</a>
+        </div>`;
+    }
+
+    function bizCard(b) {
+      return `<div class="card biz-card">
+        <div class="biz-top">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <span class="tag">Autonomous business</span>
+              <span class="badge ${b.active ? "" : "pending"}"><span class="dot"></span>${b.active ? "Active" : "Pending"}</span>
+            </div>
+            <h2>${esc(b.title)}</h2>
+            <div class="label-sm" style="margin-bottom:6px">NFT #${esc(b.tokenId)}</div>
+          </div>
+          <button class="btn btn-primary" data-action="select" data-id="${esc(b.tokenId)}">View business →</button>
+        </div>
+        <p class="desc">${esc(b.description)}</p>
+        <div class="mini-stats">
+          <div><div class="label-sm">Treasury</div><div class="v">${esc(fmtNear(b.balance))}</div></div>
+          <div><div class="label-sm">This month</div><div class="v green">—</div></div>
+          <div><div class="label-sm">Jobs done</div><div class="v">—</div></div>
+          <div><div class="label-sm">Success rate</div><div class="v">—</div></div>
+        </div>
+        <div class="biz-foot">
+          <a href="https://explorer.testnet.near.org/accounts/${esc(b.account)}" target="_blank" rel="noopener">${esc(b.account)} ↗</a>
+          <span class="healthy" style="${b.active ? "" : "color:#9a7208"}"><span class="dot" style="background:currentColor"></span>${b.active ? "Healthy · OutLayer TEE" : "Pending activation"}</span>
+        </div>
+        <button class="btn btn-primary btn-block" style="margin-top:14px;display:none" data-mobile-view data-action="select" data-id="${esc(b.tokenId)}">View business →</button>
+        ${b.active ? "" : `<div style="margin-top:14px">${businessActions(b)}</div>`}
+        ${b.active ? `<div class="btn-row" style="margin-top:14px">
+          <button class="btn btn-ghost" data-action="claim" data-id="${esc(b.tokenId)}">Claim revenue</button>
+          <button class="btn btn-ghost" data-action="toggle-transfer" data-id="${esc(b.tokenId)}">Sell / Transfer</button>
+        </div>${transferPanel(b)}${businessActions(b)}` : ""}
+      </div>`;
+    }
+
+    /* =====================================================================
+       VIEW: Wallet
+       ===================================================================== */
+    function viewWallet() {
+      const connected = !!state.accountId;
+      const claimable = totalClaimable();
+      const claimBiz = state.businesses.find(b => b.active && Number(b.balance) - STORAGE_RESERVE_NEAR > 0) || null;
+      const heroBtn = connected
+        ? `<button class="btn btn-lime" data-action="claim" data-id="${esc(claimBiz?.tokenId || "")}" ${claimBiz ? "" : "disabled"}>Claim to wallet →</button>`
+        : `<button class="btn btn-lime" data-action="connect">Connect to claim →</button>`;
+
+      return `
+        <div class="eyebrow">Your earnings</div>
+        <div class="page-head">
+          <div><h1>Wallet</h1><div class="page-sub">Manage and claim profits from your autonomous businesses.</div></div>
+          ${connected
+            ? `<button class="btn btn-primary" data-action="disconnect">Disconnect wallet</button>`
+            : `<button class="btn btn-primary" data-action="connect">Connect wallet</button>`}
+        </div>
+
+        <div class="two-col">
+          <div class="stack">
+            <div class="hero" style="flex-direction:column;align-items:stretch;margin:0">
+              <div>
+                <div class="tag">Available to claim</div>
+                <div class="amount">${claimable.toFixed(4)}<small>NEAR</small></div>
+              </div>
+              <div class="from">${claimBiz ? "From " + esc(claimBiz.title) + " #" + esc(claimBiz.tokenId) : "No claimable profits yet"}</div>
+              <div>${heroBtn}</div>
+              ${claimBiz ? `<div class="status-msg ${esc(state.status[claimBiz.tokenId]?.cls || "")}" id="status-${esc(claimBiz.tokenId)}" style="display:${state.status[claimBiz.tokenId] ? "block" : "none"}">${esc(state.status[claimBiz.tokenId]?.msg || "")}</div>` : ""}
+            </div>
+
+            <div class="card">
+              <div class="card-head"><h3>Claimable by business</h3><span class="badge">${state.businesses.filter(b => b.active).length} business</span></div>
+              ${state.businesses.filter(b => b.active).map(b => `
+                <div style="margin-bottom:14px">
+                  <div class="biz-row"><div><div style="font-weight:600">${esc(b.title)} #${esc(b.tokenId)}</div><div class="label-sm" style="font-size:.72rem">${esc(b.account)}</div></div>
+                  <div class="amt">${Math.max(0, Number(b.balance) - STORAGE_RESERVE_NEAR).toFixed(4)} Ⓝ</div></div>
+                </div>`).join("") || `<div class="empty">${connected ? "No active businesses." : "Connect your wallet to see claimable profits."}</div>`}
+            </div>
+
+            <div class="card">
+              <div class="card-head"><h3>Recent allocations</h3></div>
+              <div class="card-sub">Owner profit allocations, not wallet transfers.</div>
+              <div class="empty" style="border-top:1px solid var(--border)">No allocations yet.</div>
+            </div>
+          </div>
+
+          <div class="stack">
+            <div class="card"><div class="label-sm">Business net earnings</div><div class="big green">—</div><div class="label-sm" style="font-size:.74rem">This month · before profit distribution</div></div>
+            <div class="card"><div class="label-sm">Agent treasury</div><div class="big">${totalTreasury().toFixed(4)} Ⓝ</div><div class="label-sm" style="font-size:.74rem">Held by the business, separate from your wallet</div></div>
+
+            <div class="card">
+              <div class="card-head"><h3>Your wallet</h3><span class="label-sm" style="font-size:.7rem">${connected ? "Connected" : "Not connected"}</span></div>
+              ${connected
+                ? `<div class="card-sub" style="word-break:break-all">${esc(state.accountId)}</div>
+                   <div class="big" style="font-size:1.5rem">${esc(fmtNear(state.walletBalance))}</div>
+                   <button class="btn btn-ghost btn-block" data-action="disconnect" style="margin-top:10px">Disconnect wallet</button>`
+                : `<div class="card-sub">Connect your NEAR wallet to view its balance and receive your business profits.</div>
+                   <button class="btn btn-primary btn-block" data-action="connect">Connect wallet</button>`}
+              <div class="kv"><span>Network</span><b>NEAR Protocol</b></div>
+            </div>
+
+            <div class="card">
+              <div class="card-head"><h3>How claiming works</h3></div>
+              <ol class="steps">
+                <li><span class="n">01</span><div>Connect your wallet<div class="d">Choose the wallet that will receive your profits.</div></div></li>
+                <li><span class="n">02</span><div>Review your claim<div class="d">Check the available balance from your business.</div></div></li>
+                <li><span class="n">03</span><div>Confirm the transfer<div class="d">Approve the transaction in your wallet.</div></div></li>
+              </ol>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    /* =====================================================================
+       VIEW: Configuration (+ Agent control)
+       ===================================================================== */
+    function viewConfig() {
+      const c = state.config;
+      const b = selected();
+      const total = Number(c.reinvest) + Number(c.owner);
+      const okTotal = total === 100;
+      return `
+        ${b ? `<a href="#" data-action="goto" data-id="overview" style="color:var(--green);font-size:.8rem;text-decoration:none">← ${esc(b.title)} #${esc(b.tokenId)}</a>` : ""}
+        <div class="page-head" style="margin-top:12px">
+          <div><h1>Configuration</h1><div class="page-sub">Manage how your agent works, earns and stays secure.</div></div>
+        </div>
+        <div class="banner ${b && b.active ? "" : "warn"}"><span class="dot"></span>${b && b.active ? "Your agent is active. Updates apply to future jobs." : "Your agent is not active yet. Activate a business to apply changes."}</div>
+
+        <div class="cfg-grid">
+          <div class="stack">
+            <div class="card">
+              <div class="card-head"><h3>Service description</h3><span class="num">01</span></div>
+              <div class="card-sub">Tell clients what your autonomous agent can do.</div>
+              <textarea class="input" id="cfgDesc">${esc(c.description)}</textarea>
+              <div class="hint">A clear description helps clients find the right agent.</div>
+            </div>
+
+            <div class="card">
+              <div class="card-head"><h3>Pricing</h3><span class="num">02</span></div>
+              <div class="card-sub">Set your base rate and optional premium add-ons.</div>
+              <div class="field"><label>Base price per job</label><input class="input" id="cfgPrice" value="${esc(c.price)}" inputmode="decimal" /><div class="hint">Charged for each completed standard job.</div></div>
+              <div class="two-inputs">
+                <div class="field"><label>Premium add-ons · minimum</label><input class="input" id="cfgMin" value="${esc(c.min)}" inputmode="decimal" /></div>
+                <div class="field"><label>Premium add-ons · maximum</label><input class="input" id="cfgMax" value="${esc(c.max)}" inputmode="decimal" /></div>
+              </div>
+              <div class="hint">All prices are denominated in USDC.</div>
+            </div>
+
+            <div class="card">
+              <div class="card-head"><h3>Agent control</h3><span class="num">05</span></div>
+              <div class="card-sub">Use the Function-Call key to control the business.</div>
+              <div class="field"><label>Business account</label><input class="input" id="agentBusinessAccount" placeholder="business-10.buildingfromthetop.testnet" value="${b ? esc(b.account) : ""}" /></div>
+              <div class="field"><label>Private key (ed25519:...)</label><textarea class="input mono" id="agentPrivateKey" placeholder="Paste the private key you copied during activation"></textarea></div>
+              <div class="field"><label>OutLayer API key (wk_...)</label><input class="input" id="outlayerApiKey" placeholder="wk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" /></div>
+              <div class="btn-row">
+                <button class="btn btn-primary" data-action="check-treasury">Check treasury balance</button>
+                <button class="btn btn-ghost" data-action="check-outlayer">Check OutLayer balance</button>
+                <button class="btn btn-ghost" data-action="toggle-agent-info">How to run full agent</button>
+              </div>
+              <div class="result-panel" id="agentResult"></div>
+              <div class="info-panel" id="agentInfoPanel"></div>
+            </div>
+          </div>
+
+          <div class="stack">
+            <div class="card">
+              <div class="card-head"><h3>Profit distribution</h3><span class="num">03</span></div>
+              <div class="card-sub">Choose how every payout is allocated.</div>
+              <div class="alloc-bar"><i id="barA" style="flex:${Number(c.reinvest) || 0}"></i><i id="barB" style="flex:${Number(c.owner) || 0}"></i></div>
+              <div class="field"><label>Reinvest into treasury (%)</label><input class="input" id="cfgReinvest" value="${esc(c.reinvest)}" inputmode="numeric" /><div class="hint">Funds your agent's future operations.</div></div>
+              <div class="field"><label>Send to owner (%)</label><input class="input" id="cfgOwner" value="${esc(c.owner)}" inputmode="numeric" /><div class="hint">Available as claimable profits.</div></div>
+              <div class="alloc-total"><span>Total allocation</span><span class="badge ${okTotal ? "" : "pending"}" id="allocBadge">${okTotal ? "100% allocated" : total + "% allocated"}</span></div>
+            </div>
+
+            <div class="card">
+              <div class="card-head"><h3>Agent security</h3><span class="num">04</span></div>
+              <div class="card-sub">Rotate the agent's signing key for enhanced security.</div>
+              <button class="btn btn-ghost btn-block" data-action="rotate-key" ${b && b.active ? "" : "disabled"}>↻ Rotate agent key</button>
+              <div class="hint">Key rotation is separate from other settings.</div>
+              ${b ? `<div id="keyholder-${esc(b.tokenId)}">${renderKeyBox(b.tokenId)}</div>` : ""}
+            </div>
+          </div>
+        </div>
+
+        <div class="foot-actions">
+          <span class="label-sm">Review your changes before saving.</span>
+          <div class="btns">
+            <button class="btn btn-ghost" data-action="cancel-config">Cancel</button>
+            <button class="btn btn-primary" data-action="save-config">Save changes</button>
+          </div>
+        </div>`;
+    }
+
+    /* =====================================================================
+       RENDER (shell + current view)
+       ===================================================================== */
+    const VIEWS = { overview: viewOverview, businesses: viewBusinesses, wallet: viewWallet, config: viewConfig };
+    const CRUMBS = {
+      overview: () => { const b = selected(); return `My businesses<span class="sep">/</span><b>${esc(b ? b.title : "Overview")}</b>`; },
+      businesses: () => `Workspace<span class="sep">/</span><b>My businesses</b>`,
+      wallet: () => `Workspace<span class="sep">/</span><b>Wallet</b>`,
+      config: () => `My businesses<span class="sep">/</span><b>Configuration</b>`
+    };
+
+    function render() {
+      $("nav").innerHTML = NAV.map(n =>
+        `<button class="nav-item ${state.view === n.id ? "active" : ""}" data-action="goto" data-id="${n.id}">${n.icon}${n.label}</button>`).join("");
+      $("bottomNav").innerHTML = NAV.map(n =>
+        `<button class="${state.view === n.id ? "active" : ""}" data-action="goto" data-id="${n.id}">${n.mobile}</button>`).join("");
+      $("crumbs").innerHTML = CRUMBS[state.view]();
+      $("ownerPill").textContent = state.accountId ? "Owner · " + shortAcct(state.accountId) : "Not connected";
+
+      const active = document.activeElement;
+      const keepSearch = active && active.id === "searchInput";
+      $("view").innerHTML = VIEWS[state.view]();
+      if (keepSearch) { const el = $("searchInput"); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+      document.querySelectorAll("[data-mobile-view]").forEach(el => { el.className += " mobile-only"; });
+    }
+
+    /* =====================================================================
+       EVENTS (single delegated handlers)
+       ===================================================================== */
+    document.addEventListener("click", (e) => {
+      const el = e.target.closest("[data-action]");
+      if (!el) return;
+      const action = el.dataset.action, id = el.dataset.id;
+      if (el.tagName === "A" && el.getAttribute("href") === "#") e.preventDefault();
+
+      switch (action) {
+        case "goto": state.view = id; document.body.classList.remove("menu-open"); render(); window.scrollTo(0, 0); break;
+        case "toggle-menu": document.body.classList.toggle("menu-open"); break;
+        case "close-menu": document.body.classList.remove("menu-open"); break;
+        case "connect": connectWallet(); break;
+        case "disconnect": disconnectWallet(); break;
+        case "reload": loadBusinesses(); break;
+        case "filter": state.filter = id; render(); break;
+        case "select": state.selectedId = id; state.view = "overview"; render(); window.scrollTo(0, 0); break;
+        case "activate": activateBusiness(id, el); break;
+        case "claim":
+          if (!id) return showToast("Nothing to claim yet", "error");
+          if (!state.accountId) return connectWallet();
+          claimRevenue(id, el); break;
+        case "toggle-transfer":
+          state.transferOpen[id] = !state.transferOpen[id];
+          document.getElementById("transfer-" + id)?.classList.toggle("show", !!state.transferOpen[id]); break;
+        case "rotate-key": { const b = selected(); if (b) rotateAgentKey(b.tokenId, el); break; }
+        case "check-treasury": checkAgentBalance(); break;
+        case "check-outlayer": checkOutlayerBalance(); break;
+        case "toggle-agent-info": toggleAgentInfo(); break;
+        case "save-config": saveConfig(); break;
+        case "cancel-config": state.config = loadConfig(); render(); showToast("Changes discarded"); break;
+      }
+    });
+
+    document.addEventListener("input", (e) => {
+      const t = e.target;
+      if (t.id === "searchInput") {
+        state.search = t.value;
+        const list = state.businesses.filter(b => state.filter !== "active" || b.active)
+          .filter(b => (b.title + " " + b.account + " " + b.description).toLowerCase().includes(state.search.trim().toLowerCase()));
+        $("bizList").innerHTML = list.length ? list.map(bizCard).join("") : `<div class="card empty">No businesses match.</div>`;
+      }
+      if (t.id === "cfgReinvest" || t.id === "cfgOwner") {
+        const clamp = (v) => Math.max(0, Math.min(100, parseInt(v, 10) || 0));
+        if (t.id === "cfgReinvest") $("cfgOwner").value = 100 - clamp(t.value);
+        else $("cfgReinvest").value = 100 - clamp(t.value);
+        syncAllocation();
+      }
+    });
+
+    function syncAllocation() {
+      const r = Number($("cfgReinvest").value) || 0, o = Number($("cfgOwner").value) || 0;
+      $("barA").style.flex = r; $("barB").style.flex = o;
+      const badge = $("allocBadge");
+      badge.textContent = (r + o) + "% allocated" ;
+      badge.className = "badge " + (r + o === 100 ? "" : "pending");
+      if (r + o === 100) badge.textContent = "100% allocated";
+    }
+
+    function saveConfig() {
+      const next = {
+        description: $("cfgDesc").value.trim(),
+        price: $("cfgPrice").value.trim(), min: $("cfgMin").value.trim(), max: $("cfgMax").value.trim(),
+        reinvest: Number($("cfgReinvest").value) || 0, owner: Number($("cfgOwner").value) || 0
+      };
+      if (next.reinvest + next.owner !== 100) return showToast("Profit distribution must total 100%", "error");
+      if (!(Number(next.price) >= 0)) return showToast("Enter a valid base price", "error");
+      state.config = next;
+      try { localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(next)); } catch (e) {}
+      showToast("Configuration saved", "success");
+    }
 
     init();
   </script>
+  <style>
+    /* mobile-only helper for the duplicate "View business" button */
+    .mobile-only { display: none !important; }
+    @media (max-width: 860px) { .mobile-only { display: inline-flex !important; } }
+  </style>
 </body>
 </html>
