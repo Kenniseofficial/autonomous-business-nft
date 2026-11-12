@@ -561,14 +561,66 @@
         }
 
         // Activate buttons
-        document.querySelectorAll(".activate-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const card = btn.closest(".business-card");
-            const tokenIdText = card.querySelector(".token-id")?.textContent || "";
-            const tokenId = tokenIdText.replace("Token ID:", "").trim();
-            activateBusiness(tokenId, btn);
-          });
-        });
+        // Claim Revenue buttons - REAL withdrawal
+document.querySelectorAll(".claim-btn").forEach(btn => {
+  btn.addEventListener("click", async () => {
+    const card = btn.closest(".business-card");
+    const statusEl = card.querySelector(".status-msg");
+    const treasuryText = card.querySelector(".treasury")?.textContent || "";
+    const businessAccount = treasuryText.replace("Treasury:", "").trim();
+
+    if (!businessAccount) {
+      showToast("Business account not found", "error");
+      return;
+    }
+
+    try {
+      btn.disabled = true;
+      btn.innerText = "Claiming...";
+      if (statusEl) {
+        statusEl.className = "status-msg info";
+        statusEl.innerText = "Preparing real claim... Confirm in your wallet";
+      }
+
+      // Get current balance first
+      const balance = await getAccountBalance(businessAccount);
+      if (!balance || Number(balance) < 0.01) {
+        throw new Error("Treasury balance too low to claim (need at least 0.01 NEAR)");
+      }
+
+      // Leave a tiny amount for storage (0.005 NEAR) and claim the rest
+      const claimAmountYocto = Math.floor((Number(balance) - 0.005) * 1e24).toString();
+
+      const wallet = await connector.wallet();
+      await wallet.signAndSendTransaction({
+        receiverId: businessAccount,
+        actions: [
+          {
+            type: "Transfer",
+            params: {
+              deposit: claimAmountYocto
+            }
+          }
+        ]
+      });
+
+      if (statusEl) {
+        statusEl.className = "status-msg success";
+        statusEl.innerText = `✅ Claimed \~${(Number(balance) - 0.005).toFixed(4)} NEAR to your wallet`;
+      }
+      showToast("Revenue claimed successfully", "success");
+      setTimeout(() => loadBusinesses(), 5000);
+    } catch (err) {
+      if (statusEl) {
+        statusEl.className = "status-msg error";
+        statusEl.innerText = err.message || "Claim failed or cancelled";
+      }
+      showToast(err.message || "Claim failed", "error");
+      btn.disabled = false;
+      btn.innerText = "Claim Revenue";
+    }
+  });
+});
 
         // Claim Revenue buttons
         document.querySelectorAll(".claim-btn").forEach(btn => {
