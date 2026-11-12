@@ -16,6 +16,9 @@ jobs:
         with:
           targets: wasm32-unknown-unknown
 
+      - name: Install system libraries
+        run: sudo apt-get update && sudo apt-get install -y libudev-dev pkg-config
+
       - name: Install cargo-near
         run: cargo install cargo-near --locked
 
@@ -31,3 +34,4 @@ jobs:
           git add -f contracts/treasury/treasury.wasm
           git commit -m "Add built treasury wasm" || echo "No changes to commit"
           git push
+          
