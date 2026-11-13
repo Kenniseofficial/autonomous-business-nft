@@ -1,5 +1,8 @@
 name: Agent worker
 
+permissions:
+  contents: write
+
 on:
   schedule:
     - cron: "*/10 * * * *"
@@ -28,3 +31,13 @@ jobs:
           BUSINESS_ACCOUNT: ${{ secrets.BUSINESS_ACCOUNT }}
           AGENT_PRIVATE_KEY: ${{ secrets.AGENT_PRIVATE_KEY }}
           NEARAI_API_KEY: ${{ secrets.NEARAI_API_KEY }}
+
+      - name: Configure Git User
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Pull latest changes and push updates
+        run: |
+          git pull origin main --rebase
+          git push origin main
