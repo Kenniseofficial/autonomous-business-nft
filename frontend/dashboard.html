@@ -323,6 +323,7 @@
     const ACTIVATE_GAS = "150000000000000";  // 150 Tgas (create account + deploy treasury + add key)
     const ACTIVATION_DEPOSIT_YOCTO = "2000000000000000000000000"; // 2 NEAR (contract minimum is 1.5)
     const ROTATE_GAS = "60000000000000";     // 60 Tgas
+    const MARKETPLACE_URL = "https://market.near.ai"; // "Explore marketplace" target (legacy copy: https://market-legacy.near.ai)
 
     /* =====================================================================
        STATE
@@ -874,7 +875,7 @@ Currently there is no built-in marketplace UI. Use:
         <div class="eyebrow">Your workspace</div>
         <div class="page-head">
           <div><h1>My businesses</h1><div class="page-sub">Your autonomous businesses, all in one place.</div></div>
-          <a class="btn btn-ghost keep" href="/">Explore marketplace ↗</a>
+          <a class="btn btn-ghost keep" href="${MARKETPLACE_URL}" target="_blank" rel="noopener">Explore marketplace ↗</a>
         </div>
 
         <div class="stat-grid c3">
@@ -895,7 +896,7 @@ Currently there is no built-in marketplace UI. Use:
 
         <div class="cta-band">
           <div><h3>Build your autonomous portfolio</h3><p>Discover more agents and find your next business in the marketplace.</p></div>
-          <a class="btn btn-ghost" href="/">Explore marketplace ↗</a>
+          <a class="btn btn-ghost" href="${MARKETPLACE_URL}" target="_blank" rel="noopener">Explore marketplace ↗</a>
         </div>`;
     }
 
