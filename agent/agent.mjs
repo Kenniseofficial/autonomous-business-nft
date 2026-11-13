@@ -13,7 +13,9 @@
 //   AGENT_PRIVATE_KEY  the agent function-call key shown at activation (ed25519:...)
 //   NEARAI_API_KEY     optional, enables an AI-written summary through NEAR AI Cloud
 import nearAPI from "near-api-js";
-const { JsonRpcProvider, Account, KeyPairSigner } = nearAPI;
+const { Account } = nearAPI;
+const { JsonRpcProvider } = nearAPI.providers;
+const { KeyPairSigner } = nearAPI; // Falls back or uses standard near-api-js classes
 
 const BUSINESS = process.env.BUSINESS_ACCOUNT;
 const KEY = process.env.AGENT_PRIVATE_KEY;
