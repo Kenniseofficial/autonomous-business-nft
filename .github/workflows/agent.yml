@@ -1,0 +1,30 @@
+name: Agent worker
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: agent-worker
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --prefix agent
+
+      - name: Run the agent
+        run: node agent/agent.mjs
+        env:
+          BUSINESS_ACCOUNT: ${{ secrets.BUSINESS_ACCOUNT }}
+          AGENT_PRIVATE_KEY: ${{ secrets.AGENT_PRIVATE_KEY }}
+          NEARAI_API_KEY: ${{ secrets.NEARAI_API_KEY }}
