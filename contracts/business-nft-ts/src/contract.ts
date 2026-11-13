@@ -1,7 +1,12 @@
 import { NearBindgen, near, call, view, initialize, assert } from "near-sdk-js";
 
 const TGAS = 1_000_000_000_000n;
-const MIN_ACTIVATION_DEPOSIT = 1_500_000_000_000_000_000_000_000n; // 1.5 NEAR: covers the treasury code storage
+const COST_BUFFER = 300_000_000_000_000_000_000_000n; // 0.3 NEAR on top of the treasury code storage
+
+// Cost to activate a business = storage for the treasury code (1e19 yocto per byte) + a small buffer
+function activationCostFor(codeLen: number): bigint {
+  return BigInt(codeLen) * 10_000_000_000_000_000_000n + COST_BUFFER;
+}
 
 // near-sdk-js "Raw" storage functions take the key as bytes, not text
 function keyBytes(s: string): Uint8Array {
@@ -89,7 +94,6 @@ class Contract {
     near.storageWrite(`token_meta:${token_id}`, JSON.stringify(metadata));
 
     // Pre-calculate business account name
-    // FIX: the template string was corrupted (backslash / spaces); it must be exactly this
     const businessAccount = `business-${token_id}.${near.currentAccountId()}`;
     near.storageWrite(`business_account:${token_id}`, businessAccount);
 
@@ -111,9 +115,9 @@ class Contract {
     return token_id;
   }
 
-  // ========== NEW: NEP-171 transfer (the dashboard's Sell / Transfer instructions rely on it) ==========
-  // Moves ownership and keeps the owner_tokens index in sync, so the new owner can see the business
-  // in the dashboard and is the only one who passes the treasury's owner check when claiming.
+  // ========== NEP-171 transfer ==========
+  // Moves ownership, keeps the owner_tokens index in sync and, if the business is already activated,
+  // REVOKES the seller's agent key and PAUSES the business (the buyer then sets a fresh agent key).
   @call({ payableFunction: true })
   nft_transfer({
     receiver_id,
@@ -143,10 +147,26 @@ class Contract {
       data: [{ old_owner_id: owner, new_owner_id: receiver_id, token_ids: [token_id], memo: memo || undefined }],
     };
     near.log(`EVENT_JSON:${JSON.stringify(event)}`);
+
+    // Revoke the seller's agent key on the business account
+    const activated = near.storageRead(`business_activated:${token_id}`);
+    const oldKey = near.storageRead(`agent_key:${token_id}`);
+    const alreadyRevoked = near.storageRead(`agent_key_revoked:${token_id}`);
+    if (activated && oldKey && !alreadyRevoked) {
+      const business = near.storageRead(`business_account:${token_id}`) as string;
+      near.storageWrite(`agent_key_revoked:${token_id}`, "1");
+      const p = near.promiseBatchCreate(business);
+      nearAny.promiseBatchActionFunctionCall(
+        p,
+        "revoke_agent_key",
+        JSON.stringify({ key: oldKey }),
+        0n,
+        8n * TGAS
+      );
+    }
   }
 
-  // ========== NEW: treasury code upload (contract owner only) ==========
-  // The compiled treasury.wasm is uploaded in small base64 chunks, then deployed onto each business account.
+  // ========== Treasury code upload (contract owner only) ==========
   @call({})
   treasury_code_reset() {
     assert(near.predecessorAccountId() === this.owner_id, "Only the contract owner");
@@ -170,7 +190,14 @@ class Contract {
     return code ? code.length : 0;
   }
 
-  // ========== NEW: activation (replaces the user-signed CreateAccount, which NEAR rejects for subaccounts) ==========
+  // Exact deposit (in yoctoNEAR, as text) the dashboard must attach when activating a business
+  @view({})
+  activation_cost(): string {
+    const code: Uint8Array | null = nearAny.storageReadRaw(CODE_KEY);
+    return activationCostFor(code ? code.length : 0).toString();
+  }
+
+  // ========== Activation ==========
   // Only the NFT owner can activate. The contract creates business-<id>.<this contract>, funds it with the
   // attached deposit, deploys the treasury contract and registers the agent's function-call key.
   @call({ payableFunction: true })
@@ -186,17 +213,21 @@ class Contract {
     assert(owner === caller, "Only the NFT owner can activate this business");
     assert(!near.storageRead(`business_activated:${token_id}`), "Business already activated");
 
-    const deposit = near.attachedDeposit();
-    assert(deposit >= MIN_ACTIVATION_DEPOSIT, "Attach at least 1.5 NEAR to cover treasury storage");
-
     const code: Uint8Array | null = nearAny.storageReadRaw(CODE_KEY);
     assert(code !== null && code !== undefined && code.length > 0, "Treasury code has not been uploaded");
+
+    const deposit = near.attachedDeposit();
+    assert(
+      deposit >= activationCostFor((code as Uint8Array).length),
+      "Deposit too low for treasury storage (read activation_cost for the exact amount)"
+    );
 
     const business = near.storageRead(`business_account:${token_id}`);
     assert(!!business, "Business account not found");
 
     near.storageWrite(`business_activated:${token_id}`, "1");
     near.storageWrite(`agent_key:${token_id}`, agent_public_key);
+    near.storageRemove(`agent_key_revoked:${token_id}`);
 
     const p = near.promiseBatchCreate(business as string);
     near.promiseBatchActionCreateAccount(p);
@@ -246,7 +277,8 @@ class Contract {
     }
   }
 
-  // ========== NEW: rotate the agent key (owner only) ==========
+  // ========== Set or rotate the agent key (owner only) ==========
+  // Works for a normal rotation AND for the new owner after a sale (when the old key was revoked).
   @call({})
   rotate_agent_key({
     token_id,
@@ -256,16 +288,21 @@ class Contract {
     agent_public_key: string;
   }) {
     const owner = near.storageRead(`token_owner:${token_id}`);
-    assert(owner === near.predecessorAccountId(), "Only the NFT owner can rotate the key");
-    const oldKey = near.storageRead(`agent_key:${token_id}`);
-    assert(!!oldKey, "Business is not activated");
+    assert(owner === near.predecessorAccountId(), "Only the NFT owner can set the agent key");
+    assert(!!near.storageRead(`business_activated:${token_id}`), "Business is not activated");
     const business = near.storageRead(`business_account:${token_id}`);
+
+    const oldKey = near.storageRead(`agent_key:${token_id}`);
+    const revoked = near.storageRead(`agent_key_revoked:${token_id}`);
+    const justAdd = !oldKey || !!revoked;
 
     const p = near.promiseBatchCreate(business as string);
     nearAny.promiseBatchActionFunctionCall(
       p,
-      "rotate_agent_key",
-      JSON.stringify({ old_key: oldKey, new_key: agent_public_key }),
+      justAdd ? "add_agent_key" : "rotate_agent_key",
+      JSON.stringify(
+        justAdd ? { public_key: agent_public_key } : { old_key: oldKey, new_key: agent_public_key }
+      ),
       0n,
       20n * TGAS
     );
@@ -285,8 +322,9 @@ class Contract {
     try {
       near.promiseResult(0);
       near.storageWrite(`agent_key:${token_id}`, new_key);
+      near.storageRemove(`agent_key_revoked:${token_id}`);
     } catch (e) {
-      // rotation failed on the business account; keep the old key on record
+      // the business account rejected the change; keep what is on record
     }
   }
 
@@ -336,7 +374,6 @@ class Contract {
     const list = near.storageRead(`owner_tokens:${account_id}`);
     if (!list) return [];
 
-    // FIX: skip empty entries (an owner list can become "" after a transfer)
     const tokenIds = list.split(",").filter((x) => x !== "");
     const start = from_index ? parseInt(from_index) : 0;
     const max = limit || 50;
@@ -367,7 +404,7 @@ class Contract {
     return this.next_token_id;
   }
 
-  // Used by each business's treasury contract to verify who owns the NFT when `claim` is called
+  // Used by each business's treasury contract to verify who owns the NFT
   @view({})
   get_token_owner({ token_id }: { token_id: string }): string | null {
     return near.storageRead(`token_owner:${token_id}`) || null;
