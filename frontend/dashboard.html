@@ -6,42 +6,21 @@
   <title>Owner Dashboard – Autonomous</title>
   <style>
     :root {
-      --sidebar: #163226;
-      --sidebar-active: #25513b;
-      --bg: #f4f6f3;
-      --card: #ffffff;
-      --border: #e2e8e1;
-      --ink: #15271f;
-      --muted: #66756c;
-      --green: #23744c;
-      --green-soft: #e8f3e6;
-      --hero: #173f2e;
-      --lime: #cdeeaa;
-      --danger: #c0392b;
-      --radius: 16px;
+      --sidebar: #163226; --sidebar-active: #25513b; --bg: #f4f6f3; --card: #ffffff; --border: #e2e8e1;
+      --ink: #15271f; --muted: #66756c; --green: #23744c; --green-soft: #e8f3e6; --hero: #173f2e;
+      --lime: #cdeeaa; --danger: #c0392b; --amber: #9a7208; --amber-soft: #fbf1d6; --radius: 16px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: var(--bg); color: var(--ink); line-height: 1.5; min-height: 100vh;
-    }
+    body { font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--ink); line-height: 1.5; min-height: 100vh; }
     button { font-family: inherit; }
     a { color: inherit; }
 
-    /* ---------- Layout ---------- */
     .app { display: flex; min-height: 100vh; }
-    .sidebar {
-      width: 220px; flex-shrink: 0; background: var(--sidebar); color: #e6efe9;
-      position: fixed; inset: 0 auto 0 0; display: flex; flex-direction: column;
-      padding: 24px 20px; z-index: 50; transition: transform .25s ease;
-    }
+    .sidebar { width: 220px; flex-shrink: 0; background: var(--sidebar); color: #e6efe9; position: fixed; inset: 0 auto 0 0; display: flex; flex-direction: column; padding: 24px 20px; z-index: 50; transition: transform .25s ease; }
     .brand { font-size: 1.55rem; font-weight: 600; letter-spacing: -0.02em; color: #fff; }
     .brand-sub { font-size: .62rem; letter-spacing: .06em; text-transform: uppercase; color: #a9c1b3; margin-top: 4px; }
     .nav { margin-top: 48px; display: flex; flex-direction: column; gap: 6px; }
-    .nav-item {
-      display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 10px;
-      color: #cfe0d5; font-size: .92rem; cursor: pointer; border: none; background: none; text-align: left; width: 100%;
-    }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 10px; color: #cfe0d5; font-size: .92rem; cursor: pointer; border: none; background: none; text-align: left; width: 100%; }
     .nav-item:hover { background: rgba(255,255,255,.06); }
     .nav-item.active { background: var(--sidebar-active); color: #fff; font-weight: 600; }
     .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
@@ -52,18 +31,12 @@
     .foot-note { margin-top: 14px; font-size: .68rem; color: #86a393; }
 
     .main { margin-left: 220px; flex: 1; min-width: 0; }
-    .topbar {
-      background: #fff; height: 80px; padding: 0 36px; display: flex; align-items: center;
-      justify-content: space-between; border-bottom: 1px solid var(--border);
-    }
+    .topbar { background: #fff; height: 80px; padding: 0 36px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
     .crumbs { font-size: .82rem; color: var(--muted); }
     .crumbs b { color: var(--ink); font-weight: 500; }
     .crumbs span.sep { margin: 0 10px; opacity: .6; }
     .top-actions { display: flex; align-items: center; gap: 10px; }
-    .pill {
-      background: var(--bg); border-radius: 10px; padding: 8px 14px; font-size: .8rem;
-      display: flex; align-items: center; gap: 8px; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
+    .pill { background: var(--bg); border-radius: 10px; padding: 8px 14px; font-size: .8rem; display: flex; align-items: center; gap: 8px; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .pill .dot { background: var(--sidebar); }
     .menu-btn { display: none; background: none; border: none; cursor: pointer; padding: 4px; color: var(--ink); }
     .menu-btn svg { width: 24px; height: 24px; }
@@ -78,7 +51,6 @@
     .meta-line { font-size: .78rem; color: var(--muted); margin-top: 10px; display: flex; gap: 14px; flex-wrap: wrap; }
     .meta-line a { color: var(--green); text-decoration: none; }
 
-    /* ---------- Components ---------- */
     .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
     .card h3 { font-size: 1.02rem; font-weight: 600; }
     .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 10px; }
@@ -90,22 +62,18 @@
     .big.green { color: var(--green); }
     .stack { display: flex; flex-direction: column; gap: 16px; }
 
-    .btn {
-      border: 1px solid transparent; border-radius: 10px; padding: 11px 18px; font-size: .88rem; font-weight: 600;
-      cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; white-space: nowrap;
-    }
+    .btn { border: 1px solid transparent; border-radius: 10px; padding: 11px 18px; font-size: .88rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; white-space: nowrap; }
     .btn:disabled { opacity: .55; cursor: not-allowed; }
     .btn-primary { background: var(--green); color: #fff; }
     .btn-lime { background: var(--lime); color: var(--hero); }
     .btn-ghost { background: #fff; border-color: var(--border); color: var(--ink); }
     .btn-danger { background: #fff; border-color: #e8b4ad; color: var(--danger); }
     .btn-block { width: 100%; }
+    .btn-sm { padding: 7px 12px; font-size: .78rem; }
 
-    .badge {
-      display: inline-flex; align-items: center; gap: 7px; background: var(--green-soft); color: var(--green);
-      font-size: .74rem; font-weight: 600; padding: 5px 11px; border-radius: 8px;
-    }
-    .badge.pending { background: #fbf1d6; color: #9a7208; }
+    .badge { display: inline-flex; align-items: center; gap: 7px; background: var(--green-soft); color: var(--green); font-size: .74rem; font-weight: 600; padding: 5px 11px; border-radius: 8px; }
+    .badge.pending { background: var(--amber-soft); color: var(--amber); }
+    .badge.red { background: #fbe4e1; color: var(--danger); }
     .badge .dot { background: currentColor; width: 6px; height: 6px; }
     .tag { font-size: .66rem; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 
@@ -114,27 +82,25 @@
     .stat-grid.c3 { grid-template-columns: repeat(3, 1fr); }
     .stat .big { font-size: 1.9rem; }
 
-    .hero {
-      background: var(--hero); color: #fff; border-radius: var(--radius); padding: 26px;
-      display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 20px;
-    }
+    .hero { background: var(--hero); color: #fff; border-radius: var(--radius); padding: 26px; display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 20px; }
     .hero .tag { color: #a9c9b5; }
     .hero .amount { font-size: 2.6rem; font-weight: 600; color: var(--lime); letter-spacing: -0.02em; line-height: 1.1; margin-top: 8px; }
     .hero .amount small { font-size: .85rem; color: #cfe3d6; font-weight: 400; margin-left: 8px; }
     .hero .from { margin: 14px 0; font-size: .85rem; color: #dcebe1; }
 
-    .status-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-    .status-grid .v { font-size: 1.15rem; font-weight: 500; margin-top: 4px; }
+    .status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .status-grid .v { font-size: 1.05rem; font-weight: 500; margin-top: 4px; }
     .status-grid .v.green { color: var(--green); }
 
-    .table-head, .row {
-      display: grid; grid-template-columns: 1fr 120px 110px; gap: 12px; align-items: center;
-    }
+    .table-head, .row { display: grid; grid-template-columns: 1fr 110px 130px; gap: 12px; align-items: center; }
     .table-head { font-size: .66rem; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding-bottom: 10px; }
     .row { padding: 14px 0; border-top: 1px solid var(--border); }
     .row .t { font-weight: 500; font-size: .9rem; }
-    .row .s { font-size: .78rem; color: var(--muted); }
+    .row .s { font-size: .78rem; color: var(--muted); word-break: break-word; }
+    .row .amt { text-align: right; font-weight: 600; color: var(--green); }
+    .row .amt small { display: block; font-weight: 400; color: var(--muted); font-size: .72rem; }
     .empty { text-align: center; color: var(--muted); font-size: .88rem; padding: 26px 0; }
+    pre.result { background: var(--bg); border-radius: 10px; padding: 12px; font-size: .78rem; white-space: pre-wrap; word-break: break-word; margin-top: 8px; font-family: inherit; }
 
     .tabs { display: flex; gap: 8px; margin-bottom: 18px; }
     .tab { background: transparent; border: none; border-radius: 8px; padding: 6px 12px; font-size: .8rem; color: var(--muted); cursor: pointer; }
@@ -150,9 +116,8 @@
     .biz-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; font-size: .78rem; flex-wrap: wrap; gap: 8px; }
     .biz-foot a { color: var(--green); text-decoration: none; word-break: break-all; }
     .biz-foot .healthy { color: var(--green); display: flex; align-items: center; gap: 7px; }
-    .cta-band {
-      background: #ebf3e8; border-radius: var(--radius); padding: 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px;
-    }
+    .biz-foot .healthy.warn { color: var(--amber); }
+    .cta-band { background: #ebf3e8; border-radius: var(--radius); padding: 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
     .cta-band h3 { font-size: 1.1rem; font-weight: 600; }
     .cta-band p { color: var(--muted); font-size: .85rem; margin-top: 6px; }
 
@@ -163,23 +128,21 @@
     .steps li { display: grid; grid-template-columns: 26px 1fr; gap: 6px; font-size: .86rem; }
     .steps li .n { color: var(--green); font-size: .74rem; font-weight: 600; padding-top: 2px; }
     .steps li .d { color: var(--muted); font-size: .78rem; }
-    .kv { display: flex; justify-content: space-between; font-size: .8rem; color: var(--muted); margin-top: 14px; }
-    .kv b { color: var(--ink); font-weight: 500; }
+    .kv { display: flex; justify-content: space-between; font-size: .8rem; color: var(--muted); margin-top: 14px; gap: 10px; }
+    .kv b { color: var(--ink); font-weight: 500; text-align: right; }
 
     .banner { background: var(--green-soft); color: var(--green); border-radius: 10px; padding: 14px 18px; font-size: .85rem; margin-bottom: 20px; display: flex; gap: 12px; align-items: center; }
-    .banner .dot { background: var(--green); }
-    .banner.warn { background: #fbf1d6; color: #9a7208; }
-    .banner.warn .dot { background: #9a7208; }
+    .banner .dot { background: var(--green); flex-shrink: 0; }
+    .banner.warn { background: var(--amber-soft); color: var(--amber); }
+    .banner.warn .dot { background: var(--amber); }
     .cfg-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; align-items: start; }
     .field { margin-bottom: 14px; }
     .field label { display: block; font-size: .8rem; font-weight: 500; margin-bottom: 6px; }
-    .input, textarea.input {
-      width: 100%; background: #fafbf9; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px;
-      font-size: .88rem; color: var(--ink); font-family: inherit;
-    }
+    .input, textarea.input { width: 100%; background: #fafbf9; border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: .88rem; color: var(--ink); font-family: inherit; }
     textarea.input { min-height: 84px; resize: vertical; }
     textarea.mono { font-family: ui-monospace, Menlo, monospace; font-size: .76rem; }
     .input:focus { outline: 2px solid rgba(35,116,76,.25); border-color: var(--green); }
+    .input[readonly] { color: var(--muted); }
     .two-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .alloc-bar { display: flex; gap: 4px; margin-bottom: 18px; }
     .alloc-bar i { height: 10px; border-radius: 4px; display: block; }
@@ -188,6 +151,7 @@
     .alloc-total { display: flex; justify-content: space-between; align-items: center; font-size: .8rem; color: var(--muted); }
     .foot-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 22px; gap: 12px; flex-wrap: wrap; }
     .foot-actions .btns { display: flex; gap: 10px; }
+    .payee { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border); font-size: .82rem; word-break: break-all; }
 
     .status-msg { font-size: .82rem; padding: 10px 12px; border-radius: 10px; margin-top: 12px; }
     .status-msg.error { background: #fbe4e1; color: var(--danger); }
@@ -203,25 +167,20 @@
     .result-panel { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-top: 14px; font-size: .82rem; white-space: pre-wrap; display: none; word-break: break-word; }
     .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
 
-    #toast {
-      position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid var(--border);
-      color: var(--ink); padding: 12px 18px; border-radius: 12px; font-size: .88rem; max-width: 90%; z-index: 9999;
-      opacity: 0; pointer-events: none; transition: opacity .3s; box-shadow: 0 8px 24px rgba(0,0,0,.12);
-    }
+    #toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #fff; border: 1px solid var(--border); color: var(--ink); padding: 12px 18px; border-radius: 12px; font-size: .88rem; max-width: 90%; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity .3s; box-shadow: 0 8px 24px rgba(0,0,0,.12); }
     #toast.show { opacity: 1; }
     #toast.error { border-color: var(--danger); color: var(--danger); }
     #toast.success { border-color: var(--green); color: var(--green); }
 
     .bottom-nav { display: none; }
     .scrim { display: none; }
+    .mobile-only { display: none !important; }
 
-    /* ---------- Tablet ---------- */
     @media (max-width: 1100px) {
       .stat-grid.c4 { grid-template-columns: repeat(2, 1fr); }
       .two-col, .cfg-grid { grid-template-columns: 1fr; }
+      .status-grid { grid-template-columns: repeat(2, 1fr); }
     }
-
-    /* ---------- Mobile ---------- */
     @media (max-width: 860px) {
       .sidebar { transform: translateX(-100%); box-shadow: 8px 0 30px rgba(0,0,0,.25); }
       body.menu-open .sidebar { transform: translateX(0); }
@@ -245,7 +204,6 @@
       .status-grid .v { margin: 0; font-size: 1rem; }
       .table-head { display: none; }
       .row { grid-template-columns: 1fr auto; }
-      .row .time { grid-column: 1; }
       .mini-stats { grid-template-columns: 1fr; }
       .mini-stats > div { display: flex; justify-content: space-between; align-items: center; }
       .biz-top .btn { display: none; }
@@ -255,10 +213,8 @@
       .foot-actions { flex-direction: column-reverse; align-items: stretch; }
       .foot-actions .btns { flex-direction: column-reverse; }
       .foot-actions .btn { width: 100%; }
-      .bottom-nav {
-        display: flex; position: fixed; left: 16px; right: 16px; bottom: 14px; background: #fff; border: 1px solid var(--border);
-        border-radius: 16px; padding: 6px; z-index: 30; box-shadow: 0 6px 20px rgba(0,0,0,.08);
-      }
+      .mobile-only { display: inline-flex !important; }
+      .bottom-nav { display: flex; position: fixed; left: 16px; right: 16px; bottom: 14px; background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 6px; z-index: 30; box-shadow: 0 6px 20px rgba(0,0,0,.08); }
       .bottom-nav button { flex: 1; background: none; border: none; padding: 12px 4px; font-size: .86rem; color: var(--muted); cursor: pointer; border-radius: 12px; }
       .bottom-nav button.active { color: var(--green); font-weight: 600; }
     }
@@ -274,7 +230,7 @@
       <nav class="nav" id="nav"></nav>
       <div class="sidebar-foot">
         <div class="sys-box">
-          <div class="ok"><span class="dot"></span> All systems operational</div>
+          <div class="ok"><span class="dot"></span> Live on testnet</div>
           <div>NEAR Protocol · Testnet</div>
         </div>
         <div class="foot-note">Autonomous by design.</div>
@@ -316,14 +272,19 @@
     const NETWORK = "testnet";
     const RPC_URL = "https://rpc.testnet.near.org";
     const OUTLAYER_API = "https://testnet-api.outlayer.ai";
-    const CONFIG_STORAGE_KEY = "autonomous.agentConfig.v1";
     const STORAGE_RESERVE_NEAR = 0.005;
-    const CLAIM_METHOD = "claim";            // method that must exist on each business account's contract
-    const CLAIM_GAS = "50000000000000";      // 50 Tgas (cross-contract owner check + transfer)
-    const ACTIVATE_GAS = "150000000000000";  // 150 Tgas (create account + deploy treasury + add key)
-    const ACTIVATION_DEPOSIT_YOCTO = "2000000000000000000000000"; // 2 NEAR (contract minimum is 1.5)
-    const ROTATE_GAS = "60000000000000";     // 60 Tgas
-    const MARKETPLACE_URL = "https://market.near.ai"; // "Explore marketplace" target (legacy copy: https://market-legacy.near.ai)
+    const MARKETPLACE_URL = "https://market.near.ai";
+    // After you run list-on-market.mjs, put your registered handle here, e.g. "business_19"
+    const MARKET_AGENT_HANDLE = "";
+
+    const CLAIM_GAS = "80000000000000";       // 80 Tgas
+    const OWNER_GAS = "80000000000000";       // 80 Tgas (owner checks go through the NFT contract)
+    const ACTIVATE_GAS = "250000000000000";   // 250 Tgas
+    const ROTATE_GAS = "60000000000000";      // 60 Tgas
+    const ORDER_GAS = "30000000000000";       // 30 Tgas
+    const CANCEL_GAS = "30000000000000";      // 30 Tgas
+    const ACTIVATION_MARGIN_YOCTO = 50000000000000000000000n; // +0.05 NEAR on top of the contract's quoted cost
+    const ONLINE_WINDOW_MS = 30 * 60 * 1000;  // agent counts as online if its last heartbeat is newer than this
 
     /* =====================================================================
        STATE
@@ -332,7 +293,7 @@
     const state = {
       accountId: null,
       walletBalance: null,
-      businesses: [],          // { tokenId, title, description, account, balance, active }
+      businesses: [],
       selectedId: null,
       loading: false,
       loaded: false,
@@ -340,10 +301,11 @@
       view: "overview",
       filter: "all",
       search: "",
-      keys: {},                // tokenId -> { privateKey, outlayerKey }
-      status: {},              // tokenId -> { cls, msg }
-      transferOpen: {},        // tokenId -> bool
-      config: loadConfig()
+      keys: {},
+      status: {},
+      transferOpen: {},
+      orderAccount: null,
+      order: { stats: null, jobs: [], loading: false, error: false }
     };
 
     /* =====================================================================
@@ -352,26 +314,41 @@
     const $ = (id) => document.getElementById(id);
     const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
     const shortAcct = (a) => (a && a.length > 22 ? a.slice(0, 10) + "…" + a.slice(-8) : a);
-    const fmtNear = (v) => (v === null || v === undefined ? "—" : v + " Ⓝ");
     const businessAccountFor = (tokenId) => "business-" + tokenId + "." + CONTRACT_ID;
+    const E24 = 10n ** 24n;
+
+    function fmtYocto(y, decimals = 4) {
+      try {
+        const n = BigInt(y);
+        const unit = 10n ** BigInt(24 - decimals);
+        const whole = n / E24;
+        const frac = (n % E24) / unit;
+        return `${whole}.${String(frac).padStart(decimals, "0")}`;
+      } catch (e) { return "0.0000"; }
+    }
+    function nearToYocto(str) {
+      const s = String(str).trim();
+      if (!/^\d+(\.\d+)?$/.test(s)) throw new Error("Enter a valid NEAR amount");
+      const [w, f = ""] = s.split(".");
+      return (BigInt(w) * E24 + BigInt((f + "0".repeat(24)).slice(0, 24))).toString();
+    }
+    const fmtNear = (v) => (v === null || v === undefined ? "—" : v + " Ⓝ");
+    function nsToMs(ns) { try { return Number(BigInt(ns) / 1000000n); } catch (e) { return 0; } }
+    function ago(ms) {
+      if (!ms) return "never";
+      const s = Math.max(0, Math.floor((Date.now() - ms) / 1000));
+      if (s < 60) return s + "s ago";
+      if (s < 3600) return Math.floor(s / 60) + " min ago";
+      if (s < 86400) return Math.floor(s / 3600) + " hrs ago";
+      return Math.floor(s / 86400) + " days ago";
+    }
 
     function showToast(message, type = "info") {
       const el = $("toast");
       el.textContent = message;
       el.className = "show " + type;
       clearTimeout(el._timer);
-      el._timer = setTimeout(() => { el.className = ""; }, 4000);
-    }
-
-    function loadConfig() {
-      const defaults = {
-        description: "Autonomous AI agent that conducts geo-economic research, monitors global markets, and delivers structured intelligence reports.",
-        price: "15.00", min: "0.00", max: "5.00", reinvest: 40, owner: 60
-      };
-      try {
-        const saved = JSON.parse(localStorage.getItem(CONFIG_STORAGE_KEY) || "null");
-        return saved ? { ...defaults, ...saved } : defaults;
-      } catch (e) { return defaults; }
+      el._timer = setTimeout(() => { el.className = ""; }, 4500);
     }
 
     const ICONS = {
@@ -380,7 +357,6 @@
       wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M16 15h2"/></svg>',
       config: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>'
     };
-
     const NAV = [
       { id: "overview", label: "Overview", mobile: "Overview", icon: ICONS.overview },
       { id: "businesses", label: "My businesses", mobile: "Businesses", icon: ICONS.businesses },
@@ -389,13 +365,12 @@
     ];
 
     const selected = () => state.businesses.find(b => b.tokenId === state.selectedId) || state.businesses[0] || null;
-    const totalClaimable = () => state.businesses.filter(b => b.active && b.balance !== null)
-      .reduce((s, b) => s + (b.claimable || 0), 0);
-    const totalTreasury = () => state.businesses.filter(b => b.active && b.balance !== null)
-      .reduce((s, b) => s + Number(b.balance), 0);
+    const totalClaimYocto = () => state.businesses.filter(b => b.active).reduce((s, b) => s + (b.claimYocto || 0n), 0n);
+    const totalTreasuryNear = () => state.businesses.filter(b => b.active && b.balance !== null).reduce((s, b) => s + Number(b.balance), 0);
+    const orderLink = (account) => location.origin + location.pathname + "#/order/" + account;
 
     /* =====================================================================
-       NEAR / CRYPTO UTILITIES  (unchanged logic)
+       NEAR / CRYPTO UTILITIES
        ===================================================================== */
     function toBase58(bytes) {
       const ALPHABET = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -406,55 +381,51 @@
       for (let i = 0; i < bytes.length && bytes[i] === 0; i++) str = "1" + str;
       return str;
     }
-
     function generateKeyPair() {
       if (typeof nacl === "undefined") throw new Error("Crypto library not loaded. Please refresh.");
       const kp = nacl.sign.keyPair();
       const seed = kp.secretKey.slice(0, 32);
-      return {
-        privateKeyStr: "ed25519:" + toBase58(seed),
-        publicKeyStr: "ed25519:" + toBase58(kp.publicKey)
-      };
+      return { privateKeyStr: "ed25519:" + toBase58(seed), publicKeyStr: "ed25519:" + toBase58(kp.publicKey) };
     }
 
-    async function getAccountBalance(accountId) {
+    async function rpc(params) {
+      const res = await fetch(RPC_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jsonrpc: "2.0", id: "1", method: "query", params })
+      });
+      return res.json();
+    }
+
+    // Read-only contract call. Returns parsed JSON, or null if the method does not exist / fails.
+    async function rpcView(contractId, method, args = {}) {
       try {
-        const res = await fetch(RPC_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jsonrpc: "2.0", id: "1", method: "query",
-            params: { request_type: "view_account", finality: "final", account_id: accountId }
-          })
+        const data = await rpc({
+          request_type: "call_function", finality: "final", account_id: contractId,
+          method_name: method, args_base64: btoa(JSON.stringify(args))
         });
-        const data = await res.json();
-        if (data.result && data.result.amount) return (Number(data.result.amount) / 1e24).toFixed(4);
-        return null;
+        const bytes = data.result?.result;
+        if (!bytes) return null;
+        return JSON.parse(new TextDecoder().decode(new Uint8Array(bytes)));
       } catch (e) { return null; }
     }
 
-    // Total balance plus the part that can actually be claimed (total minus storage backing the treasury code, minus a small reserve)
     async function getAccountInfo(accountId) {
       try {
-        const res = await fetch(RPC_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jsonrpc: "2.0", id: "1", method: "query",
-            params: { request_type: "view_account", finality: "final", account_id: accountId }
-          })
-        });
-        const data = await res.json();
+        const data = await rpc({ request_type: "view_account", finality: "final", account_id: accountId });
         if (!data.result || !data.result.amount) return null;
         const total = BigInt(data.result.amount);
         const locked = BigInt(data.result.storage_usage || 0) * 10n ** 19n;
         const free = total > locked ? total - locked : 0n;
-        const freeNear = Number(free) / 1e24;
         return {
           balance: (Number(total) / 1e24).toFixed(4),
-          claimable: Math.max(0, freeNear - STORAGE_RESERVE_NEAR)
+          claimable: Math.max(0, Number(free) / 1e24 - STORAGE_RESERVE_NEAR)
         };
       } catch (e) { return null; }
+    }
+    async function getAccountBalance(accountId) {
+      const info = await getAccountInfo(accountId);
+      return info ? info.balance : null;
     }
 
     async function registerOutlayerWallet() {
@@ -465,8 +436,16 @@
       } catch (e) { return null; }
     }
 
+    async function sendCall(receiverId, methodName, args, gas, deposit = "0") {
+      const wallet = await connector.wallet();
+      return wallet.signAndSendTransaction({
+        receiverId,
+        actions: [{ type: "FunctionCall", params: { methodName, args, gas, deposit } }]
+      });
+    }
+
     /* =====================================================================
-       WALLET CONNECTION  (unchanged logic)
+       WALLET CONNECTION
        ===================================================================== */
     async function syncConnectedWallet() {
       const connected = await connector.getConnectedWallet();
@@ -480,15 +459,14 @@
     }
 
     async function init() {
+      parseHash();
       render();
       connector = new NearConnector({ network: NETWORK, features: { signAndSendTransaction: true }, autoConnect: true });
-
       connector.on("wallet:signIn", () => { syncConnectedWallet(); });
       connector.on("wallet:signOut", () => {
         state.accountId = null; state.businesses = []; state.selectedId = null; state.loaded = false;
         render();
       });
-
       await new Promise(r => setTimeout(r, 500));
       try { await syncConnectedWallet(); } catch (e) {}
     }
@@ -505,45 +483,42 @@
     }
 
     /* =====================================================================
-       DATA LOADING  (nft_tokens_for_owner)
+       DATA LOADING
        ===================================================================== */
+    async function loadOneBusiness(token) {
+      const tokenId = String(token.token_id);
+      const account = businessAccountFor(tokenId);
+      const info = await getAccountInfo(account);
+      const biz = {
+        tokenId, account,
+        title: token.metadata?.title || "Untitled",
+        description: token.metadata?.description || "No description",
+        balance: info ? info.balance : null,
+        active: !!info,
+        stats: null, jobs: [], claimYocto: 0n
+      };
+      if (info) {
+        const stats = await rpcView(account, "get_stats");
+        if (stats) {
+          biz.stats = stats;
+          biz.jobs = (await rpcView(account, "get_recent_jobs", { limit: 30 })) || [];
+          biz.claimYocto = BigInt(stats.owner_available);
+        } else {
+          // first-version treasury without on-chain settings
+          biz.claimYocto = BigInt(Math.floor(info.claimable * 1e4)) * 10n ** 20n;
+        }
+      }
+      return biz;
+    }
+
     async function loadBusinesses() {
       if (!state.accountId) return;
       state.loading = true; state.loadError = false; render();
       try {
-        const res = await fetch(RPC_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            jsonrpc: "2.0", id: "1", method: "query",
-            params: {
-              request_type: "call_function", finality: "final", account_id: CONTRACT_ID,
-              method_name: "nft_tokens_for_owner",
-              args_base64: btoa(JSON.stringify({ account_id: state.accountId }))
-            }
-          })
-        });
-        const data = await res.json();
-        const bytes = data.result?.result;
-        let tokens = [];
-        if (bytes) tokens = JSON.parse(new TextDecoder().decode(new Uint8Array(bytes))) || [];
-
-        const list = [];
-        for (const token of tokens) {
-          const tokenId = String(token.token_id);
-          const account = businessAccountFor(tokenId);
-          const info = await getAccountInfo(account);
-          const balance = info ? info.balance : null;
-          list.push({
-            tokenId, account, balance,
-            claimable: info ? info.claimable : 0,
-            active: balance !== null,
-            title: token.metadata?.title || "Untitled",
-            description: token.metadata?.description || "No description"
-          });
-        }
-        state.businesses = list;
-        if (!list.find(b => b.tokenId === state.selectedId)) state.selectedId = list[0]?.tokenId || null;
+        const tokens = await rpcView(CONTRACT_ID, "nft_tokens_for_owner", { account_id: state.accountId });
+        if (tokens === null) throw new Error("load failed");
+        state.businesses = await Promise.all(tokens.map(loadOneBusiness));
+        if (!state.businesses.find(b => b.tokenId === state.selectedId)) state.selectedId = state.businesses[0]?.tokenId || null;
         state.loaded = true;
       } catch (err) {
         state.loadError = true;
@@ -551,6 +526,50 @@
       }
       state.loading = false;
       render();
+    }
+
+    async function loadOrder(silent = false) {
+      const account = state.orderAccount;
+      if (!account) return;
+      if (!silent) { state.order = { stats: null, jobs: [], loading: true, error: false }; render(); }
+      const stats = await rpcView(account, "get_stats");
+      if (!stats) { state.order = { stats: null, jobs: [], loading: false, error: true }; if (state.view === "order") render(); return; }
+      const jobs = (await rpcView(account, "get_recent_jobs", { limit: 30 })) || [];
+      state.order = { stats, jobs, loading: false, error: false };
+      if (state.view === "order") render();
+    }
+
+    function parseHash() {
+      const m = location.hash.match(/^#\/order\/(.+)$/);
+      if (m) {
+        state.view = "order";
+        state.orderAccount = decodeURIComponent(m[1]);
+        loadOrder();
+      } else if (state.view === "order") {
+        state.view = "overview";
+      }
+    }
+
+    /* =====================================================================
+       STATUS HELPERS (everything shown comes from on-chain data)
+       ===================================================================== */
+    function agentStatus(b) {
+      if (!b.active) return { label: "Pending activation", cls: "pending", detail: "Activate to start the agent" };
+      if (!b.stats) return { label: "Treasury v1", cls: "pending", detail: "No on-chain agent features" };
+      const lastMs = nsToMs(b.stats.last_heartbeat_ns);
+      if (b.stats.paused) return { label: "Paused", cls: "pending", detail: lastMs ? "Agent last seen " + ago(lastMs) : "Agent not seen yet" };
+      if (!lastMs) return { label: "Waiting for agent", cls: "pending", detail: "No heartbeat yet. Start the worker." };
+      if (Date.now() - lastMs < ONLINE_WINDOW_MS) return { label: "Agent online", cls: "", detail: "Last heartbeat " + ago(lastMs) };
+      return { label: "Agent offline", cls: "red", detail: "Last heartbeat " + ago(lastMs) };
+    }
+    function revenue30d(b) {
+      const cutoff = Date.now() - 30 * 86400 * 1000;
+      return (b.jobs || []).filter(j => j.status === "done" && nsToMs(j.done_ns) >= cutoff).reduce((s, j) => s + BigInt(j.paid), 0n);
+    }
+    function successRate(b) {
+      if (!b.stats) return null;
+      const done = b.stats.jobs_done, ref = b.stats.jobs_refunded;
+      return done + ref === 0 ? null : ((done / (done + ref)) * 100).toFixed(1) + "%";
     }
 
     /* =====================================================================
@@ -565,59 +584,50 @@
     function renderKeyBox(tokenId) {
       const k = state.keys[tokenId];
       if (!k) return "";
-      return `<div class="key-box" id="keys-${esc(tokenId)}">
+      const account = businessAccountFor(tokenId);
+      return `<div class="key-box">
         <div class="k-title">🔑 Agent Function-Call Key (COPY THIS NOW)</div>
         <div class="k-val">${esc(k.privateKey)}</div>
-        <div class="k-warn">⚠️ This is the agent key for this business. Copy and store it safely. This is the only time it will be shown. You will give this key to your AI agent later.</div>
+        <div class="k-warn">⚠️ Shown only once. This restricted key can only call complete_job, spend and heartbeat.<br><br>
+        To start the agent, add two GitHub secrets to your repo (Settings → Secrets → Actions):<br>
+        AGENT_PRIVATE_KEY = the key above<br>BUSINESS_ACCOUNT = ${esc(account)}</div>
         ${k.outlayerKey ? `<hr><div class="k-title" style="color:#c9a6ff">🛡️ OutLayer TEE API Key</div>
         <div class="k-val">${esc(k.outlayerKey)}</div>
-        <div class="k-warn">Copy this key too. Paste it in the Agent control card (Configuration) later.</div>` : ""}
+        <div class="k-warn">Copy this key too. You can check its balance in the Agent control card (Configuration).</div>` : ""}
       </div>`;
+    }
+    function refreshKeyBox(tokenId) {
+      const holder = document.getElementById("keyholder-" + tokenId);
+      if (holder) holder.innerHTML = renderKeyBox(tokenId);
     }
 
     async function activateBusiness(tokenId, btn) {
-      const businessAccount = businessAccountFor(tokenId);
       try {
         btn.disabled = true; btn.textContent = "Confirm in wallet...";
-        setStatus(tokenId, "info", "Creating treasury + Agent Function-Call key... Confirm in your wallet");
+        setStatus(tokenId, "info", "Creating treasury + restricted agent key... Confirm in your wallet");
+
+        const quoted = await rpcView(CONTRACT_ID, "activation_cost");
+        if (!quoted) throw new Error("Could not read the activation cost. Has the treasury code been uploaded?");
+        const deposit = (BigInt(quoted) + ACTIVATION_MARGIN_YOCTO).toString();
 
         const { privateKeyStr, publicKeyStr } = generateKeyPair();
         state.keys[tokenId] = { privateKey: privateKeyStr, outlayerKey: null };
         refreshKeyBox(tokenId);
 
-        // The NFT contract creates the business account, funds it with the deposit,
-        // deploys the treasury contract and adds the agent key. Only the NFT owner may call this.
-        const wallet = await connector.wallet();
-        await wallet.signAndSendTransaction({
-          receiverId: CONTRACT_ID,
-          actions: [{
-            type: "FunctionCall",
-            params: {
-              methodName: "activate_business",
-              args: { token_id: tokenId, agent_public_key: publicKeyStr },
-              gas: ACTIVATE_GAS,
-              deposit: ACTIVATION_DEPOSIT_YOCTO
-            }
-          }]
-        });
+        await sendCall(CONTRACT_ID, "activate_business", { token_id: tokenId, agent_public_key: publicKeyStr }, ACTIVATE_GAS, deposit);
 
         const outlayer = await registerOutlayerWallet();
         if (outlayer && outlayer.api_key) { state.keys[tokenId].outlayerKey = outlayer.api_key; refreshKeyBox(tokenId); }
 
-        setStatus(tokenId, "success", "✅ Business activated! Agent key has been added.");
+        setStatus(tokenId, "success", "✅ Business activated! Copy the agent key now.");
         btn.textContent = "Activated ✓";
-        showToast("Agent key granted successfully! Copy the private key now.", "success");
-        setTimeout(() => loadBusinesses(), 60000);
+        showToast("Business activated. Copy the agent key now.", "success");
+        setTimeout(() => loadBusinesses(), 15000);
       } catch (err) {
         setStatus(tokenId, "error", err.message || "Activation failed or cancelled");
         showToast(err.message || "Activation failed", "error");
         btn.disabled = false; btn.textContent = "Activate business";
       }
-    }
-
-    function refreshKeyBox(tokenId) {
-      const holder = document.getElementById("keyholder-" + tokenId);
-      if (holder) holder.innerHTML = renderKeyBox(tokenId);
     }
 
     async function claimRevenue(tokenId, btn) {
@@ -627,32 +637,12 @@
       try {
         btn.disabled = true; btn.textContent = "Claiming...";
         setStatus(tokenId, "info", "Preparing claim... Confirm in your wallet");
+        if (biz.claimYocto < 1000000000000000000000n) throw new Error("Nothing to claim yet (need at least 0.001 NEAR of owner share)");
 
-        // Claimable = balance minus the storage that backs the treasury contract, minus a small reserve
-        const info = await getAccountInfo(biz.account);
-        if (!info || info.claimable < 0.01) throw new Error("Treasury balance too low to claim (need at least 0.01 NEAR above the storage reserve)");
+        // The treasury contract checks you hold the NFT and only releases your enforced share
+        await sendCall(biz.account, "claim", { amount: biz.claimYocto.toString() }, CLAIM_GAS);
 
-        // BigInt avoids float / scientific-notation bugs
-        const claimNear = info.claimable;
-        const claimAmountYocto = (BigInt(Math.floor(claimNear * 1e4)) * 10n ** 20n).toString();
-
-        // Calls `claim` on the business account's contract. The contract checks that the caller
-        // owns the NFT, then transfers `amount` from the business account to the caller.
-        const wallet = await connector.wallet();
-        await wallet.signAndSendTransaction({
-          receiverId: biz.account,
-          actions: [{
-            type: "FunctionCall",
-            params: {
-              methodName: CLAIM_METHOD,
-              args: { amount: claimAmountYocto },
-              gas: CLAIM_GAS,
-              deposit: "0"
-            }
-          }]
-        });
-
-        setStatus(tokenId, "success", `✅ Claimed ~${claimNear.toFixed(4)} NEAR to your wallet`);
+        setStatus(tokenId, "success", `✅ Claimed ${fmtYocto(biz.claimYocto)} NEAR to your wallet`);
         showToast("Revenue claimed successfully", "success");
         setTimeout(() => loadBusinesses(), 5000);
       } catch (err) {
@@ -668,36 +658,87 @@
       try {
         btn.disabled = true;
         const { privateKeyStr, publicKeyStr } = generateKeyPair();
-        // The NFT contract swaps the key on the business account (adds the new one, removes the old one)
-        const wallet = await connector.wallet();
-        await wallet.signAndSendTransaction({
-          receiverId: CONTRACT_ID,
-          actions: [{
-            type: "FunctionCall",
-            params: {
-              methodName: "rotate_agent_key",
-              args: { token_id: tokenId, agent_public_key: publicKeyStr },
-              gas: ROTATE_GAS,
-              deposit: "0"
-            }
-          }]
-        });
+        await sendCall(CONTRACT_ID, "rotate_agent_key", { token_id: tokenId, agent_public_key: publicKeyStr }, ROTATE_GAS);
         state.keys[tokenId] = { ...(state.keys[tokenId] || {}), privateKey: privateKeyStr };
         refreshKeyBox(tokenId);
-        showToast("New agent key created. Copy it now.", "success");
+        showToast("New agent key created. Copy it, then resume the business if it is paused.", "success");
       } catch (err) {
-        showToast(err.message || "Key rotation failed", "error");
+        showToast(err.message || "Key change failed", "error");
       }
       btn.disabled = false;
     }
 
-    /* =====================================================================
-       AGENT CONTROL  (unchanged logic)
-       ===================================================================== */
-    function setPanel(id, text) {
-      const el = $(id); if (!el) return;
-      el.style.display = "block"; el.textContent = text;
+    async function ownerCall(b, methodName, args, okMessage) {
+      try {
+        await sendCall(b.account, methodName, args, OWNER_GAS);
+        showToast(okMessage, "success");
+        setTimeout(() => loadBusinesses(), 5000);
+      } catch (err) {
+        showToast(err.message || "Transaction failed or cancelled", "error");
+      }
     }
+
+    async function saveConfig() {
+      const b = selected();
+      if (!b || !b.stats) return;
+      try {
+        const pct = Number($("cfgOwnerPct").value);
+        if (!(pct >= 0 && pct <= 100)) throw new Error("Owner share must be between 0 and 100");
+        const action = { SetConfig: {
+          price: nearToYocto($("cfgPrice").value),
+          owner_bps: Math.round(pct * 100),
+          per_payment_cap: nearToYocto($("cfgPerCap").value),
+          daily_cap: nearToYocto($("cfgDailyCap").value)
+        } };
+        await ownerCall(b, "owner_action", { action }, "Settings saved on-chain");
+      } catch (err) { showToast(err.message || "Check your values", "error"); }
+    }
+
+    async function withdrawCapital() {
+      const b = selected(); if (!b) return;
+      try {
+        const amount = nearToYocto($("withdrawAmt").value);
+        await ownerCall(b, "withdraw_capital", { amount }, "Capital withdrawn to your wallet");
+      } catch (err) { showToast(err.message || "Enter a valid amount", "error"); }
+    }
+
+    /* ---- customer order flow ---- */
+    async function submitOrder() {
+      const st = state.order.stats;
+      if (!st) return;
+      if (!state.accountId) return connectWallet();
+      const prompt = ($("orderPrompt").value || "").trim();
+      if (!prompt) return showToast("Describe what you want researched", "error");
+      if (prompt.length > 500) return showToast("Keep the request under 500 characters", "error");
+      const btn = $("orderBtn");
+      try {
+        btn.disabled = true; btn.textContent = "Confirm in wallet...";
+        await sendCall(state.orderAccount, "order_job", { prompt }, ORDER_GAS, st.price);
+        showToast("Order placed. The agent will deliver shortly.", "success");
+        $("orderPrompt").value = "";
+        setTimeout(() => loadOrder(true), 4000);
+      } catch (err) {
+        showToast(err.message || "Order failed or cancelled", "error");
+      }
+      btn.disabled = false; btn.textContent = "Pay & order";
+    }
+
+    async function cancelOrder(jobId, btn) {
+      try {
+        btn.disabled = true;
+        await sendCall(state.orderAccount, "cancel_job", { job_id: Number(jobId) }, CANCEL_GAS);
+        showToast("Refund sent to your wallet", "success");
+        setTimeout(() => loadOrder(true), 4000);
+      } catch (err) {
+        showToast(err.message || "Cancel failed", "error");
+        btn.disabled = false;
+      }
+    }
+
+    /* =====================================================================
+       AGENT CONTROL
+       ===================================================================== */
+    function setPanel(id, text) { const el = $(id); if (!el) return; el.style.display = "block"; el.textContent = text; }
 
     async function checkAgentBalance() {
       const account = ($("agentBusinessAccount")?.value || "").trim();
@@ -705,7 +746,7 @@
       setPanel("agentResult", "Checking balance...");
       const balance = await getAccountBalance(account);
       setPanel("agentResult", balance !== null
-        ? `Treasury Balance of ${account}:\n\n${balance} NEAR\n\n✅ Account exists and is controlled by the Function-Call key.`
+        ? `Treasury balance of ${account}:\n\n${balance} NEAR\n\n✅ Account exists.`
         : `Could not find account or failed to fetch balance.\nMake sure the account name is correct.`);
     }
 
@@ -731,26 +772,18 @@
       }
     }
 
-    const AGENT_INFO = `HOW THE AGENT WORKS (UNDER THE HOOD)
+    const AGENT_INFO = `HOW THE AGENT RUNS
 
-For normal users:
-• You only mint the NFT and activate the business once.
-• The agent runs in the background using the Function-Call key + OutLayer custody.
-• Revenue is deposited into the business treasury.
-• You only need to claim revenue or sell/transfer the NFT when you want.
-
-Two ways the agent can run:
-
-1. CLASSIC (Function-Call Key)
-   - Copy the private key shown during activation
-   - Use it with the Node.js agent script or any agent runtime
-   - The key can only call allowed methods and has limited allowance
-
-2. OUTLAYER TEE (Recommended)
-   - The wk_... key you received is a custodial key inside OutLayer's TEE
-   - You can check balance here
-   - Later the agent can be controlled / scheduled through OutLayer API
-   - Safer because the private key never leaves the TEE`;
+1. When you activate a business you receive a restricted agent key.
+2. Add it to your GitHub repo as the secret AGENT_PRIVATE_KEY, and add BUSINESS_ACCOUNT as a second secret.
+3. A scheduled GitHub Action ("Agent worker") wakes up about every 10 minutes. It sends a heartbeat, picks up paid jobs, writes the report and completes the job on-chain.
+4. The business treasury contract enforces the rules:
+   • Customers pay into escrow; the agent only gets recognised revenue after delivering.
+   • Revenue is split by your owner-share setting; you can only claim your share.
+   • The agent key can only call complete_job, spend and heartbeat.
+   • Spending needs an allowed payee, a per-payment cap and a daily cap.
+   • You can pause the agent at any time.
+5. If you sell the NFT, the seller's agent key is revoked automatically and the business is paused until the new owner sets a new key.`;
 
     function toggleAgentInfo() {
       const panel = $("agentInfoPanel"); if (!panel) return;
@@ -769,24 +802,20 @@ Two ways the agent can run:
     }
 
     function transferPanel(b) {
-      return `<div class="info-panel ${state.transferOpen[b.tokenId] ? "show" : ""}" id="transfer-${esc(b.tokenId)}">How to Sell / Transfer this NFT
+      return `<div class="info-panel ${state.transferOpen[b.tokenId] ? "show" : ""}" id="transfer-${esc(b.tokenId)}">How to Sell / Transfer this business
 
-1. Open any NEAR NFT marketplace that supports testnet (or use near-cli).
-
-2. Transfer the NFT using the standard NEP-171 method:
+1. Transfer the NFT with the standard NEP-171 method (near-cli or any wallet that supports NFT transfer):
 
    nft_transfer
    • receiver_id → the buyer's account
    • token_id → ${esc(b.tokenId)}
+   • attach exactly 1 yoctoNEAR
 
-3. After the NFT is transferred, the new owner automatically becomes the controller of the business account (${esc(b.account)}).
+2. In the same transaction the contract REVOKES your agent key and PAUSES the business.
 
-4. The Function-Call key remains valid for the agent. The new owner can also generate a new key if they want.
+3. The buyer instantly controls the treasury: unclaimed profits, settings and future earnings now belong to them. The buyer opens this dashboard, sets a fresh agent key (Configuration → Agent security) and resumes the business.
 
-Currently there is no built-in marketplace UI. Use:
-• Paras (testnet)
-• near-cli
-• or any wallet that supports NFT transfer</div>`;
+4. Unfinished customer orders stay in escrow. The new agent can complete them, or customers can cancel for a refund after 1 hour.</div>`;
     }
 
     function connectPrompt(title) {
@@ -805,20 +834,37 @@ Currently there is no built-in marketplace UI. Use:
       return null;
     }
 
+    function jobRows(jobs, ownerBps) {
+      if (!jobs.length) return `<div class="empty">No jobs yet. Share the order link to get your first customer.</div>`;
+      return jobs.map(j => {
+        const done = j.status === "done";
+        const ownerShare = ownerBps !== null ? (BigInt(j.paid) * BigInt(ownerBps)) / 10000n : null;
+        const when = nsToMs(done ? j.done_ns : j.created_ns);
+        return `<div class="row">
+          <div><div class="t">${done ? "Job completed" : j.status === "refunded" ? "Job refunded" : "Job waiting for the agent"} · #${esc(j.id)}</div>
+            <div class="s">${esc(String(j.prompt).slice(0, 90))}</div></div>
+          <div class="s">${ago(when)}</div>
+          <div class="amt">${done ? "+" : ""}${fmtYocto(j.paid)} Ⓝ<small>${done && ownerShare !== null ? fmtYocto(ownerShare) + " to owner" : j.status}</small></div>
+        </div>`;
+      }).join("");
+    }
+
     /* =====================================================================
        VIEW: Overview
        ===================================================================== */
     function viewOverview() {
       const gate = stateGate("Overview"); if (gate) return gate;
       const b = selected();
-      const claimable = b.active ? (b.claimable || 0).toFixed(4) : "0.0000";
+      const st = b.stats;
+      const as = agentStatus(b);
+      const rate = successRate(b);
       return `
         <div class="eyebrow">My businesses <span style="margin:0 6px">/</span> Agent #${esc(b.tokenId)}</div>
         <div class="page-head">
           <div>
             <div class="title-row">
               <h1>${esc(b.title)}</h1>
-              <span class="badge ${b.active ? "" : "pending"}"><span class="dot"></span>${b.active ? "Active" : "Pending activation"}</span>
+              <span class="badge ${as.cls}"><span class="dot"></span>${esc(as.label)}</span>
             </div>
             <div class="meta-line"><span>NFT ID: #${esc(b.tokenId)}</span><a href="https://explorer.testnet.near.org/accounts/${esc(b.account)}" target="_blank" rel="noopener">${esc(b.account)} ↗</a></div>
             <div class="page-sub">${esc(b.description)}</div>
@@ -826,17 +872,21 @@ Currently there is no built-in marketplace UI. Use:
           ${b.active ? `<button class="btn btn-ghost" data-action="toggle-transfer" data-id="${esc(b.tokenId)}">Sell / Transfer ↗</button>` : ""}
         </div>
 
+        ${st && st.paused ? `<div class="banner warn"><span class="dot"></span>This business is paused. The agent is not taking jobs and customers cannot order. If you just bought it, set a new agent key in Configuration, then resume.</div>` : ""}
+        ${b.active && !st ? `<div class="banner warn"><span class="dot"></span>This business uses the first treasury version, so on-chain settings, jobs and the agent are not available. Mint a new business to use them.</div>` : ""}
+
         <div class="stat-grid c4">
           <div class="card stat"><div class="label-sm">Treasury</div><div class="big">${esc(fmtNear(b.balance))}</div><div class="label-sm">NEAR balance</div></div>
-          <div class="card stat"><div class="label-sm">This month</div><div class="big green">—</div><div class="label-sm">Net earnings</div></div>
-          <div class="card stat"><div class="label-sm">Jobs done</div><div class="big">—</div><div class="label-sm">All time</div></div>
-          <div class="card stat"><div class="label-sm">Success rate</div><div class="big">—</div><div class="label-sm">All time</div></div>
+          <div class="card stat"><div class="label-sm">Last 30 days</div><div class="big green">${st ? fmtYocto(revenue30d(b)) + " Ⓝ" : "—"}</div><div class="label-sm">Revenue</div></div>
+          <div class="card stat"><div class="label-sm">Jobs done</div><div class="big">${st ? st.jobs_done : "—"}</div><div class="label-sm">All time</div></div>
+          <div class="card stat"><div class="label-sm">Success rate</div><div class="big">${rate || "—"}</div><div class="label-sm">${rate ? "Completed vs refunded" : "No finished jobs yet"}</div></div>
         </div>
 
         <div class="hero">
           <div>
             <div class="tag">Available profits</div>
-            <div class="amount">${claimable}<small>NEAR</small></div>
+            <div class="amount">${fmtYocto(b.claimYocto)}<small>NEAR</small></div>
+            ${st ? `<div class="from" style="margin-bottom:0">Your share: ${(st.owner_bps / 100).toFixed(0)}% of revenue · ${(100 - st.owner_bps / 100).toFixed(0)}% reinvested (enforced on-chain)</div>` : ""}
           </div>
           <button class="btn btn-lime" data-action="claim" data-id="${esc(b.tokenId)}" ${b.active ? "" : "disabled"}>Claim to wallet →</button>
         </div>
@@ -844,21 +894,27 @@ Currently there is no built-in marketplace UI. Use:
         ${transferPanel(b)}
         ${businessActions(b)}
 
+        ${st ? `
         <div class="card" style="margin:20px 0">
           <div class="card-head"><h3>Agent status</h3>
-            <span class="badge ${b.active ? "" : "pending"}"><span class="dot"></span>${b.active ? "Ready" : "Pending"}</span></div>
+            <span class="badge ${as.cls}"><span class="dot"></span>${esc(as.label)}</span></div>
           <div class="status-grid">
-            <div><div class="label-sm">Running on</div><div class="v green">OutLayer TEE</div></div>
-            <div><div class="label-sm">Last activity</div><div class="v">—</div></div>
-            <div><div class="label-sm">Uptime (30d)</div><div class="v">—</div></div>
+            <div><div class="label-sm">Runs on</div><div class="v green">Scheduled worker</div></div>
+            <div><div class="label-sm">Heartbeat</div><div class="v">${esc(as.detail)}</div></div>
+            <div><div class="label-sm">Spent today</div><div class="v">${fmtYocto(st.spent_today)} / ${fmtYocto(st.daily_cap)} Ⓝ</div></div>
+            <div><div class="label-sm">Agent Market</div><div class="v">${MARKET_AGENT_HANDLE ? `<a href="${MARKETPLACE_URL}/agents/${esc(MARKET_AGENT_HANDLE)}" target="_blank" rel="noopener" style="color:var(--green)">Listed ↗</a>` : "Not listed yet"}</div></div>
+          </div>
+          <div class="btn-row" style="margin-top:16px">
+            <a class="btn btn-ghost btn-sm" href="#/order/${esc(b.account)}">Open customer order page</a>
+            <button class="btn btn-ghost btn-sm" data-action="copy-order" data-id="${esc(b.account)}">Copy order link</button>
           </div>
         </div>
 
         <div class="card">
           <div class="card-head"><h3>Recent activity</h3></div>
           <div class="table-head"><span>Event</span><span>Time</span><span style="text-align:right">Amount</span></div>
-          <div class="empty">No activity yet. Completed jobs and profit distributions will appear here.</div>
-        </div>`;
+          ${jobRows(b.jobs.slice(0, 8), st.owner_bps)}
+        </div>` : ""}`;
     }
 
     /* =====================================================================
@@ -880,8 +936,8 @@ Currently there is no built-in marketplace UI. Use:
 
         <div class="stat-grid c3">
           <div class="card stat"><div class="label-sm">Active businesses</div><div class="big">${active.length}</div><div class="label-sm">Running on NEAR</div></div>
-          <div class="card stat"><div class="label-sm">Total treasury</div><div class="big">${totalTreasury().toFixed(4)} Ⓝ</div><div class="label-sm">NEAR held by your agents</div></div>
-          <div class="card stat"><div class="label-sm">Available profits</div><div class="big green">${totalClaimable().toFixed(4)} Ⓝ</div><div class="label-sm">Ready to claim</div></div>
+          <div class="card stat"><div class="label-sm">Total treasury</div><div class="big">${totalTreasuryNear().toFixed(4)} Ⓝ</div><div class="label-sm">NEAR held by your agents</div></div>
+          <div class="card stat"><div class="label-sm">Available profits</div><div class="big green">${fmtYocto(totalClaimYocto())} Ⓝ</div><div class="label-sm">Ready to claim</div></div>
         </div>
 
         <div style="display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px">
@@ -901,12 +957,15 @@ Currently there is no built-in marketplace UI. Use:
     }
 
     function bizCard(b) {
+      const st = b.stats;
+      const as = agentStatus(b);
+      const rate = successRate(b);
       return `<div class="card biz-card">
         <div class="biz-top">
           <div>
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
               <span class="tag">Autonomous business</span>
-              <span class="badge ${b.active ? "" : "pending"}"><span class="dot"></span>${b.active ? "Active" : "Pending"}</span>
+              <span class="badge ${as.cls}"><span class="dot"></span>${esc(as.label)}</span>
             </div>
             <h2>${esc(b.title)}</h2>
             <div class="label-sm" style="margin-bottom:6px">NFT #${esc(b.tokenId)}</div>
@@ -916,20 +975,19 @@ Currently there is no built-in marketplace UI. Use:
         <p class="desc">${esc(b.description)}</p>
         <div class="mini-stats">
           <div><div class="label-sm">Treasury</div><div class="v">${esc(fmtNear(b.balance))}</div></div>
-          <div><div class="label-sm">This month</div><div class="v green">—</div></div>
-          <div><div class="label-sm">Jobs done</div><div class="v">—</div></div>
-          <div><div class="label-sm">Success rate</div><div class="v">—</div></div>
+          <div><div class="label-sm">Last 30 days</div><div class="v green">${st ? fmtYocto(revenue30d(b)) + " Ⓝ" : "—"}</div></div>
+          <div><div class="label-sm">Jobs done</div><div class="v">${st ? st.jobs_done : "—"}</div></div>
+          <div><div class="label-sm">Success rate</div><div class="v">${rate || "—"}</div></div>
         </div>
         <div class="biz-foot">
           <a href="https://explorer.testnet.near.org/accounts/${esc(b.account)}" target="_blank" rel="noopener">${esc(b.account)} ↗</a>
-          <span class="healthy" style="${b.active ? "" : "color:#9a7208"}"><span class="dot" style="background:currentColor"></span>${b.active ? "Healthy · OutLayer TEE" : "Pending activation"}</span>
+          <span class="healthy ${as.cls ? "warn" : ""}"><span class="dot" style="background:currentColor"></span>${esc(as.label)} · ${esc(as.detail)}</span>
         </div>
-        <button class="btn btn-primary btn-block" style="margin-top:14px;display:none" data-mobile-view data-action="select" data-id="${esc(b.tokenId)}">View business →</button>
-        ${b.active ? "" : `<div style="margin-top:14px">${businessActions(b)}</div>`}
+        <button class="btn btn-primary btn-block mobile-only" style="margin-top:14px" data-action="select" data-id="${esc(b.tokenId)}">View business →</button>
         ${b.active ? `<div class="btn-row" style="margin-top:14px">
           <button class="btn btn-ghost" data-action="claim" data-id="${esc(b.tokenId)}">Claim revenue</button>
           <button class="btn btn-ghost" data-action="toggle-transfer" data-id="${esc(b.tokenId)}">Sell / Transfer</button>
-        </div>${transferPanel(b)}${businessActions(b)}` : ""}
+        </div>${transferPanel(b)}${businessActions(b)}` : `<div style="margin-top:14px">${businessActions(b)}</div>`}
       </div>`;
     }
 
@@ -938,19 +996,21 @@ Currently there is no built-in marketplace UI. Use:
        ===================================================================== */
     function viewWallet() {
       const connected = !!state.accountId;
-      const claimable = totalClaimable();
-      const claimBiz = state.businesses.find(b => b.active && b.claimable > 0) || null;
+      const claimTotal = totalClaimYocto();
+      const claimBiz = state.businesses.find(b => b.active && b.claimYocto >= 1000000000000000000000n) || null;
       const heroBtn = connected
         ? `<button class="btn btn-lime" data-action="claim" data-id="${esc(claimBiz?.tokenId || "")}" ${claimBiz ? "" : "disabled"}>Claim to wallet →</button>`
         : `<button class="btn btn-lime" data-action="connect">Connect to claim →</button>`;
+      const v2 = state.businesses.filter(b => b.stats);
+      const earned = v2.reduce((s, b) => s + BigInt(b.stats.earned_total), 0n);
+      const allJobs = v2.flatMap(b => b.jobs.filter(j => j.status === "done").map(j => ({ ...j, bps: b.stats.owner_bps, title: b.title })))
+        .sort((a, c) => nsToMs(c.done_ns) - nsToMs(a.done_ns)).slice(0, 6);
 
       return `
         <div class="eyebrow">Your earnings</div>
         <div class="page-head">
           <div><h1>Wallet</h1><div class="page-sub">Manage and claim profits from your autonomous businesses.</div></div>
-          ${connected
-            ? `<button class="btn btn-primary" data-action="disconnect">Disconnect wallet</button>`
-            : `<button class="btn btn-primary" data-action="connect">Connect wallet</button>`}
+          ${connected ? `<button class="btn btn-primary" data-action="disconnect">Disconnect wallet</button>` : `<button class="btn btn-primary" data-action="connect">Connect wallet</button>`}
         </div>
 
         <div class="two-col">
@@ -958,7 +1018,7 @@ Currently there is no built-in marketplace UI. Use:
             <div class="hero" style="flex-direction:column;align-items:stretch;margin:0">
               <div>
                 <div class="tag">Available to claim</div>
-                <div class="amount">${claimable.toFixed(4)}<small>NEAR</small></div>
+                <div class="amount">${fmtYocto(claimTotal)}<small>NEAR</small></div>
               </div>
               <div class="from">${claimBiz ? "From " + esc(claimBiz.title) + " #" + esc(claimBiz.tokenId) : "No claimable profits yet"}</div>
               <div>${heroBtn}</div>
@@ -970,20 +1030,23 @@ Currently there is no built-in marketplace UI. Use:
               ${state.businesses.filter(b => b.active).map(b => `
                 <div style="margin-bottom:14px">
                   <div class="biz-row"><div><div style="font-weight:600">${esc(b.title)} #${esc(b.tokenId)}</div><div class="label-sm" style="font-size:.72rem">${esc(b.account)}</div></div>
-                  <div class="amt">${(b.claimable || 0).toFixed(4)} Ⓝ</div></div>
+                  <div class="amt">${fmtYocto(b.claimYocto)} Ⓝ</div></div>
+                  ${b.stats ? `<div class="label-sm" style="font-size:.74rem;margin-top:6px">${(b.stats.owner_bps / 100).toFixed(0)}% to owner · ${(100 - b.stats.owner_bps / 100).toFixed(0)}% reinvested (enforced on-chain)</div>` : ""}
                 </div>`).join("") || `<div class="empty">${connected ? "No active businesses." : "Connect your wallet to see claimable profits."}</div>`}
             </div>
 
             <div class="card">
-              <div class="card-head"><h3>Recent allocations</h3></div>
-              <div class="card-sub">Owner profit allocations, not wallet transfers.</div>
-              <div class="empty" style="border-top:1px solid var(--border)">No allocations yet.</div>
+              <div class="card-head"><h3>Recent payouts</h3></div>
+              <div class="card-sub">Completed customer jobs and your share at the current split.</div>
+              ${allJobs.length ? allJobs.map(j => `<div class="row" style="grid-template-columns:1fr auto">
+                <div><div class="t">${esc(j.title)} · job #${esc(j.id)}</div><div class="s">${ago(nsToMs(j.done_ns))}</div></div>
+                <div class="amt">${fmtYocto((BigInt(j.paid) * BigInt(j.bps)) / 10000n)} Ⓝ<small>to owner</small></div></div>`).join("") : `<div class="empty" style="border-top:1px solid var(--border)">No payouts yet.</div>`}
             </div>
           </div>
 
           <div class="stack">
-            <div class="card"><div class="label-sm">Business net earnings</div><div class="big green">—</div><div class="label-sm" style="font-size:.74rem">This month · before profit distribution</div></div>
-            <div class="card"><div class="label-sm">Agent treasury</div><div class="big">${totalTreasury().toFixed(4)} Ⓝ</div><div class="label-sm" style="font-size:.74rem">Held by the business, separate from your wallet</div></div>
+            <div class="card"><div class="label-sm">Business net earnings</div><div class="big green">${v2.length ? fmtYocto(earned) + " Ⓝ" : "—"}</div><div class="label-sm" style="font-size:.74rem">All time · before profit distribution</div></div>
+            <div class="card"><div class="label-sm">Agent treasury</div><div class="big">${totalTreasuryNear().toFixed(4)} Ⓝ</div><div class="label-sm" style="font-size:.74rem">Held by the business, separate from your wallet</div></div>
 
             <div class="card">
               <div class="card-head"><h3>Your wallet</h3><span class="label-sm" style="font-size:.7rem">${connected ? "Connected" : "Not connected"}</span></div>
@@ -999,9 +1062,9 @@ Currently there is no built-in marketplace UI. Use:
             <div class="card">
               <div class="card-head"><h3>How claiming works</h3></div>
               <ol class="steps">
-                <li><span class="n">01</span><div>Connect your wallet<div class="d">Choose the wallet that will receive your profits.</div></div></li>
-                <li><span class="n">02</span><div>Review your claim<div class="d">Check the available balance from your business.</div></div></li>
-                <li><span class="n">03</span><div>Confirm the transfer<div class="d">Approve the transaction in your wallet.</div></div></li>
+                <li><span class="n">01</span><div>Customers pay into escrow<div class="d">The agent delivers, then the contract splits the revenue.</div></div></li>
+                <li><span class="n">02</span><div>Your share builds up<div class="d">Only your enforced percentage can be claimed.</div></div></li>
+                <li><span class="n">03</span><div>Confirm the transfer<div class="d">Approve the claim in your wallet.</div></div></li>
               </ol>
             </div>
           </div>
@@ -1009,50 +1072,57 @@ Currently there is no built-in marketplace UI. Use:
     }
 
     /* =====================================================================
-       VIEW: Configuration (+ Agent control)
+       VIEW: Configuration
        ===================================================================== */
     function viewConfig() {
-      const c = state.config;
+      const gate = stateGate("Configuration"); if (gate) return gate;
       const b = selected();
-      const total = Number(c.reinvest) + Number(c.owner);
-      const okTotal = total === 100;
+      const st = b.stats;
+      const pct = st ? st.owner_bps / 100 : 60;
       return `
-        ${b ? `<a href="#" data-action="goto" data-id="overview" style="color:var(--green);font-size:.8rem;text-decoration:none">← ${esc(b.title)} #${esc(b.tokenId)}</a>` : ""}
+        <a href="#" data-action="goto" data-id="overview" style="color:var(--green);font-size:.8rem;text-decoration:none">← ${esc(b.title)} #${esc(b.tokenId)}</a>
         <div class="page-head" style="margin-top:12px">
-          <div><h1>Configuration</h1><div class="page-sub">Manage how your agent works, earns and stays secure.</div></div>
+          <div><h1>Configuration</h1><div class="page-sub">Manage how your agent works, earns and stays secure. These settings live on-chain.</div></div>
         </div>
-        <div class="banner ${b && b.active ? "" : "warn"}"><span class="dot"></span>${b && b.active ? "Your agent is active. Updates apply to future jobs." : "Your agent is not active yet. Activate a business to apply changes."}</div>
+        ${st
+          ? `<div class="banner ${st.paused ? "warn" : ""}"><span class="dot"></span>${st.paused ? "Your agent is paused. Resume it when you are ready." : "Your agent is active. Updates apply to future jobs."}</div>`
+          : `<div class="banner warn"><span class="dot"></span>${b.active ? "This business uses the first treasury version with no on-chain settings. Mint a new one to use them." : "Activate this business to configure it."}</div>`}
 
         <div class="cfg-grid">
           <div class="stack">
             <div class="card">
               <div class="card-head"><h3>Service description</h3><span class="num">01</span></div>
-              <div class="card-sub">Tell clients what your autonomous agent can do.</div>
-              <textarea class="input" id="cfgDesc">${esc(c.description)}</textarea>
-              <div class="hint">A clear description helps clients find the right agent.</div>
+              <div class="card-sub">Shown to clients. Taken from the NFT metadata.</div>
+              <textarea class="input" readonly>${esc(b.description)}</textarea>
             </div>
 
             <div class="card">
               <div class="card-head"><h3>Pricing</h3><span class="num">02</span></div>
-              <div class="card-sub">Set your base rate and optional premium add-ons.</div>
-              <div class="field"><label>Base price per job</label><input class="input" id="cfgPrice" value="${esc(c.price)}" inputmode="decimal" /><div class="hint">Charged for each completed standard job.</div></div>
-              <div class="two-inputs">
-                <div class="field"><label>Premium add-ons · minimum</label><input class="input" id="cfgMin" value="${esc(c.min)}" inputmode="decimal" /></div>
-                <div class="field"><label>Premium add-ons · maximum</label><input class="input" id="cfgMax" value="${esc(c.max)}" inputmode="decimal" /></div>
-              </div>
-              <div class="hint">All prices are denominated in USDC.</div>
+              <div class="card-sub">What a customer pays into escrow for one job.</div>
+              <div class="field"><label>Base price per job (NEAR)</label><input class="input" id="cfgPrice" value="${st ? fmtYocto(st.price, 3) : ""}" inputmode="decimal" ${st ? "" : "disabled"} /></div>
             </div>
 
             <div class="card">
-              <div class="card-head"><h3>Agent control</h3><span class="num">05</span></div>
-              <div class="card-sub">Use the Function-Call key to control the business.</div>
-              <div class="field"><label>Business account</label><input class="input" id="agentBusinessAccount" placeholder="business-10.buildingfromthetop.testnet" value="${b ? esc(b.account) : ""}" /></div>
-              <div class="field"><label>Private key (ed25519:...)</label><textarea class="input mono" id="agentPrivateKey" placeholder="Paste the private key you copied during activation"></textarea></div>
+              <div class="card-head"><h3>Spending limits</h3><span class="num">03</span></div>
+              <div class="card-sub">Enforced by the contract on every payment the agent makes.</div>
+              <div class="two-inputs">
+                <div class="field"><label>Per-payment cap (NEAR)</label><input class="input" id="cfgPerCap" value="${st ? fmtYocto(st.per_payment_cap, 3) : ""}" inputmode="decimal" ${st ? "" : "disabled"} /></div>
+                <div class="field"><label>Daily cap (NEAR)</label><input class="input" id="cfgDailyCap" value="${st ? fmtYocto(st.daily_cap, 3) : ""}" inputmode="decimal" ${st ? "" : "disabled"} /></div>
+              </div>
+              <div class="hint">Spent today: ${st ? fmtYocto(st.spent_today) : "0.0000"} Ⓝ. The agent can only pay accounts on this list:</div>
+              ${st ? `${(st.payees || []).map(p => `<div class="payee"><span>${esc(p)}</span><button class="btn btn-danger btn-sm" data-action="remove-payee" data-id="${esc(p)}">Remove</button></div>`).join("") || `<div class="hint">No allowed payees yet, so the agent cannot spend at all.</div>`}
+              <div style="display:flex;gap:10px;margin-top:12px"><input class="input" id="payeeInput" placeholder="account.testnet" /><button class="btn btn-ghost" data-action="add-payee">Add</button></div>` : ""}
+            </div>
+
+            <div class="card">
+              <div class="card-head"><h3>Agent control</h3><span class="num">06</span></div>
+              <div class="card-sub">Check balances and learn how the agent runs.</div>
+              <div class="field"><label>Business account</label><input class="input" id="agentBusinessAccount" placeholder="business-10.buildingfromthetop.testnet" value="${esc(b.account)}" /></div>
               <div class="field"><label>OutLayer API key (wk_...)</label><input class="input" id="outlayerApiKey" placeholder="wk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" /></div>
               <div class="btn-row">
                 <button class="btn btn-primary" data-action="check-treasury">Check treasury balance</button>
                 <button class="btn btn-ghost" data-action="check-outlayer">Check OutLayer balance</button>
-                <button class="btn btn-ghost" data-action="toggle-agent-info">How to run full agent</button>
+                <button class="btn btn-ghost" data-action="toggle-agent-info">How the agent runs</button>
               </div>
               <div class="result-panel" id="agentResult"></div>
               <div class="info-panel" id="agentInfoPanel"></div>
@@ -1061,42 +1131,113 @@ Currently there is no built-in marketplace UI. Use:
 
           <div class="stack">
             <div class="card">
-              <div class="card-head"><h3>Profit distribution</h3><span class="num">03</span></div>
-              <div class="card-sub">Choose how every payout is allocated.</div>
-              <div class="alloc-bar"><i id="barA" style="flex:${Number(c.reinvest) || 0}"></i><i id="barB" style="flex:${Number(c.owner) || 0}"></i></div>
-              <div class="field"><label>Reinvest into treasury (%)</label><input class="input" id="cfgReinvest" value="${esc(c.reinvest)}" inputmode="numeric" /><div class="hint">Funds your agent's future operations.</div></div>
-              <div class="field"><label>Send to owner (%)</label><input class="input" id="cfgOwner" value="${esc(c.owner)}" inputmode="numeric" /><div class="hint">Available as claimable profits.</div></div>
-              <div class="alloc-total"><span>Total allocation</span><span class="badge ${okTotal ? "" : "pending"}" id="allocBadge">${okTotal ? "100% allocated" : total + "% allocated"}</span></div>
+              <div class="card-head"><h3>Profit distribution</h3><span class="num">04</span></div>
+              <div class="card-sub">Choose how every completed job is split. The contract enforces it.</div>
+              <div class="alloc-bar"><i id="barA" style="flex:${100 - pct}"></i><i id="barB" style="flex:${pct}"></i></div>
+              <div class="field"><label>Send to owner (%)</label><input class="input" id="cfgOwnerPct" value="${pct}" inputmode="decimal" ${st ? "" : "disabled"} /><div class="hint">Becomes claimable profit.</div></div>
+              <div class="field"><label>Reinvest into treasury (%)</label><input class="input" id="cfgReinvestPct" value="${100 - pct}" readonly /><div class="hint">Stays in the treasury for the agent's operations.</div></div>
+              <div class="alloc-total"><span>Total allocation</span><span class="badge">100% allocated</span></div>
             </div>
 
             <div class="card">
-              <div class="card-head"><h3>Agent security</h3><span class="num">04</span></div>
-              <div class="card-sub">Rotate the agent's signing key for enhanced security.</div>
-              <button class="btn btn-ghost btn-block" data-action="rotate-key" ${b && b.active ? "" : "disabled"}>↻ Rotate agent key</button>
-              <div class="hint">Key rotation is separate from other settings.</div>
-              ${b ? `<div id="keyholder-${esc(b.tokenId)}">${renderKeyBox(b.tokenId)}</div>` : ""}
+              <div class="card-head"><h3>Pause &amp; control</h3><span class="num">05</span></div>
+              <div class="card-sub">Pausing stops new orders and blocks every agent action.</div>
+              ${st ? `<button class="btn ${st.paused ? "btn-primary" : "btn-danger"} btn-block" data-action="toggle-pause">${st.paused ? "▶ Resume business" : "⏸ Pause business"}</button>
+              <div class="field" style="margin-top:16px"><label>Withdraw treasury capital (NEAR, only while paused)</label>
+                <div style="display:flex;gap:10px"><input class="input" id="withdrawAmt" placeholder="0.5" inputmode="decimal" /><button class="btn btn-ghost" data-action="withdraw" ${st.paused ? "" : "disabled"}>Withdraw</button></div>
+                <div class="hint">Available: ${fmtYocto(st.spendable)} Ⓝ</div></div>` : `<div class="hint">Available once the business is active.</div>`}
+            </div>
+
+            <div class="card">
+              <div class="card-head"><h3>Agent security</h3><span class="num">07</span></div>
+              <div class="card-sub">The agent key can only call complete_job, spend and heartbeat. Create a new one any time, and always after buying a business.</div>
+              <button class="btn btn-ghost btn-block" data-action="rotate-key" ${b.active ? "" : "disabled"}>↻ Set / rotate agent key</button>
+              <div id="keyholder-${esc(b.tokenId)}">${renderKeyBox(b.tokenId)}</div>
             </div>
           </div>
         </div>
 
         <div class="foot-actions">
-          <span class="label-sm">Review your changes before saving.</span>
+          <span class="label-sm">Saving sends one transaction signed by your wallet.</span>
           <div class="btns">
-            <button class="btn btn-ghost" data-action="cancel-config">Cancel</button>
-            <button class="btn btn-primary" data-action="save-config">Save changes</button>
+            <button class="btn btn-ghost" data-action="reload">Reset</button>
+            <button class="btn btn-primary" data-action="save-config" ${st ? "" : "disabled"}>Save changes</button>
           </div>
         </div>`;
     }
 
     /* =====================================================================
-       RENDER (shell + current view)
+       VIEW: Public order page (any visitor)
        ===================================================================== */
-    const VIEWS = { overview: viewOverview, businesses: viewBusinesses, wallet: viewWallet, config: viewConfig };
+    function viewOrder() {
+      const account = state.orderAccount;
+      const o = state.order;
+      const st = o.stats;
+      const mine = state.accountId ? o.jobs.filter(j => j.customer === state.accountId) : [];
+      const now = Date.now();
+      return `
+        <div class="eyebrow">Autonomous business · customer order page</div>
+        <div class="page-head">
+          <div><h1>Order a market report</h1>
+            <div class="meta-line"><a href="https://explorer.testnet.near.org/accounts/${esc(account)}" target="_blank" rel="noopener">${esc(account)} ↗</a></div>
+            <div class="page-sub">An AI agent owned by an NFT delivers your report. Your payment is held in escrow until it delivers.</div></div>
+        </div>
+        ${o.loading ? `<div class="card empty">Loading...</div>` : o.error || !st ? `<div class="card empty" style="color:var(--danger)">This business was not found or has no on-chain ordering yet.</div>` : `
+        <div class="two-col">
+          <div class="stack">
+            <div class="card">
+              <div class="card-head"><h3>Your request</h3><span class="badge">${fmtYocto(st.price, 3)} Ⓝ per report</span></div>
+              ${st.paused ? `<div class="banner warn"><span class="dot"></span>This business is paused and not taking orders.</div>` : ""}
+              <div class="field"><label>What should the agent research?</label>
+                <textarea class="input" id="orderPrompt" maxlength="500" placeholder="e.g. How are crypto markets moving today and what does it mean for NEAR?" ${st.paused ? "disabled" : ""}></textarea>
+                <div class="hint">Up to 500 characters. Delivered on-chain, usually within about 10 minutes.</div></div>
+              <button class="btn btn-primary btn-block" id="orderBtn" data-action="order" ${st.paused ? "disabled" : ""}>${state.accountId ? "Pay &amp; order" : "Connect wallet to order"}</button>
+            </div>
+
+            <div class="card">
+              <div class="card-head"><h3>${state.accountId ? "Your orders" : "Latest jobs"}</h3></div>
+              ${(state.accountId ? mine : o.jobs.slice(0, 6)).map(j => {
+                const canCancel = j.status === "pending" && nsToMs(j.created_ns) + 3600000 <= now;
+                return `<div class="row" style="grid-template-columns:1fr auto">
+                  <div><div class="t">#${esc(j.id)} · ${esc(j.status === "done" ? "Delivered" : j.status === "refunded" ? "Refunded" : "Waiting for the agent")}</div>
+                  <div class="s">${esc(String(j.prompt).slice(0, 120))}</div>
+                  ${j.status === "done" ? `<pre class="result">${esc(j.result)}</pre>` : ""}
+                  ${j.status === "pending" && state.accountId ? (canCancel ? `<button class="btn btn-danger btn-sm" style="margin-top:8px" data-action="cancel-order" data-id="${esc(j.id)}">Cancel &amp; refund</button>` : `<div class="s" style="margin-top:6px">Refund available if not delivered within 1 hour.</div>`) : ""}</div>
+                  <div class="amt">${fmtYocto(j.paid, 3)} Ⓝ</div></div>`;
+              }).join("") || `<div class="empty">${state.accountId ? "You have no orders yet." : "No jobs yet."}</div>`}
+            </div>
+          </div>
+
+          <div class="stack">
+            <div class="card">
+              <div class="card-head"><h3>Your wallet</h3><span class="label-sm" style="font-size:.7rem">${state.accountId ? "Connected" : "Not connected"}</span></div>
+              ${state.accountId ? `<div class="card-sub" style="word-break:break-all">${esc(state.accountId)}</div>` : `<button class="btn btn-primary btn-block" data-action="connect">Connect wallet</button>`}
+            </div>
+            <div class="card">
+              <div class="card-head"><h3>How it works</h3></div>
+              <ol class="steps">
+                <li><span class="n">01</span><div>Pay into escrow<div class="d">The contract holds your payment.</div></div></li>
+                <li><span class="n">02</span><div>The agent delivers<div class="d">It writes your report and completes the job on-chain.</div></div></li>
+                <li><span class="n">03</span><div>Revenue is split<div class="d">${(st.owner_bps / 100).toFixed(0)}% to the NFT owner, the rest reinvested. Enforced by the contract.</div></div></li>
+              </ol>
+              <div class="kv"><span>Jobs delivered</span><b>${st.jobs_done}</b></div>
+              <div class="kv"><span>Refund if not delivered</span><b>after 1 hour</b></div>
+            </div>
+            <a class="btn btn-ghost btn-block" href="#" data-action="goto" data-id="overview">← Owner dashboard</a>
+          </div>
+        </div>`}`;
+    }
+
+    /* =====================================================================
+       RENDER
+       ===================================================================== */
+    const VIEWS = { overview: viewOverview, businesses: viewBusinesses, wallet: viewWallet, config: viewConfig, order: viewOrder };
     const CRUMBS = {
       overview: () => { const b = selected(); return `My businesses<span class="sep">/</span><b>${esc(b ? b.title : "Overview")}</b>`; },
       businesses: () => `Workspace<span class="sep">/</span><b>My businesses</b>`,
       wallet: () => `Workspace<span class="sep">/</span><b>Wallet</b>`,
-      config: () => `My businesses<span class="sep">/</span><b>Configuration</b>`
+      config: () => `My businesses<span class="sep">/</span><b>Configuration</b>`,
+      order: () => `Customer<span class="sep">/</span><b>Order</b>`
     };
 
     function render() {
@@ -1107,15 +1248,21 @@ Currently there is no built-in marketplace UI. Use:
       $("crumbs").innerHTML = CRUMBS[state.view]();
       $("ownerPill").textContent = state.accountId ? "Owner · " + shortAcct(state.accountId) : "Not connected";
 
-      const active = document.activeElement;
-      const keepSearch = active && active.id === "searchInput";
+      // keep what the user is typing when a background refresh re-renders the page
+      const keep = {};
+      ["orderPrompt", "searchInput", "payeeInput", "withdrawAmt", "cfgPrice", "cfgOwnerPct", "cfgPerCap", "cfgDailyCap"].forEach(id => {
+        const el = $(id); if (el) keep[id] = el.value;
+      });
+      const activeId = document.activeElement && document.activeElement.id;
       $("view").innerHTML = VIEWS[state.view]();
-      if (keepSearch) { const el = $("searchInput"); el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
-      document.querySelectorAll("[data-mobile-view]").forEach(el => { el.className += " mobile-only"; });
+      Object.keys(keep).forEach(id => { const el = $(id); if (el && keep[id] !== "") el.value = keep[id]; });
+      if (activeId && $(activeId) && ["orderPrompt", "searchInput", "payeeInput"].includes(activeId)) {
+        const el = $(activeId); el.focus(); try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {}
+      }
     }
 
     /* =====================================================================
-       EVENTS (single delegated handlers)
+       EVENTS
        ===================================================================== */
     document.addEventListener("click", (e) => {
       const el = e.target.closest("[data-action]");
@@ -1124,7 +1271,9 @@ Currently there is no built-in marketplace UI. Use:
       if (el.tagName === "A" && el.getAttribute("href") === "#") e.preventDefault();
 
       switch (action) {
-        case "goto": state.view = id; document.body.classList.remove("menu-open"); render(); window.scrollTo(0, 0); break;
+        case "goto":
+          if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+          state.view = id; document.body.classList.remove("menu-open"); render(); window.scrollTo(0, 0); break;
         case "toggle-menu": document.body.classList.toggle("menu-open"); break;
         case "close-menu": document.body.classList.remove("menu-open"); break;
         case "connect": connectWallet(); break;
@@ -1141,11 +1290,22 @@ Currently there is no built-in marketplace UI. Use:
           state.transferOpen[id] = !state.transferOpen[id];
           document.getElementById("transfer-" + id)?.classList.toggle("show", !!state.transferOpen[id]); break;
         case "rotate-key": { const b = selected(); if (b) rotateAgentKey(b.tokenId, el); break; }
+        case "toggle-pause": { const b = selected(); if (b && b.stats) ownerCall(b, "owner_action", { action: { SetPaused: { paused: !b.stats.paused } } }, b.stats.paused ? "Business resumed" : "Business paused"); break; }
+        case "add-payee": {
+          const b = selected(); const v = ($("payeeInput")?.value || "").trim().toLowerCase();
+          if (!v) return showToast("Enter an account name", "error");
+          if (b) ownerCall(b, "owner_action", { action: { AddPayee: { account: v } } }, "Payee added"); break; }
+        case "remove-payee": { const b = selected(); if (b) ownerCall(b, "owner_action", { action: { RemovePayee: { account: id } } }, "Payee removed"); break; }
+        case "withdraw": withdrawCapital(); break;
+        case "save-config": saveConfig(); break;
         case "check-treasury": checkAgentBalance(); break;
         case "check-outlayer": checkOutlayerBalance(); break;
         case "toggle-agent-info": toggleAgentInfo(); break;
-        case "save-config": saveConfig(); break;
-        case "cancel-config": state.config = loadConfig(); render(); showToast("Changes discarded"); break;
+        case "order": submitOrder(); break;
+        case "cancel-order": cancelOrder(id, el); break;
+        case "copy-order":
+          navigator.clipboard?.writeText(orderLink(id)).then(() => showToast("Order link copied", "success")).catch(() => showToast(orderLink(id)));
+          break;
       }
     });
 
@@ -1157,42 +1317,17 @@ Currently there is no built-in marketplace UI. Use:
           .filter(b => (b.title + " " + b.account + " " + b.description).toLowerCase().includes(state.search.trim().toLowerCase()));
         $("bizList").innerHTML = list.length ? list.map(bizCard).join("") : `<div class="card empty">No businesses match.</div>`;
       }
-      if (t.id === "cfgReinvest" || t.id === "cfgOwner") {
-        const clamp = (v) => Math.max(0, Math.min(100, parseInt(v, 10) || 0));
-        if (t.id === "cfgReinvest") $("cfgOwner").value = 100 - clamp(t.value);
-        else $("cfgReinvest").value = 100 - clamp(t.value);
-        syncAllocation();
+      if (t.id === "cfgOwnerPct") {
+        const p = Math.max(0, Math.min(100, Number(t.value) || 0));
+        $("cfgReinvestPct").value = 100 - p;
+        $("barA").style.flex = 100 - p; $("barB").style.flex = p;
       }
     });
 
-    function syncAllocation() {
-      const r = Number($("cfgReinvest").value) || 0, o = Number($("cfgOwner").value) || 0;
-      $("barA").style.flex = r; $("barB").style.flex = o;
-      const badge = $("allocBadge");
-      badge.textContent = (r + o) + "% allocated" ;
-      badge.className = "badge " + (r + o === 100 ? "" : "pending");
-      if (r + o === 100) badge.textContent = "100% allocated";
-    }
-
-    function saveConfig() {
-      const next = {
-        description: $("cfgDesc").value.trim(),
-        price: $("cfgPrice").value.trim(), min: $("cfgMin").value.trim(), max: $("cfgMax").value.trim(),
-        reinvest: Number($("cfgReinvest").value) || 0, owner: Number($("cfgOwner").value) || 0
-      };
-      if (next.reinvest + next.owner !== 100) return showToast("Profit distribution must total 100%", "error");
-      if (!(Number(next.price) >= 0)) return showToast("Enter a valid base price", "error");
-      state.config = next;
-      try { localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(next)); } catch (e) {}
-      showToast("Configuration saved", "success");
-    }
+    window.addEventListener("hashchange", () => { parseHash(); render(); });
+    setInterval(() => { if (state.view === "order") loadOrder(true); }, 12000);
 
     init();
   </script>
-  <style>
-    /* mobile-only helper for the duplicate "View business" button */
-    .mobile-only { display: none !important; }
-    @media (max-width: 860px) { .mobile-only { display: inline-flex !important; } }
-  </style>
 </body>
 </html>
