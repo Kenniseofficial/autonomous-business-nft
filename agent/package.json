@@ -1,0 +1,8 @@
+{
+  "name": "business-agent",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "near-api-js": "^6.0.0"
+  }
+}
