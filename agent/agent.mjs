@@ -15,7 +15,7 @@
 import nearAPI from "near-api-js";
 const { Account } = nearAPI;
 const { JsonRpcProvider } = nearAPI.providers;
-const { KeyPairSigner } = nearAPI; // Falls back or uses standard near-api-js classes
+const { KeyPairSigner } = nearAPI;
 
 const BUSINESS = process.env.BUSINESS_ACCOUNT;
 const KEY = process.env.AGENT_PRIVATE_KEY;
@@ -123,11 +123,18 @@ async function buildReport(prompt) {
 }
 
 // ---- main ----
-const stats = await view("get_stats");
+let stats;
+try {
+  stats = await view("get_stats");
+} catch (e) {
+  console.error("Could not fetch stats via get_stats. Check contract method names.", e.message);
+  process.exit(1);
+}
+
 console.log(`Business ${BUSINESS}: paused=${stats.paused}, jobs done=${stats.jobs_done}`);
 
-const lastBeatMs = Number(BigInt(stats.last_heartbeat_ns) / 1_000_000n);
-if (Date.now() - lastBeatMs > HEARTBEAT_EVERY_MS) {
+const lastBeatMs = Number(BigInt(stats.last_heartbeat_ns || 0n) / 1_000_000n);
+if (!stats.last_heartbeat_ns || Date.now() - lastBeatMs > HEARTBEAT_EVERY_MS) {
   await call("heartbeat", {}, HEARTBEAT_GAS);
   console.log("Heartbeat sent.");
 }
@@ -137,7 +144,13 @@ if (stats.paused) {
   process.exit(0);
 }
 
-const pending = await view("get_pending_jobs", { from_id: 1, limit: 5 });
+let pending = [];
+try {
+  pending = await view("get_pending_jobs", { from_id: 1, limit: 5 });
+} catch (e) {
+  console.log("Could not fetch pending jobs:", e.message);
+}
+
 console.log(`${pending.length} pending job(s).`);
 
 for (const job of pending) {
