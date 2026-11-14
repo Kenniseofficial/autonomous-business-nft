@@ -3,7 +3,8 @@
 //   1. proves it is alive on-chain (heartbeat),
 //   2. looks for paid customer jobs waiting in escrow,
 //   3. writes the deliverable (live market data + optional NEAR AI Cloud summary),
-//   4. completes the job on-chain, which triggers the enforced profit split.
+//   4. completes the job on-chain, which triggers the enforced profit split,
+//   5. checks on-chain that the job really became "done" (and fails the run loudly if not).
 //
 // It signs with the business's restricted function-call key. That key can ONLY call
 // complete_job, spend and heartbeat, and the contract enforces pause + spending limits.
@@ -12,10 +13,7 @@
 //   BUSINESS_ACCOUNT   e.g. business-19.buildingfromthetop.testnet
 //   AGENT_PRIVATE_KEY  the agent function-call key shown at activation (ed25519:...)
 //   NEARAI_API_KEY     optional, enables an AI-written summary through NEAR AI Cloud
-import nearAPI from "near-api-js";
-const { Account } = nearAPI;
-const { JsonRpcProvider } = nearAPI.providers;
-const { KeyPairSigner } = nearAPI;
+import { JsonRpcProvider, Account, KeyPairSigner } from "near-api-js";
 
 const BUSINESS = process.env.BUSINESS_ACCOUNT;
 const KEY = process.env.AGENT_PRIVATE_KEY;
@@ -24,18 +22,30 @@ const NEARAI_MODEL = process.env.NEARAI_MODEL || "deepseek-ai/DeepSeek-V3.1";
 const RPC = process.env.NEAR_RPC || "https://rpc.testnet.near.org";
 
 const HEARTBEAT_EVERY_MS = 25 * 60 * 1000;
-const COMPLETE_GAS = 30_000_000_000_000n; // 30 Tgas
+const COMPLETE_GAS = 60_000_000_000_000n; // 60 Tgas
 const HEARTBEAT_GAS = 10_000_000_000_000n; // 10 Tgas
 const MAX_RESULT_BYTES = 1100;
 
 if (!BUSINESS || !KEY) {
-  console.error("Missing BUSINESS_ACCOUNT or AGENT_PRIVATE_KEY.");
+  console.error("Missing BUSINESS_ACCOUNT or AGENT_PRIVATE_KEY secrets.");
   process.exit(1);
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function fetchWithTimeout(url, options = {}, ms = 12000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { ...options, signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ---- read-only call straight to the RPC (no key needed) ----
 async function view(method, args = {}) {
-  const res = await fetch(RPC, {
+  const res = await fetchWithTimeout(RPC, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -67,33 +77,43 @@ async function call(methodName, args, gas) {
 
 // ---- deliverable ----
 async function marketSnapshot() {
-  const url =
-    "https://api.coingecko.com/api/v3/simple/price?ids=near,bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true";
-  const res = await fetch(url, { headers: { accept: "application/json" } });
-  if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
-  const d = await res.json();
-  const line = (id, label) =>
-    d[id] ? `${label} $${d[id].usd} (${d[id].usd_24h_change >= 0 ? "+" : ""}${d[id].usd_24h_change.toFixed(2)}% 24h)` : `${label} n/a`;
-  return [line("near", "NEAR"), line("bitcoin", "BTC"), line("ethereum", "ETH")].join(" | ");
+  try {
+    const url =
+      "https://api.coingecko.com/api/v3/simple/price?ids=near,bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true";
+    const res = await fetchWithTimeout(url, { headers: { accept: "application/json" } });
+    if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
+    const d = await res.json();
+    const line = (id, label) =>
+      d[id] ? `${label} $${d[id].usd} (${d[id].usd_24h_change >= 0 ? "+" : ""}${d[id].usd_24h_change.toFixed(2)}% 24h)` : `${label} n/a`;
+    return [line("near", "NEAR"), line("bitcoin", "BTC"), line("ethereum", "ETH")].join(" | ");
+  } catch (e) {
+    // Never let a flaky price feed block a paid job: say so honestly in the report instead.
+    console.log("Price feed unavailable, delivering without live prices:", e.message);
+    return "live price feed unavailable at delivery time";
+  }
 }
 
 async function aiSummary(prompt, snapshot) {
-  const res = await fetch("https://cloud-api.near.ai/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${NEARAI_KEY}` },
-    body: JSON.stringify({
-      model: NEARAI_MODEL,
-      max_tokens: 400,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a concise geo-economic research analyst. Answer in under 700 characters. Use only the data given plus well-known background. No markdown tables.",
-        },
-        { role: "user", content: `Request: ${prompt}\n\nLive market data: ${snapshot}` },
-      ],
-    }),
-  });
+  const res = await fetchWithTimeout(
+    "https://cloud-api.near.ai/v1/chat/completions",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${NEARAI_KEY}` },
+      body: JSON.stringify({
+        model: NEARAI_MODEL,
+        max_tokens: 400,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a concise geo-economic research analyst. Answer in under 700 characters. Use only the data given plus well-known background. No markdown tables.",
+          },
+          { role: "user", content: `Request: ${prompt}\n\nLive market data: ${snapshot}` },
+        ],
+      }),
+    },
+    25000
+  );
   if (!res.ok) throw new Error(`NEAR AI Cloud ${res.status}`);
   const d = await res.json();
   return (d.choices?.[0]?.message?.content || "").trim();
@@ -118,33 +138,30 @@ async function buildReport(prompt) {
       console.log("AI summary failed, falling back to data-only:", e.message);
     }
   }
-  if (!body) body = `Research request received. Live market data is attached below; no AI analysis was generated for this run.`;
+  if (!body) body = `Research request received. The market data is attached below; no AI analysis was generated for this run.`;
   return clip(`REPORT ${when}\nRequest: ${prompt}\n\n${body}\n\nMarket snapshot: ${snapshot}\n[agent: ${by}]`, MAX_RESULT_BYTES);
 }
 
-// ---- main ----
-let stats = { paused: false, jobs_done: 0, last_heartbeat_ns: 0n };
-try {
-  stats = await view("get_stats");
-} catch (e) {
-  console.log("get_stats not found on contract, trying alternatives or using defaults...", e.message);
-  try {
-    stats = await view("get_status");
-  } catch (err) {
-    console.log("Proceeding with default stats configuration.");
+// After completing, read the job back from the chain to be sure it really became "done"
+async function confirmDone(jobId) {
+  for (let i = 0; i < 8; i++) {
+    await sleep(2500);
+    try {
+      const j = await view("get_job", { job_id: jobId });
+      if (j && j.status === "done") return true;
+    } catch (e) {}
   }
+  return false;
 }
 
-console.log(`Business ${BUSINESS}: paused=${stats.paused}, jobs done=${stats.jobs_done || 0}`);
+// ---- main ----
+const stats = await view("get_stats");
+console.log(`Business ${BUSINESS}: paused=${stats.paused}, jobs total=${stats.jobs_total}, done=${stats.jobs_done}`);
 
-const lastBeatMs = stats.last_heartbeat_ns ? Number(BigInt(stats.last_heartbeat_ns) / 1_000_000n) : 0;
-if (!lastBeatMs || Date.now() - lastBeatMs > HEARTBEAT_EVERY_MS) {
-  try {
-    await call("heartbeat", {}, HEARTBEAT_GAS);
-    console.log("Heartbeat sent.");
-  } catch (hbErr) {
-    console.log("Heartbeat call failed or skipped:", hbErr.message);
-  }
+const lastBeatMs = Number(BigInt(stats.last_heartbeat_ns) / 1_000_000n);
+if (Date.now() - lastBeatMs > HEARTBEAT_EVERY_MS) {
+  await call("heartbeat", {}, HEARTBEAT_GAS);
+  console.log("Heartbeat sent.");
 }
 
 if (stats.paused) {
@@ -152,22 +169,28 @@ if (stats.paused) {
   process.exit(0);
 }
 
-let pending = [];
-try {
-  pending = await view("get_pending_jobs", { from_id: 1, limit: 5 });
-} catch (e) {
-  console.log("Could not fetch pending jobs:", e.message);
-}
-
+const pending = await view("get_pending_jobs", { from_id: 1, limit: 5 });
 console.log(`${pending.length} pending job(s).`);
 
+let failures = 0;
 for (const job of pending) {
   try {
-    console.log(`Working on job #${job.id}: ${job.prompt.slice(0, 80)}`);
+    console.log(`Working on job #${job.id}: ${String(job.prompt).slice(0, 80)}`);
     const report = await buildReport(job.prompt);
     await call("complete_job", { job_id: job.id, result: report }, COMPLETE_GAS);
-    console.log(`Job #${job.id} completed and paid out on-chain.`);
+    if (await confirmDone(job.id)) {
+      console.log(`Job #${job.id} completed and paid out on-chain. ✅`);
+    } else {
+      throw new Error("complete_job was sent but the job is not 'done' on-chain");
+    }
   } catch (e) {
-    console.error(`Job #${job.id} failed:`, e.message);
+    failures++;
+    console.error(`JOB #${job.id} FAILED: ${e.message}`);
+    if (e.cause) console.error("Cause:", e.cause?.message || e.cause);
   }
+}
+
+if (failures > 0) {
+  console.error(`${failures} job(s) failed. See the messages above.`);
+  process.exitCode = 1; // make the GitHub run red so a failure is never hidden
 }
