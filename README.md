@@ -12,7 +12,7 @@ Tracks: **Autonomous Business**, **Agent Economy**, **NFTs That Do Something**.
 | Owner dashboard | https://autonomous-business-nft-frontend.vercel.app/dashboard.html |
 | Customer order page | `…/dashboard.html#/order/<business account>` (example in the quickstart below) |
 | NFT contract (testnet) | `buildingfromthetop.testnet` |
-| Demo post on X | <!-- PASTE LINK TO YOUR X POST --> |
+| Demo post on X | https://x.com/kenniseoficial/status/2121700297776996769?a=lVoO1DL0dyFUDF28NjA&s=19 |
 
 > **Everything runs on NEAR Testnet. Transactions have no real value.** This is an unaudited prototype.
 
