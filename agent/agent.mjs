@@ -18,9 +18,10 @@ import * as nearApi from "near-api-js";
 const api = nearApi.JsonRpcProvider ? nearApi : nearApi.default;
 const { JsonRpcProvider, Account, KeyPairSigner } = api;
 
-const BUSINESS = process.env.BUSINESS_ACCOUNT;
-const KEY = process.env.AGENT_PRIVATE_KEY;
-const NEARAI_KEY = process.env.NEARAI_API_KEY || "";
+// .trim() removes the invisible space or new line that often sneaks in when a secret is pasted
+const BUSINESS = (process.env.BUSINESS_ACCOUNT || "").trim();
+const KEY = (process.env.AGENT_PRIVATE_KEY || "").trim();
+const NEARAI_KEY = (process.env.NEARAI_API_KEY || "").trim();
 const NEARAI_MODEL = process.env.NEARAI_MODEL || "deepseek-ai/DeepSeek-V3.1";
 const RPC = process.env.NEAR_RPC || "https://rpc.testnet.near.org";
 
