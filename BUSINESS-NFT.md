@@ -1,90 +1,24 @@
-# Autonomous Business NFT
+# Autonomous Business NFT: machine-readable summary
 
-## One-line description
-An NFT on NEAR that owns and operates its own autonomous business through a dedicated sub-account, Function-Call key, and optional OutLayer TEE custody. The agent runs under the hood; the NFT holder only claims revenue or transfers ownership.
+See `README.md` for the full description, the status table and the judges quickstart. This file is a short summary for automated readers.
 
-## Problem
-Most NFTs are static collectibles. Most AI agents require constant human supervision and key management. There is no clean primitive that combines:
-- Ownable digital asset (NFT)
-- Autonomous economic agent
-- On-chain treasury
-- Restricted permissions (Function-Call keys)
-- Optional TEE custody
+**One line:** an NFT on NEAR that owns a dedicated business sub-account with an on-chain treasury and a restricted AI agent. Whoever holds the NFT owns the business.
 
-This project creates that primitive.
+**Network:** NEAR testnet only. NFT contract: `buildingfromthetop.testnet`.
 
-## Core Architecture
+## Components
+- `contracts/business-nft-ts` (near-sdk-js): NEP-171 mint and transfer, creates `business-<id>.<contract>`, deploys the treasury code, issues and revokes the agent key.
+- `contracts/treasury` (Rust, near-sdk 5): escrowed customer orders, job completion, enforced owner/reinvest split, owner claim checked against NFT ownership, spending limits, pause.
+- `agent/`: scheduled worker that sends a heartbeat, takes paid jobs, and completes them using a restricted function-call key.
+- `frontend/`: mint page and owner / customer dashboard.
 
-1. **Mint**  
-   User mints an NFT on the factory contract (`buildingfromthetop.testnet`).
+## Permissions model
+- Agent key (function-call key on the business account) may call only: `complete_job`, `spend`, `heartbeat`.
+- Owner actions are authorised by asking the NFT contract who owns the token at call time.
+- On `nft_transfer` the previous agent key is revoked and the business is paused.
 
-2. **Activation**  
-   Owner activates the business. This creates:
-   - A dedicated sub-account: `business-{tokenId}.buildingfromthetop.testnet`
-   - A Function-Call key with limited allowance
-   - Optional registration with OutLayer TEE (returns a `wk_...` API key)
+## Verified vs in progress
+See the status table in `README.md`. Anything marked 🟡 there is implemented but not yet verified end-to-end.
 
-3. **Agent Runtime**  
-   The agent can operate in two modes:
-   - Classic: using the Function-Call private key
-   - OutLayer TEE: using the custodial `wk_...` key (private key never leaves the TEE)
-
-4. **Revenue & Ownership**  
-   - Agent deposits earnings into the business treasury
-   - NFT owner can claim revenue
-   - Transferring the NFT transfers control of the business account
-
-## What is currently live (testnet)
-
-- NFT minting (NEP-171 compatible)
-- On-chain ownership tracking
-- Business sub-account creation
-- Function-Call key generation and attachment
-- OutLayer TEE wallet registration
-- Owner Dashboard with:
-  - Wallet sync
-  - Business list + treasury balance
-  - Activate Business flow
-  - Claim Revenue (test)
-  - Sell/Transfer instructions
-  - Agent Control tab (classic key + OutLayer key)
-- 60-second key copy window after activation
-
-Contract: `buildingfromthetop.testnet`  
-Frontend: Vercel + single-file dashboard
-
-## Design Philosophy
-
-- Normal users should not need to touch the agent.
-- Power users and developers can still inject their own agent logic via the Function-Call key or OutLayer API.
-- Permissions are intentionally restricted (no full-access keys).
-- The NFT is the source of truth for ownership and control.
-
-## Current Limitations
-
-- No fully autonomous background job scheduler yet (the agent still needs to be started by a runtime).
-- Claim Revenue currently performs a small test transfer; full treasury withdrawal logic is still pending.
-- No dedicated marketplace that presents the NFT + autonomous business as a single sellable package (standard NEP-171 marketplaces can still transfer the NFT).
-- Agent does not yet automatically list itself on agent marketplaces or accept external jobs.
-- Some advanced OutLayer features (NEAR Intents, confidential balances) are mainnet-only.
-
-## Intended Next Steps
-
-1. Minimal working agent script that uses the Function-Call key to perform real actions.
-2. Proper treasury claim (withdraw available balance to owner).
-3. Optional background scheduler (OutLayer / Hermes / simple cron).
-4. Agent self-registration on available NEAR agent marketplaces.
-5. Mainnet deployment after thorough testing.
-
-## Technical Notes
-
-- Contract written in near-sdk-js
-- Frontend uses @hot-labs/near-connect
-- Keys generated client-side with tweetnacl
-- Business accounts are real NEAR sub-accounts
-- Function-Call keys are scoped with allowance
-
-## Status
-
-Working end-to-end on NEAR testnet as of November 2026.  
-Core loop (mint → activate → agent key → treasury) is functional.
+## Tracks
+Autonomous Business, Agent Economy, NFTs That Do Something.
