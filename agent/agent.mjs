@@ -13,7 +13,10 @@
 //   BUSINESS_ACCOUNT   e.g. business-19.buildingfromthetop.testnet
 //   AGENT_PRIVATE_KEY  the agent function-call key shown at activation (ed25519:...)
 //   NEARAI_API_KEY     optional, enables an AI-written summary through NEAR AI Cloud
-import { JsonRpcProvider, Account, KeyPairSigner } from "near-api-js";
+import * as nearApi from "near-api-js";
+// Works whether the package is loaded as ESM or CommonJS
+const api = nearApi.JsonRpcProvider ? nearApi : nearApi.default;
+const { JsonRpcProvider, Account, KeyPairSigner } = api;
 
 const BUSINESS = process.env.BUSINESS_ACCOUNT;
 const KEY = process.env.AGENT_PRIVATE_KEY;
