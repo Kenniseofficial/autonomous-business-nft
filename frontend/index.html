@@ -2,241 +2,352 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Autonomous Business NFT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mint Autonomous Business NFT</title>
+  <meta name="description" content="Mint an NFT that owns and runs its own business on NEAR. Testnet only." />
   <style>
+    :root {
+      --bg: #f3f5f1;
+      --ink: #15271f;
+      --muted: #5f6f66;
+      --line: #dfe5de;
+      --card: #ffffff;
+      --green: #245a3c;
+      --green-dark: #1b4730;
+      --green-soft: #e8f1e6;
+      --lime: #cdeeaa;
+      --danger: #b03a2e;
+      --radius: 20px;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: #050508;
-      color: #f4f4f5;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.55;
       min-height: 100vh;
-      line-height: 1.5;
+      overflow-x: hidden;
     }
-    .container {
-      max-width: 440px;
-      margin: 0 auto;
-      padding: 16px 16px 80px;
-    }
+    a { color: inherit; }
+    section { scroll-margin-top: 110px; }
+
+    /* ---------- Header ---------- */
     .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0 24px;
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(243, 245, 241, 0.92);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 700;
-      font-size: 1rem;
+    .topbar-inner {
+      max-width: 1240px; margin: 0 auto; padding: 18px 32px;
+      display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px;
     }
-    .logo-box {
-      width: 32px;
-      height: 32px;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      border-radius: 9px;
-      display: grid;
-      place-items: center;
-      font-size: 16px;
+    .brand { text-decoration: none; display: inline-flex; flex-direction: column; line-height: 1.1; justify-self: start; }
+    .brand-name { font-size: 1.9rem; font-weight: 600; letter-spacing: -0.03em; }
+    .brand-sub { font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin-top: 5px; }
+
+    .nav { display: flex; gap: 34px; }
+    .nav a { text-decoration: none; font-size: 1rem; padding: 8px 2px; position: relative; color: var(--ink); white-space: nowrap; }
+    .nav a.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 3px; border-radius: 3px; background: var(--green); }
+
+    .wallet {
+      justify-self: end; display: inline-flex; align-items: center;
+      background: #f9faf8; border: 1px solid var(--line); border-radius: 16px; padding: 6px 8px 6px 6px;
     }
-    .live {
-      background: rgba(34, 197, 94, 0.12);
-      color: #4ade80;
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 5px 12px;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    .wallet-btn {
+      display: inline-flex; align-items: center; gap: 10px; background: none; border: none; cursor: pointer;
+      padding: 8px 14px; font-size: .98rem; color: var(--ink); border-radius: 12px; font-family: inherit;
     }
-    .live::before {
-      content: "";
-      width: 6px;
-      height: 6px;
-      background: #4ade80;
-      border-radius: 50%;
+    .wallet-btn:hover { background: rgba(0,0,0,.03); }
+    .status-dot { width: 9px; height: 9px; border-radius: 50%; background: #b8c2ba; flex-shrink: 0; }
+    .wallet.connected .status-dot { background: var(--green); }
+    .wallet-out {
+      display: none; align-items: center; justify-content: center; width: 38px; height: 38px;
+      background: none; border: none; border-left: 1px solid var(--line); border-radius: 0; cursor: pointer; color: var(--ink);
+      margin-left: 4px; padding-left: 4px;
     }
-    .hero {
-      text-align: center;
-      padding: 10px 0 28px;
+    .wallet.connected .wallet-out { display: inline-flex; }
+    .wallet-out svg { width: 22px; height: 22px; }
+
+    /* ---------- Hero + mint card ---------- */
+    .hero { position: relative; padding: 56px 24px 70px; text-align: center; }
+    .hex { position: absolute; color: #c9d0c8; pointer-events: none; }
+    .hex svg { width: 100%; height: auto; display: block; }
+    .hex-right { right: 3%; top: 180px; width: 210px; }
+    .hex-left { left: -2%; bottom: -40px; width: 240px; }
+    .eyebrow { font-size: .95rem; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; }
+    .hero h1 { font-size: clamp(2.1rem, 5.2vw, 3.6rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; margin: 14px auto 18px; max-width: 900px; }
+    .hero .lead { font-size: 1.2rem; color: #2c3d34; max-width: 560px; margin: 0 auto; }
+
+    .mint-card {
+      position: relative; z-index: 1; background: var(--card); border: 1px solid var(--line); border-radius: 26px;
+      max-width: 640px; margin: 40px auto 0; padding: 38px 32px 32px; text-align: left;
+      box-shadow: 0 14px 40px rgba(21, 39, 31, 0.07);
     }
-    .hero h1 {
-      font-size: 2.35rem;
-      font-weight: 800;
-      line-height: 1.12;
-      letter-spacing: -0.5px;
-      margin-bottom: 14px;
-    }
-    .hero h1 span {
-      background: linear-gradient(90deg, #4ade80 0%, #22c55e 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .hero p {
-      color: #a1a1aa;
-      font-size: 1rem;
-      max-width: 300px;
-      margin: 0 auto;
-    }
-    .card {
-      background: #0f0f12;
-      border: 1px solid #27272a;
-      border-radius: 22px;
-      padding: 24px 20px;
-      margin-bottom: 18px;
-    }
-    .card h2 {
-      font-size: 1.15rem;
-      font-weight: 600;
-      margin-bottom: 20px;
-    }
-    .price-box {
-      background: #18181b;
-      border-radius: 14px;
-      padding: 14px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .price-label { color: #a1a1aa; font-size: 0.9rem; }
-    .price-value { color: #4ade80; font-weight: 700; font-size: 1.15rem; }
-    label {
-      display: block;
-      font-size: 0.8rem;
-      color: #a1a1aa;
-      margin-bottom: 7px;
-      font-weight: 500;
-    }
+    .price { padding-bottom: 20px; border-bottom: 1px solid var(--line); margin-bottom: 22px; }
+    .price span { display: block; color: var(--ink); font-size: 1.05rem; }
+    .price strong { display: block; font-size: 1.7rem; font-weight: 600; letter-spacing: -0.01em; margin-top: 2px; }
+    label { display: block; font-size: 1.05rem; margin-bottom: 8px; }
     input, textarea {
-      width: 100%;
-      background: #09090b;
-      border: 1px solid #3f3f46;
-      border-radius: 13px;
-      padding: 14px 15px;
-      color: #fff;
-      font-size: 0.95rem;
-      margin-bottom: 16px;
+      width: 100%; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px;
+      font-size: 1rem; color: var(--ink); font-family: inherit; margin-bottom: 8px;
     }
-    input:focus, textarea:focus {
-      outline: none;
-      border-color: #22c55e;
-    }
+    textarea { resize: vertical; min-height: 56px; }
+    input::placeholder, textarea::placeholder { color: #9aa79f; }
+    input:focus, textarea:focus { outline: 2px solid rgba(36, 90, 60, 0.22); border-color: var(--green); }
+    .help { font-size: .95rem; color: var(--muted); margin-bottom: 20px; }
+    .field-gap { margin-bottom: 20px; }
+
     .btn {
-      width: 100%;
-      border: none;
-      border-radius: 15px;
-      padding: 16px;
-      font-size: 1.05rem;
-      font-weight: 600;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
+      width: 100%; border: 1px solid transparent; border-radius: 14px; padding: 17px; font-size: 1.1rem; font-weight: 500;
+      cursor: pointer; font-family: inherit; -webkit-tap-highlight-color: transparent;
     }
-    .btn-primary {
-      background: linear-gradient(90deg, #16a34a, #22c55e);
-      color: white;
+    .btn-primary { background: var(--green); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--green-dark); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-ghost { background: #fff; border-color: var(--line); color: var(--ink); margin-top: 14px; }
+    .btn-ghost.highlight { background: var(--lime); border-color: var(--lime); color: #173f2e; font-weight: 600; }
+
+    .status { display: none; margin-top: 18px; padding: 14px 16px; border-radius: 14px; font-size: .95rem; }
+    .status.show { display: block; }
+    .status.info { background: #e6eef8; color: #274a7a; }
+    .status.success { background: var(--green-soft); color: #1d5436; }
+    .status.error { background: #fbe4e1; color: var(--danger); }
+
+    /* ---------- Content sections ---------- */
+    .block { max-width: 1040px; margin: 0 auto; padding: 56px 24px; }
+    .block h2 { font-size: clamp(1.7rem, 3.6vw, 2.4rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 14px; }
+    .block .section-lead { color: var(--muted); font-size: 1.1rem; max-width: 720px; margin-bottom: 30px; }
+    .block p + p { margin-top: 14px; }
+    .tag { font-size: .8rem; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--green); display: block; margin-bottom: 10px; }
+
+    .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 26px; }
+    .tile { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 24px; }
+    .tile h3 { font-size: 1.1rem; margin-bottom: 8px; }
+    .tile p { color: var(--muted); font-size: .98rem; }
+
+    .steps { list-style: none; display: grid; gap: 14px; counter-reset: step; }
+    .steps li {
+      counter-increment: step; display: grid; grid-template-columns: 52px 1fr; gap: 16px; align-items: start;
+      background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px 22px;
     }
-    .btn-primary:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
+    .steps li::before {
+      content: counter(step, decimal-leading-zero); width: 44px; height: 44px; border-radius: 12px; background: var(--green-soft);
+      color: var(--green); font-weight: 700; display: grid; place-items: center; font-size: .95rem;
     }
-    .btn-secondary {
-      background: #18181b;
-      border: 1px solid #3f3f46;
-      color: #e4e4e7;
-      margin-bottom: 10px;
+    .steps h3 { font-size: 1.08rem; margin-bottom: 4px; }
+    .steps p { color: var(--muted); font-size: .98rem; margin: 0; }
+
+    .faq { display: grid; gap: 12px; }
+    details { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 0 22px; }
+    summary {
+      list-style: none; cursor: pointer; padding: 18px 0; font-weight: 600; font-size: 1.05rem;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px;
     }
-    .btn-disconnect {
-      background: transparent;
-      border: 1px solid #ef4444;
-      color: #f87171;
-      margin-bottom: 14px;
-      padding: 12px;
-      font-size: 0.95rem;
-      display: none;
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; font-size: 1.5rem; font-weight: 400; color: var(--green); line-height: 1; flex-shrink: 0; }
+    details[open] summary::after { content: "–"; }
+    details .answer { padding: 0 0 20px; color: var(--muted); font-size: 1rem; }
+    details .answer p + p { margin-top: 10px; }
+    details .answer ul { margin: 10px 0 0 20px; }
+    details .answer li { margin-top: 4px; }
+
+    .note { background: var(--green-soft); color: #1d5436; border-radius: 14px; padding: 14px 18px; font-size: .95rem; margin-top: 22px; }
+
+    /* ---------- Footer ---------- */
+    .footer { border-top: 1px solid var(--line); margin-top: 30px; padding: 34px 24px 44px; text-align: center; }
+    .footer .meta { color: var(--muted); font-size: .88rem; margin-bottom: 14px; }
+    .footer .testnet-note { font-size: 1rem; font-weight: 600; text-align: center; }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 960px) {
+      .topbar-inner { grid-template-columns: 1fr auto; padding: 14px 18px 10px; row-gap: 10px; }
+      .nav { grid-column: 1 / -1; order: 3; gap: 26px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+      .nav::-webkit-scrollbar { display: none; }
+      .brand-name { font-size: 1.6rem; }
+      .hex-right { display: none; }
+      .hex-left { width: 150px; left: -40px; bottom: -20px; opacity: .7; }
+      .grid3 { grid-template-columns: 1fr; }
     }
-    .status {
-      margin-top: 16px;
-      padding: 13px 15px;
-      border-radius: 13px;
-      font-size: 0.9rem;
-      display: none;
-    }
-    .status.success {
-      background: #14532d;
-      color: #bbf7d0;
-      display: block;
-    }
-    .status.error {
-      background: #450a0a;
-      color: #fecaca;
-      display: block;
-    }
-    .footer {
-      text-align: center;
-      margin-top: 36px;
-      font-size: 0.8rem;
-      color: #52525b;
-      line-height: 1.6;
+    @media (max-width: 560px) {
+      .wallet-btn { padding: 8px 10px; font-size: .9rem; }
+      .hero { padding: 36px 16px 50px; }
+      .mint-card { padding: 26px 18px 22px; border-radius: 22px; margin-top: 30px; }
+      .hero .lead { font-size: 1.05rem; }
+      .block { padding: 40px 16px; }
+      .steps li { grid-template-columns: 44px 1fr; padding: 16px; gap: 12px; }
+      details { padding: 0 16px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="topbar">
-      <div class="logo">
-        <div class="logo-box">◈</div>
-        <span>Autonomous Business</span>
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#mint">
+        <span class="brand-name">autonomous</span>
+        <span class="brand-sub">Businesses on NEAR</span>
+      </a>
+
+      <nav class="nav" id="nav" aria-label="Main">
+        <a href="#mint" data-section="mint" class="active">Mint</a>
+        <a href="#about" data-section="about">About</a>
+        <a href="#how" data-section="how">How It Works</a>
+        <a href="#faq" data-section="faq">FAQ</a>
+      </nav>
+
+      <div class="wallet" id="wallet">
+        <button class="wallet-btn" id="connectBtn" type="button">
+          <span class="status-dot"></span>
+          <span id="walletLabel">Connect Wallet</span>
+        </button>
+        <button class="wallet-out" id="disconnectBtn" type="button" aria-label="Disconnect wallet" title="Disconnect wallet">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="M16 8l4 4-4 4"/><path d="M20 12H9"/></svg>
+        </button>
       </div>
-      <div class="live">Live on NEAR</div>
     </div>
+  </header>
 
-    <div class="hero">
-      <h1>Mint Your Own<br><span>Autonomous Business</span></h1>
-      <p>Own a living AI agent that earns for you on NEAR</p>
-    </div>
-
-    <button class="btn btn-secondary" id="connectBtn">
-      Connect Wallet
-    </button>
-
-    <button class="btn btn-disconnect" id="disconnectBtn">
-      Disconnect Wallet
-    </button>
-
-    <!-- ADDED: Go to Dashboard button -->
-    <button class="btn btn-secondary" id="goDashboardBtn" style="display:none; margin-bottom:14px;">
-      Go to My Dashboard
-    </button>
-
-    <div class="card">
-      <h2>Mint Autonomous Business NFT</h2>
-
-      <div class="price-box">
-        <span class="price-label">Price</span>
-        <span class="price-value">0.01 Testnet NEAR</span>
+  <main>
+    <!-- ===================== MINT ===================== -->
+    <section id="mint" class="hero">
+      <div class="hex hex-right" aria-hidden="true">
+        <svg viewBox="0 0 200 230" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><polygon points="100,5 195,58 195,172 100,225 5,172 5,58"/><polygon points="100,70 150,98 150,155 100,183 50,155 50,98"/><path d="M100 127V183M100 127L50 98M100 127L150 98M100 5V70M195 58L150 98M5 58L50 98"/></svg>
+      </div>
+      <div class="hex hex-left" aria-hidden="true">
+        <svg viewBox="0 0 200 230" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><polygon points="100,5 195,58 195,172 100,225 5,172 5,58"/><polygon points="100,70 150,98 150,155 100,183 50,155 50,98"/><path d="M100 127V183M100 127L50 98M100 127L150 98M100 5V70M195 58L150 98M5 58L50 98"/></svg>
       </div>
 
-      <label>Business Name</label>
-      <input type="text" id="title" value="My First Autonomous Business" />
+      <div class="eyebrow">Testnet</div>
+      <h1>Mint Autonomous Business NFT</h1>
+      <p class="lead">Create your on-chain autonomous business identity.<br>Own your business. Govern its future.</p>
 
-      <label>Description</label>
-      <textarea id="description" rows="3">This NFT owns a live autonomous business on NEAR</textarea>
+      <div class="mint-card">
+        <div class="price">
+          <span>Price</span>
+          <strong>0.01 Testnet NEAR</strong>
+        </div>
 
-      <button class="btn btn-primary" id="mintBtn" disabled>
-        Mint Now
-      </button>
+        <label for="title">Business Name (Optional)</label>
+        <input type="text" id="title" placeholder="Enter your business name" autocomplete="off" />
+        <p class="help">Displayed on your NFT and business profile.</p>
 
-      <div id="status" class="status"></div>
-    </div>
+        <label for="description">Description (optional)</label>
+        <textarea id="description" rows="2" class="field-gap" placeholder="Enter a business description"></textarea>
 
-    <div class="footer">
-      Contract: buildingfromthetop.testnet<br>
-      Network: Testnet • Built for NEAR Hackathon
-    </div>
-  </div>
+        <button class="btn btn-primary" id="mintBtn" type="button" disabled>Mint Now</button>
+
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+
+        <!-- Dashboard button: shown once a wallet is connected, highlighted after a successful mint -->
+        <button class="btn btn-ghost" id="goDashboardBtn" type="button" style="display:none;">Go to My Dashboard</button>
+      </div>
+    </section>
+
+    <!-- ===================== ABOUT ===================== -->
+    <section id="about" class="block">
+      <span class="tag">About</span>
+      <h2>An NFT that runs its own business</h2>
+      <p class="section-lead">Most NFTs are pictures. An Autonomous Business NFT is a working company on NEAR that you can own, earn from, and sell.</p>
+
+      <p>When you mint one of these NFTs, it gets its own dedicated business account on NEAR, with a treasury, an AI agent that does the work, and rules that the blockchain enforces. The NFT is the owner of that business. Whoever holds the NFT controls the treasury, receives the profits, and can pause the business at any time.</p>
+      <p>This solves a real problem. AI agents are powerful, but today they need constant babysitting and usually hold powerful keys that can be misused. Here the agent gets only a narrow, restricted key, customers pay through escrow, and the owner stays in charge. Because ownership is just an NFT, the whole business can be sold in one transaction.</p>
+
+      <div class="grid3">
+        <div class="tile"><h3>The NFT is the business</h3><p>Each NFT has its own NEAR sub-account and treasury. Transfer the NFT and the buyer instantly inherits the business, its balance and its future earnings.</p></div>
+        <div class="tile"><h3>A restricted AI agent</h3><p>The agent works with a limited function-call key. It can only deliver jobs, send a heartbeat, and make small payments under limits you set. It can never take full control.</p></div>
+        <div class="tile"><h3>Rules enforced on-chain</h3><p>The profit split, spending caps, allowed payees, escrow and the pause switch all live in the contract, so nobody has to trust a server or a promise.</p></div>
+      </div>
+
+      <div class="note">Everything here runs on NEAR Testnet. It is a hackathon prototype built for the NEAR Hackathon 2026, and no real money is involved.</div>
+    </section>
+
+    <!-- ===================== HOW IT WORKS ===================== -->
+    <section id="how" class="block">
+      <span class="tag">How It Works</span>
+      <h2>From mint to earning, step by step</h2>
+      <p class="section-lead">Six steps take you from a wallet connection to a business that earns and pays you.</p>
+
+      <ol class="steps">
+        <li><div><h3>Connect and mint</h3><p>Connect a NEAR testnet wallet, name your business, and mint the NFT for 0.01 testnet NEAR. The NFT is your ownership certificate.</p></div></li>
+        <li><div><h3>Activate the business</h3><p>Open your dashboard and activate. The contract creates the business sub-account, funds its treasury, deploys the treasury rules, and gives the agent a restricted key. You get the key once, so copy it somewhere safe.</p></div></li>
+        <li><div><h3>Start the agent</h3><p>Add the agent key to the scheduled worker. It wakes up regularly, proves it is alive with an on-chain heartbeat, and looks for paid jobs. Your dashboard shows whether the agent is online.</p></div></li>
+        <li><div><h3>Customers order and pay into escrow</h3><p>Anyone can open the business order page, describe what they want researched, and pay. The money is held in escrow by the contract, not by the agent.</p></div></li>
+        <li><div><h3>The agent delivers and the profit is split</h3><p>The agent writes the report and completes the job on-chain. At that moment the contract splits the revenue between you and the treasury using your percentage, for example 60% to you and 40% reinvested. The split is enforced by code.</p></div></li>
+        <li><div><h3>Claim, control or sell</h3><p>Claim your share to your wallet whenever you like. Set the price, caps and allowed payees, pause the agent, or sell the NFT. On a sale the old agent key is revoked automatically and the business is paused until the new owner sets a fresh key.</p></div></li>
+      </ol>
+    </section>
+
+    <!-- ===================== FAQ ===================== -->
+    <section id="faq" class="block">
+      <span class="tag">FAQ</span>
+      <h2>Frequently asked questions</h2>
+      <p class="section-lead">Straight answers about how the business works, what it costs and what is still being built.</p>
+
+      <div class="faq">
+        <details>
+          <summary>What exactly is an Autonomous Business NFT?</summary>
+          <div class="answer"><p>It is an NFT on NEAR that owns a live business. Minting creates the NFT, and activating it creates a dedicated business account with a treasury and an AI agent. Holding the NFT means you own the business and its cash flow.</p></div>
+        </details>
+        <details>
+          <summary>What do I get when I hold the NFT?</summary>
+          <div class="answer"><p>You get control of the business: your enforced share of the profits, the right to change the price, the profit split and the spending limits, the pause button, and the right to withdraw capital while paused. Only the current NFT holder can do these things, and the contract checks ownership every time.</p></div>
+        </details>
+        <details>
+          <summary>How does the agent make money?</summary>
+          <div class="answer"><p>Customers pay for jobs, for example a short market-intelligence report. The payment sits in escrow until the agent delivers the work and completes the job on-chain. The agent can also list the business on the NEAR Agent Market so other agents and people can find it.</p></div>
+        </details>
+        <details>
+          <summary>Can the agent steal my money?</summary>
+          <div class="answer">
+            <p>It cannot, by design. The agent holds a restricted key, not a full-access key.</p>
+            <ul>
+              <li>The key can only call three methods: complete a job, send a heartbeat, and spend.</li>
+              <li>Spending only goes to payees you approved, within a per-payment cap and a daily cap.</li>
+              <li>It cannot touch customer escrow or your unclaimed share.</li>
+              <li>You can pause the business instantly and rotate the key at any time.</li>
+            </ul>
+          </div>
+        </details>
+        <details>
+          <summary>How is the profit split decided?</summary>
+          <div class="answer"><p>You choose the percentage, for example 60% to you and 40% reinvested into the treasury. The contract applies it every time a job completes, and you can only claim your own share. The treasury portion stays in the business to fund its operations.</p></div>
+        </details>
+        <details>
+          <summary>How do I claim my earnings?</summary>
+          <div class="answer"><p>Open your dashboard, go to Overview or Wallet, and press Claim to wallet. Your wallet asks you to approve one transaction, and the contract sends your available share straight to you after confirming you hold the NFT.</p></div>
+        </details>
+        <details>
+          <summary>What happens if I sell or transfer the NFT?</summary>
+          <div class="answer"><p>The buyer becomes the owner immediately. In the same transaction the contract revokes your agent key and pauses the business, so the previous owner cannot keep operating it. The new owner sets a fresh agent key, then resumes. Unclaimed profits and unfinished orders go with the business, and customers can cancel an undelivered order for a refund after one hour.</p></div>
+        </details>
+        <details>
+          <summary>What does it cost?</summary>
+          <div class="answer"><p>Minting costs 0.01 testnet NEAR plus a small network fee. Activating a business needs a deposit of a few testnet NEAR, because the treasury contract has to be stored on the new account. That deposit stays in the business account as its storage and starting balance. All of it is testnet currency.</p></div>
+        </details>
+        <details>
+          <summary>Which wallets work?</summary>
+          <div class="answer"><p>Any NEAR wallet that supports testnet and connects through NEAR Connect, such as Meteor or Intear. Switch your wallet to testnet before connecting.</p></div>
+        </details>
+        <details>
+          <summary>Is this real money?</summary>
+          <div class="answer"><p>No. Everything runs on NEAR Testnet, and testnet tokens have no real value. You can mint, activate, order and claim as often as you like while testing.</p></div>
+        </details>
+        <details>
+          <summary>What is still being built?</summary>
+          <div class="answer"><p>To be honest about the current stage: the agent runs as a scheduled worker that wakes up regularly, not yet as an always-on runtime inside a trusted execution environment. Reports use live market data and an optional AI summary. Planned next steps are a TEE-based agent runtime, deeper Agent Market integration, richer services, fractional ownership, and a mainnet launch after more testing.</p></div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="footer">
+    <div class="meta">Contract: buildingfromthetop.testnet · Built for the NEAR Hackathon 2026</div>
+    <p class="testnet-note">Transactions are on Testnet. No real Value.</p>
+  </footer>
 
   <script type="importmap">
   {
@@ -249,24 +360,67 @@
   <script type="module">
     import { NearConnector } from "@hot-labs/near-connect";
 
+    /* =====================================================================
+       CONFIG
+       ===================================================================== */
     const CONTRACT_ID = "buildingfromthetop.testnet";
+    const MINT_GAS = "30000000000000";                    // 30 Tgas
+    const MINT_DEPOSIT = "10000000000000000000000";       // 0.01 NEAR
+    const DEFAULT_TITLE = "Autonomous Business NFT";
+    const DEFAULT_DESCRIPTION = "An NFT that runs its own business on NEAR";
+    const DASHBOARD_URL = "dashboard.html";
 
-    const connectBtn = document.getElementById("connectBtn");
-    const disconnectBtn = document.getElementById("disconnectBtn");
-    const mintBtn = document.getElementById("mintBtn");
-    const statusEl = document.getElementById("status");
-    const goDashboardBtn = document.getElementById("goDashboardBtn");
+    /* =====================================================================
+       DOM + STATE
+       ===================================================================== */
+    const $ = (id) => document.getElementById(id);
+    const walletEl = $("wallet");
+    const connectBtn = $("connectBtn");
+    const disconnectBtn = $("disconnectBtn");
+    const walletLabel = $("walletLabel");
+    const mintBtn = $("mintBtn");
+    const statusEl = $("status");
+    const goDashboardBtn = $("goDashboardBtn");
 
     let connector = null;
     let accountId = null;
 
+    /* =====================================================================
+       UI HELPERS
+       ===================================================================== */
+    function showStatus(type, message) {
+      statusEl.className = "status show " + type;
+      statusEl.innerText = message;
+    }
+    function hideStatus() {
+      statusEl.className = "status";
+      statusEl.innerText = "";
+    }
+
+    function updateUI() {
+      if (accountId) {
+        const short = accountId.length > 18 ? accountId.slice(0, 8) + "..." + accountId.slice(-6) : accountId;
+        walletLabel.innerText = short;
+        walletEl.classList.add("connected");
+        mintBtn.disabled = false;
+        goDashboardBtn.style.display = "block";
+      } else {
+        walletLabel.innerText = "Connect Wallet";
+        walletEl.classList.remove("connected");
+        mintBtn.disabled = true;
+        goDashboardBtn.style.display = "none";
+        goDashboardBtn.classList.remove("highlight");
+        goDashboardBtn.innerText = "Go to My Dashboard";
+      }
+    }
+
+    /* =====================================================================
+       WALLET
+       ===================================================================== */
     async function init() {
       connector = new NearConnector({
         network: "testnet",
-        features: {
-          signAndSendTransaction: true,
-          testnet: true
-        }
+        features: { signAndSendTransaction: true, testnet: true }
       });
 
       connector.on("wallet:signIn", async (event) => {
@@ -289,74 +443,45 @@
       } catch (e) {}
     }
 
-    function updateUI() {
-      if (accountId) {
-        const short = accountId.length > 18 
-          ? accountId.slice(0, 8) + "..." + accountId.slice(-6) 
-          : accountId;
-        connectBtn.innerText = short;
-        disconnectBtn.style.display = "block";
-        mintBtn.disabled = false;
-        goDashboardBtn.style.display = "block";   // ADDED
-      } else {
-        connectBtn.innerText = "Connect Wallet";
-        disconnectBtn.style.display = "none";
-        mintBtn.disabled = true;
-        goDashboardBtn.style.display = "none";    // ADDED
-      }
-    }
-
     connectBtn.addEventListener("click", async () => {
       if (accountId) return;
       try {
         await connector.connect();
       } catch (err) {
         console.error(err);
-        statusEl.className = "status error";
-        statusEl.style.display = "block";
-        statusEl.innerText = err.message || "Connection cancelled";
+        showStatus("error", err.message || "Connection cancelled");
       }
     });
 
     disconnectBtn.addEventListener("click", async () => {
       try {
-        if (connector) {
-          await connector.disconnect();
-        }
+        if (connector) await connector.disconnect();
       } catch (e) {}
       accountId = null;
       updateUI();
-      statusEl.style.display = "none";
+      hideStatus();
     });
 
-    // ADDED: Go to Dashboard
+    // Go to Dashboard
     goDashboardBtn.addEventListener("click", () => {
-      window.location.href = "dashboard.html";
+      window.location.href = DASHBOARD_URL;
     });
 
+    /* =====================================================================
+       MINT
+       ===================================================================== */
     mintBtn.addEventListener("click", async () => {
       if (!accountId) {
-        statusEl.className = "status error";
-        statusEl.style.display = "block";
-        statusEl.innerText = "Please connect wallet first";
+        showStatus("error", "Please connect wallet first");
         return;
       }
 
-      const title = document.getElementById("title").value.trim();
-      const description = document.getElementById("description").value.trim();
-
-      if (!title || !description) {
-        statusEl.className = "status error";
-        statusEl.style.display = "block";
-        statusEl.innerText = "Please fill Business Name and Description";
-        return;
-      }
+      // Both fields are optional in the new design; fall back to the same defaults the contract uses
+      const title = $("title").value.trim() || DEFAULT_TITLE;
+      const description = $("description").value.trim() || DEFAULT_DESCRIPTION;
 
       try {
-        statusEl.className = "status";
-        statusEl.style.display = "block";
-        statusEl.innerText = "Confirm the transaction in your wallet...";
-
+        showStatus("info", "Confirm the transaction in your wallet...");
         const wallet = await connector.wallet();
 
         await wallet.signAndSendTransaction({
@@ -366,28 +491,41 @@
               type: "FunctionCall",
               params: {
                 methodName: "nft_mint",
-                args: {
-                  receiver_id: accountId,
-                  title: title,
-                  description: description
-                },
-                gas: "30000000000000",
-                deposit: "10000000000000000000000"
+                args: { receiver_id: accountId, title: title, description: description },
+                gas: MINT_GAS,
+                deposit: MINT_DEPOSIT
               }
             }
           ]
         });
 
-        statusEl.className = "status success";
-        statusEl.innerText = "✅ NFT Minted Successfully! Your Autonomous Business is live.";
+        showStatus("success", "✅ NFT Minted Successfully! Your Autonomous Business is live.");
+        goDashboardBtn.style.display = "block";
+        goDashboardBtn.classList.add("highlight");
+        goDashboardBtn.innerText = "Go to My Dashboard →";
       } catch (err) {
         console.error(err);
-        statusEl.className = "status error";
-        statusEl.style.display = "block";
-        statusEl.innerText = err.message || "Transaction failed or cancelled";
+        showStatus("error", err.message || "Transaction failed or cancelled");
       }
     });
 
+    /* =====================================================================
+       NAV: highlight the section currently in view
+       ===================================================================== */
+    function initNavHighlight() {
+      const links = Array.from(document.querySelectorAll("#nav a"));
+      const sections = links.map(a => document.getElementById(a.dataset.section)).filter(Boolean);
+      if (!("IntersectionObserver" in window)) return;
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          links.forEach(a => a.classList.toggle("active", a.dataset.section === entry.target.id));
+        });
+      }, { rootMargin: "-35% 0px -55% 0px", threshold: 0 });
+      sections.forEach(s => observer.observe(s));
+    }
+
+    initNavHighlight();
     init();
   </script>
 </body>
